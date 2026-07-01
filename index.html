@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Productivity Garden 🌱</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-
   <style>
     :root {
       --green-dark:  #3d6b4f;
@@ -37,7 +36,6 @@
       color: var(--text-dark);
     }
 
-    /* ===== EKRAN LOGOWANIA ===== */
     #auth-screen {
       display: flex;
       align-items: center;
@@ -57,7 +55,7 @@
       text-align: center;
     }
 
-    .auth-card .logo {
+    .logo {
       font-family: 'Press Start 2P', monospace;
       font-size: 13px;
       color: var(--green-dark);
@@ -65,7 +63,7 @@
       margin-bottom: 8px;
     }
 
-    .auth-card .subtitle {
+    .subtitle {
       color: var(--text-light);
       font-size: 14px;
       margin-bottom: 32px;
@@ -92,15 +90,9 @@
       transition: all 0.2s;
     }
 
-    .auth-tab.active {
-      background: var(--green-main);
-      color: white;
-    }
+    .auth-tab.active { background: var(--green-main); color: white; }
 
-    .form-group {
-      margin-bottom: 16px;
-      text-align: left;
-    }
+    .form-group { margin-bottom: 16px; text-align: left; }
 
     .form-group label {
       display: block;
@@ -156,8 +148,7 @@
 
     .btn-green:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--green-dark); }
     .btn-green:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--green-dark); }
-
-    .btn-small { padding: 6px 14px; font-size: 13px; }
+    .btn-small { padding: 8px 16px; font-size: 14px; }
 
     .message {
       padding: 12px;
@@ -165,12 +156,12 @@
       font-size: 14px;
       margin-bottom: 16px;
       display: none;
+      text-align: left;
     }
 
     .message.error   { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; display: block; }
     .message.success { background: #e8f5e9; color: var(--green-dark); border: 1px solid #c6e6c6; display: block; }
 
-    /* ===== GŁÓWNA APLIKACJA ===== */
     #app-screen { display: none; min-height: 100vh; }
 
     .topbar {
@@ -221,11 +212,7 @@
       cursor: pointer;
     }
 
-    .app-content {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
+    .app-content { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
 
     .section-card {
       background: var(--cream);
@@ -253,11 +240,7 @@
 
     .section-body { padding: 20px; }
 
-    .add-task-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+    .add-task-row { display: flex; gap: 10px; margin-bottom: 20px; }
 
     .add-task-row input {
       flex: 1;
@@ -287,6 +270,7 @@
     .task-checkbox {
       width: 24px;
       height: 24px;
+      min-width: 24px;
       border: 2px solid var(--brown-light);
       border-radius: 4px;
       background: white;
@@ -294,35 +278,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
       font-size: 14px;
       transition: all 0.15s;
     }
 
-    .task-checkbox.done {
-      background: var(--green-main);
-      border-color: var(--green-dark);
-      color: white;
-    }
+    .task-checkbox.done { background: var(--green-main); border-color: var(--green-dark); color: white; }
 
-    .task-title {
-      flex: 1;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
+    .task-title { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-dark); }
+    .task-title.done { text-decoration: line-through; color: var(--text-light); }
 
-    .task-title.done {
-      text-decoration: line-through;
-      color: var(--text-light);
-    }
-
-    .task-reward {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gold-dark);
-      white-space: nowrap;
-    }
+    .task-reward { font-size: 12px; font-weight: 700; color: var(--gold-dark); white-space: nowrap; }
 
     .task-delete {
       background: none;
@@ -337,24 +302,12 @@
 
     .task-delete:hover { color: var(--red); }
 
-    .empty-state {
-      text-align: center;
-      padding: 32px 0;
-      color: var(--text-light);
-      font-size: 14px;
-    }
-
+    .empty-state { text-align: center; padding: 32px 0; color: var(--text-light); font-size: 14px; }
     .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
-
-    .loading {
-      text-align: center;
-      padding: 24px;
-      color: var(--text-light);
-      font-size: 14px;
-    }
+    .loading { text-align: center; padding: 24px; color: var(--text-light); font-size: 14px; }
 
     @keyframes coin-pop {
-      0%   { transform: translateY(0) scale(1);     opacity: 1; }
+      0%   { transform: translateY(0) scale(1);      opacity: 1; }
       100% { transform: translateY(-60px) scale(1.4); opacity: 0; }
     }
 
@@ -367,25 +320,10 @@
       animation: coin-pop 1s ease-out forwards;
       z-index: 999;
     }
-
-    /* Baner błędu gdy Supabase nie załaduje */
-    #load-error {
-      display: none;
-      background: #fde8e8;
-      color: var(--red);
-      text-align: center;
-      padding: 20px;
-      font-weight: 700;
-    }
   </style>
 </head>
 <body>
 
-  <div id="load-error">
-    ❌ Błąd ładowania biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.
-  </div>
-
-  <!-- ===== EKRAN LOGOWANIA ===== -->
   <div id="auth-screen">
     <div class="auth-card">
       <div class="logo">🌱 Productivity<br>Garden</div>
@@ -411,7 +349,6 @@
     </div>
   </div>
 
-  <!-- ===== GŁÓWNA APLIKACJA ===== -->
   <div id="app-screen">
     <div class="topbar">
       <div class="topbar-logo">🌱 P.Garden</div>
@@ -422,7 +359,6 @@
     </div>
 
     <div class="app-content">
-
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">📋 To-Do Lista</span>
@@ -452,70 +388,36 @@
           <div class="empty-state"><div class="emoji">🚧</div><p>Cele — następny krok!</p></div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- Supabase - używamy unpkg jako bardziej niezawodny CDN -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- type="module" - nowoczesny sposób importowania bibliotek, bez problemów z MIME -->
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-  <script>
-    // ===== SPRAWDZENIE CZY SUPABASE SIĘ ZAŁADOWAŁ =====
-    if (typeof window.supabase === 'undefined') {
-      document.getElementById('load-error').style.display = 'block'
-      document.getElementById('auth-screen').style.display = 'none'
-      throw new Error('Supabase nie załadowany')
-    }
-
-    // ===== KONFIGURACJA =====
     const SUPABASE_URL = 'https://nndonweuhrlinoakunyn.supabase.co'
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng'
 
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
     let currentUser = null
     let currentTab  = 'login'
 
-    // ===== POCZEKAJ AŻ STRONA SIĘ ZAŁADUJE, POTEM PODEPNIJ PRZYCISKI =====
-    // To jest kluczowa zmiana - zamiast onclick="..." w HTML,
-    // podpinamy eventy tutaj, gdy mamy pewność że wszystko istnieje
-    document.addEventListener('DOMContentLoaded', function () {
-
-      // Zakładki logowanie / rejestracja
-      document.getElementById('tab-login').addEventListener('click', function () {
-        switchTab('login')
-      })
-      document.getElementById('tab-register').addEventListener('click', function () {
-        switchTab('register')
-      })
-
-      // Przycisk zaloguj/zarejestruj
-      document.getElementById('auth-submit-btn').addEventListener('click', handleAuth)
-
-      // Enter w polu hasła też wysyła formularz
-      document.getElementById('auth-password').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') handleAuth()
-      })
-
-      // Przycisk wyloguj
-      document.getElementById('logout-btn').addEventListener('click', logout)
-
-      // Przycisk dodaj zadanie
-      document.getElementById('add-task-btn').addEventListener('click', addTask)
-
-      // Enter w polu nowego zadania
-      document.getElementById('new-task-input').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') addTask()
-      })
-    })
+    // ===== PODPINANIE PRZYCISKÓW =====
+    document.getElementById('tab-login').addEventListener('click', () => switchTab('login'))
+    document.getElementById('tab-register').addEventListener('click', () => switchTab('register'))
+    document.getElementById('auth-submit-btn').addEventListener('click', handleAuth)
+    document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth() })
+    document.getElementById('logout-btn').addEventListener('click', () => db.auth.signOut())
+    document.getElementById('add-task-btn').addEventListener('click', addTask)
+    document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask() })
 
     // ===== ZAKŁADKI =====
     function switchTab(tab) {
       currentTab = tab
       document.getElementById('tab-login').classList.toggle('active', tab === 'login')
       document.getElementById('tab-register').classList.toggle('active', tab === 'register')
-      document.getElementById('auth-submit-btn').textContent =
-        tab === 'login' ? 'Zaloguj się' : 'Zarejestruj się'
+      document.getElementById('auth-submit-btn').textContent = tab === 'login' ? 'Zaloguj się' : 'Zarejestruj się'
       hideMessage()
     }
 
@@ -523,7 +425,6 @@
     async function handleAuth() {
       const email    = document.getElementById('auth-email').value.trim()
       const password = document.getElementById('auth-password').value
-
       if (!email || !password) { showMessage('Wypełnij oba pola!', 'error'); return }
 
       if (currentTab === 'login') {
@@ -541,30 +442,26 @@
     }
 
     function translateError(msg) {
-      if (msg.includes('Invalid login'))      return 'Nieprawidłowy e-mail lub hasło.'
-      if (msg.includes('already registered')) return 'Ten e-mail jest już zarejestrowany.'
-      if (msg.includes('Password should'))    return 'Hasło musi mieć minimum 6 znaków.'
+      if (msg.includes('Invalid login'))        return 'Nieprawidłowy e-mail lub hasło.'
+      if (msg.includes('already registered'))   return 'Ten e-mail jest już zarejestrowany.'
+      if (msg.includes('Password should'))      return 'Hasło musi mieć minimum 6 znaków.'
       return msg
-    }
-
-    async function logout() {
-      await db.auth.signOut()
     }
 
     function showMessage(text, type) {
       const el = document.getElementById('auth-message')
       el.textContent = text
-      el.className   = 'message ' + type
+      el.className = 'message ' + type
     }
 
     function hideMessage() {
       const el = document.getElementById('auth-message')
-      el.className = 'message'
       el.textContent = ''
+      el.className = 'message'
     }
 
-    // ===== ZMIANA STANU SESJI =====
-    db.auth.onAuthStateChange(async function (event, session) {
+    // ===== ZMIANA STANU SESJI (logowanie / wylogowanie) =====
+    db.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         currentUser = session.user
         document.getElementById('auth-screen').style.display = 'none'
@@ -604,7 +501,7 @@
       el.style.left  = (event.clientX - 20) + 'px'
       el.style.top   = (event.clientY - 10) + 'px'
       document.body.appendChild(el)
-      setTimeout(function () { el.remove() }, 1000)
+      setTimeout(() => el.remove(), 1000)
     }
 
     // ===== ZADANIA =====
@@ -637,40 +534,30 @@
       const ul = document.createElement('ul')
       ul.className = 'task-list'
 
-      tasks.forEach(function (task) {
-        const li = document.createElement('li')
-        li.className = 'task-item'
-        li.id = 'task-' + task.id
+      tasks.forEach(task => {
+        const li       = document.createElement('li')
+        li.className   = 'task-item'
 
-        // Checkbox
         const checkbox = document.createElement('div')
         checkbox.className = 'task-checkbox' + (task.is_done ? ' done' : '')
         checkbox.textContent = task.is_done ? '✓' : ''
-        checkbox.addEventListener('click', function (e) {
-          toggleTask(task.id, task.is_done, task.coin_reward, e)
-        })
+        checkbox.addEventListener('click', e => toggleTask(task.id, task.is_done, task.coin_reward, e))
 
-        // Tytuł
-        const title = document.createElement('span')
-        title.className = 'task-title' + (task.is_done ? ' done' : '')
+        const title    = document.createElement('span')
+        title.className  = 'task-title' + (task.is_done ? ' done' : '')
         title.textContent = task.title
 
-        // Nagroda
-        const reward = document.createElement('span')
+        const reward   = document.createElement('span')
         reward.className   = 'task-reward'
         reward.textContent = '+' + task.coin_reward + ' 🪙'
 
-        // Przycisk usuń
-        const del = document.createElement('button')
+        const del      = document.createElement('button')
         del.className   = 'task-delete'
         del.textContent = '✕'
         del.title       = 'Usuń zadanie'
-        del.addEventListener('click', function () { deleteTask(task.id) })
+        del.addEventListener('click', () => deleteTask(task.id))
 
-        li.appendChild(checkbox)
-        li.appendChild(title)
-        li.appendChild(reward)
-        li.appendChild(del)
+        li.append(checkbox, title, reward, del)
         ul.appendChild(li)
       })
 
@@ -685,12 +572,8 @@
       input.value = ''
 
       await db.from('tasks').insert({
-        user_id:     currentUser.id,
-        title:       title,
-        coin_reward: 10,
-        is_done:     false
+        user_id: currentUser.id, title, coin_reward: 10, is_done: false
       })
-
       await loadTasks()
     }
 
@@ -700,7 +583,6 @@
         is_done:      newDone,
         completed_at: newDone ? new Date().toISOString() : null
       }).eq('id', taskId)
-
       await addCoins(newDone ? coinReward : -coinReward, newDone ? event : null)
       await loadTasks()
     }
