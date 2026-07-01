@@ -36,6 +36,7 @@
       color: var(--text-dark);
     }
 
+    /* ===== EKRAN LOGOWANIA ===== */
     #auth-screen {
       display: flex;
       align-items: center;
@@ -63,11 +64,7 @@
       margin-bottom: 8px;
     }
 
-    .subtitle {
-      color: var(--text-light);
-      font-size: 14px;
-      margin-bottom: 32px;
-    }
+    .subtitle { color: var(--text-light); font-size: 14px; margin-bottom: 32px; }
 
     .auth-tabs {
       display: flex;
@@ -78,16 +75,12 @@
     }
 
     .auth-tab {
-      flex: 1;
-      padding: 10px;
+      flex: 1; padding: 10px;
       background: var(--cream-dark);
-      border: none;
-      cursor: pointer;
+      border: none; cursor: pointer;
       font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--text-light);
-      transition: all 0.2s;
+      font-weight: 700; font-size: 14px;
+      color: var(--text-light); transition: all 0.2s;
     }
 
     .auth-tab.active { background: var(--green-main); color: white; }
@@ -95,191 +88,112 @@
     .form-group { margin-bottom: 16px; text-align: left; }
 
     .form-group label {
-      display: block;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-mid);
-      margin-bottom: 6px;
+      display: block; font-weight: 700;
+      font-size: 13px; color: var(--text-mid); margin-bottom: 6px;
     }
 
     .form-group input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 2px solid var(--brown-light);
-      border-radius: 8px;
-      background: white;
-      font-family: 'Nunito', sans-serif;
-      font-size: 15px;
-      color: var(--text-dark);
-      outline: none;
-      transition: border-color 0.2s;
+      width: 100%; padding: 12px 14px;
+      border: 2px solid var(--brown-light); border-radius: 8px;
+      background: white; font-family: 'Nunito', sans-serif;
+      font-size: 15px; color: var(--text-dark); outline: none; transition: border-color 0.2s;
     }
 
     .form-group input:focus { border-color: var(--green-main); }
 
     .btn {
-      padding: 12px 24px;
-      border: 2px solid transparent;
-      border-radius: 8px;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 12px 24px; border: 2px solid transparent; border-radius: 8px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: all 0.15s;
     }
 
     .btn-primary {
-      width: 100%;
-      background: var(--gold);
-      border-color: var(--gold-dark);
-      color: var(--text-dark);
-      box-shadow: 0 4px 0 var(--gold-dark);
+      width: 100%; background: var(--gold); border-color: var(--gold-dark);
+      color: var(--text-dark); box-shadow: 0 4px 0 var(--gold-dark);
     }
 
     .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--gold-dark); }
     .btn-primary:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--gold-dark); }
 
     .btn-green {
-      background: var(--green-main);
-      border-color: var(--green-dark);
-      color: white;
-      box-shadow: 0 4px 0 var(--green-dark);
+      background: var(--green-main); border-color: var(--green-dark);
+      color: white; box-shadow: 0 4px 0 var(--green-dark);
     }
 
     .btn-green:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--green-dark); }
     .btn-green:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--green-dark); }
     .btn-small { padding: 8px 16px; font-size: 14px; }
 
-    .message {
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      margin-bottom: 16px;
-      display: none;
-      text-align: left;
-    }
-
+    .message { padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; display: none; text-align: left; }
     .message.error   { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; display: block; }
     .message.success { background: #e8f5e9; color: var(--green-dark); border: 1px solid #c6e6c6; display: block; }
 
+    /* ===== APLIKACJA ===== */
     #app-screen { display: none; min-height: 100vh; }
 
     .topbar {
-      background: var(--green-dark);
-      border-bottom: 3px solid var(--brown);
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      background: var(--green-dark); border-bottom: 3px solid var(--brown);
+      padding: 0 20px; display: flex; align-items: center;
+      justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 10;
     }
 
-    .topbar-logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      color: var(--green-light);
-      line-height: 1.6;
-    }
+    .topbar-logo { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--green-light); line-height: 1.6; }
 
     .coins-display {
-      background: var(--gold);
-      border: 2px solid var(--gold-dark);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-weight: 700;
-      font-size: 15px;
-      color: var(--text-dark);
-      box-shadow: 0 3px 0 var(--gold-dark);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      background: var(--gold); border: 2px solid var(--gold-dark); border-radius: 20px;
+      padding: 6px 14px; font-weight: 700; font-size: 15px; color: var(--text-dark);
+      box-shadow: 0 3px 0 var(--gold-dark); display: flex; align-items: center; gap: 6px;
     }
 
     .topbar-right { display: flex; align-items: center; gap: 12px; }
 
     .btn-logout {
-      background: none;
-      border: 2px solid var(--brown-light);
-      border-radius: 8px;
-      color: var(--green-light);
-      font-family: 'Nunito', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 6px 12px;
-      cursor: pointer;
+      background: none; border: 2px solid var(--brown-light); border-radius: 8px;
+      color: var(--green-light); font-family: 'Nunito', sans-serif;
+      font-size: 13px; font-weight: 700; padding: 6px 12px; cursor: pointer;
     }
 
     .app-content { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
 
     .section-card {
-      background: var(--cream);
-      border: 2px solid var(--brown-light);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      margin-bottom: 24px;
-      overflow: hidden;
+      background: var(--cream); border: 2px solid var(--brown-light);
+      border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden;
     }
 
     .section-header {
-      background: var(--cream-dark);
-      border-bottom: 2px solid var(--brown-light);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background: var(--cream-dark); border-bottom: 2px solid var(--brown-light);
+      padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
     }
 
-    .section-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      color: var(--green-dark);
-    }
-
+    .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--green-dark); }
     .section-body { padding: 20px; }
 
-    .add-task-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    /* Rząd dodawania (zadania i nawyki) */
+    .add-row { display: flex; gap: 10px; margin-bottom: 20px; }
 
-    .add-task-row input {
-      flex: 1;
-      padding: 11px 14px;
-      border: 2px solid var(--brown-light);
-      border-radius: 8px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 15px;
-      background: white;
-      outline: none;
+    .add-row input {
+      flex: 1; padding: 11px 14px; border: 2px solid var(--brown-light);
+      border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 15px;
+      background: white; outline: none;
     }
 
-    .add-task-row input:focus { border-color: var(--green-main); }
+    .add-row input:focus { border-color: var(--green-main); }
 
+    /* ===== LISTA ZADAŃ ===== */
     .task-list { list-style: none; }
 
     .task-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--cream-dark);
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--cream-dark);
     }
 
     .task-item:last-child { border-bottom: none; }
 
     .task-checkbox {
-      width: 24px;
-      height: 24px;
-      min-width: 24px;
-      border: 2px solid var(--brown-light);
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      transition: all 0.15s;
+      width: 24px; height: 24px; min-width: 24px;
+      border: 2px solid var(--brown-light); border-radius: 4px;
+      background: white; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s;
     }
 
     .task-checkbox.done { background: var(--green-main); border-color: var(--green-dark); color: white; }
@@ -289,19 +203,55 @@
 
     .task-reward { font-size: 12px; font-weight: 700; color: var(--gold-dark); white-space: nowrap; }
 
-    .task-delete {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--text-light);
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: color 0.15s;
+    .item-delete {
+      background: none; border: none; cursor: pointer; font-size: 16px;
+      color: var(--text-light); padding: 2px 6px; border-radius: 4px; transition: color 0.15s;
     }
 
-    .task-delete:hover { color: var(--red); }
+    .item-delete:hover { color: var(--red); }
 
+    /* ===== LISTA NAWYKÓW ===== */
+    .habit-list { list-style: none; }
+
+    .habit-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .habit-item:last-child { border-bottom: none; }
+
+    /* Duży przycisk odhaczania nawyku */
+    .habit-check {
+      width: 44px; height: 44px; min-width: 44px;
+      border: 2px solid var(--brown-light); border-radius: 8px;
+      background: white; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-size: 18px;
+      transition: all 0.2s; gap: 1px;
+    }
+
+    /* Odhaczony na dziś */
+    .habit-check.done-today {
+      background: var(--green-main); border-color: var(--green-dark);
+      color: white; cursor: default;
+    }
+
+    .habit-check-label { font-size: 8px; font-weight: 700; line-height: 1; }
+
+    .habit-info { flex: 1; }
+    .habit-title { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+
+    /* Licznik streaka (płomień) */
+    .habit-streak {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 13px; font-weight: 700; color: var(--text-light);
+      margin-top: 3px;
+    }
+
+    .habit-streak.hot { color: #e07b2a; }   /* pomarańczowy gdy streak > 0 */
+
+    .habit-right { display: flex; align-items: center; gap: 8px; }
+
+    /* ===== WSPÓLNE ===== */
     .empty-state { text-align: center; padding: 32px 0; color: var(--text-light); font-size: 14px; }
     .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
     .loading { text-align: center; padding: 24px; color: var(--text-light); font-size: 14px; }
@@ -312,18 +262,14 @@
     }
 
     .coin-animation {
-      position: fixed;
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--gold-dark);
-      pointer-events: none;
-      animation: coin-pop 1s ease-out forwards;
-      z-index: 999;
+      position: fixed; font-weight: 700; font-size: 18px; color: var(--gold-dark);
+      pointer-events: none; animation: coin-pop 1s ease-out forwards; z-index: 999;
     }
   </style>
 </head>
 <body>
 
+  <!-- ===== EKRAN LOGOWANIA ===== -->
   <div id="auth-screen">
     <div class="auth-card">
       <div class="logo">🌱 Productivity<br>Garden</div>
@@ -349,6 +295,7 @@
     </div>
   </div>
 
+  <!-- ===== GŁÓWNA APLIKACJA ===== -->
   <div id="app-screen">
     <div class="topbar">
       <div class="topbar-logo">🌱 P.Garden</div>
@@ -359,39 +306,52 @@
     </div>
 
     <div class="app-content">
+
+      <!-- ZADANIA -->
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">📋 To-Do Lista</span>
           <span style="font-size:12px; color:var(--text-light);">+10 🪙 za zadanie</span>
         </div>
         <div class="section-body">
-          <div class="add-task-row">
+          <div class="add-row">
             <input type="text" id="new-task-input" placeholder="Wpisz nowe zadanie..." />
             <button class="btn btn-green btn-small" id="add-task-btn">Dodaj</button>
           </div>
           <div id="tasks-container">
-            <div class="loading">Ładowanie zadań...</div>
+            <div class="loading">Ładowanie...</div>
           </div>
         </div>
       </div>
 
+      <!-- NAWYKI -->
       <div class="section-card">
-        <div class="section-header"><span class="section-title">🔁 Nawyki</span></div>
+        <div class="section-header">
+          <span class="section-title">🔁 Nawyki</span>
+          <span style="font-size:12px; color:var(--text-light);">+5 🪙 dziennie</span>
+        </div>
         <div class="section-body">
-          <div class="empty-state"><div class="emoji">🚧</div><p>Nawyki — następny krok!</p></div>
+          <div class="add-row">
+            <input type="text" id="new-habit-input" placeholder="Nowy nawyk (np. Medytacja)..." />
+            <button class="btn btn-green btn-small" id="add-habit-btn">Dodaj</button>
+          </div>
+          <div id="habits-container">
+            <div class="loading">Ładowanie...</div>
+          </div>
         </div>
       </div>
 
+      <!-- CELE - placeholder na następny krok -->
       <div class="section-card">
         <div class="section-header"><span class="section-title">🎯 Cele</span></div>
         <div class="section-body">
           <div class="empty-state"><div class="emoji">🚧</div><p>Cele — następny krok!</p></div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- type="module" - nowoczesny sposób importowania bibliotek, bez problemów z MIME -->
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -399,7 +359,6 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng'
 
     const db = createClient(SUPABASE_URL, SUPABASE_KEY)
-
     let currentUser = null
     let currentTab  = 'login'
 
@@ -411,8 +370,10 @@
     document.getElementById('logout-btn').addEventListener('click', () => db.auth.signOut())
     document.getElementById('add-task-btn').addEventListener('click', addTask)
     document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask() })
+    document.getElementById('add-habit-btn').addEventListener('click', addHabit)
+    document.getElementById('new-habit-input').addEventListener('keydown', e => { if (e.key === 'Enter') addHabit() })
 
-    // ===== ZAKŁADKI =====
+    // ===== AUTH =====
     function switchTab(tab) {
       currentTab = tab
       document.getElementById('tab-login').classList.toggle('active', tab === 'login')
@@ -421,7 +382,6 @@
       hideMessage()
     }
 
-    // ===== LOGOWANIE / REJESTRACJA =====
     async function handleAuth() {
       const email    = document.getElementById('auth-email').value.trim()
       const password = document.getElementById('auth-password').value
@@ -442,25 +402,23 @@
     }
 
     function translateError(msg) {
-      if (msg.includes('Invalid login'))        return 'Nieprawidłowy e-mail lub hasło.'
-      if (msg.includes('already registered'))   return 'Ten e-mail jest już zarejestrowany.'
-      if (msg.includes('Password should'))      return 'Hasło musi mieć minimum 6 znaków.'
+      if (msg.includes('Invalid login'))      return 'Nieprawidłowy e-mail lub hasło.'
+      if (msg.includes('already registered')) return 'Ten e-mail jest już zarejestrowany.'
+      if (msg.includes('Password should'))    return 'Hasło musi mieć minimum 6 znaków.'
       return msg
     }
 
     function showMessage(text, type) {
       const el = document.getElementById('auth-message')
-      el.textContent = text
-      el.className = 'message ' + type
+      el.textContent = text; el.className = 'message ' + type
     }
 
     function hideMessage() {
       const el = document.getElementById('auth-message')
-      el.textContent = ''
-      el.className = 'message'
+      el.textContent = ''; el.className = 'message'
     }
 
-    // ===== ZMIANA STANU SESJI (logowanie / wylogowanie) =====
+    // ===== SESJA =====
     db.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         currentUser = session.user
@@ -468,6 +426,7 @@
         document.getElementById('app-screen').style.display  = 'block'
         await loadCoins()
         await loadTasks()
+        await loadHabits()
       } else {
         currentUser = null
         document.getElementById('auth-screen').style.display = 'flex'
@@ -496,10 +455,10 @@
 
     function spawnCoinAnimation(event, amount) {
       const el = document.createElement('div')
-      el.className   = 'coin-animation'
+      el.className = 'coin-animation'
       el.textContent = '+' + amount + ' 🪙'
-      el.style.left  = (event.clientX - 20) + 'px'
-      el.style.top   = (event.clientY - 10) + 'px'
+      el.style.left = (event.clientX - 20) + 'px'
+      el.style.top  = (event.clientY - 10) + 'px'
       document.body.appendChild(el)
       setTimeout(() => el.remove(), 1000)
     }
@@ -508,59 +467,45 @@
     async function loadTasks() {
       const container = document.getElementById('tasks-container')
       container.innerHTML = '<div class="loading">Ładowanie...</div>'
-
-      const { data: tasks, error } = await db
-        .from('tasks')
-        .select('*')
+      const { data: tasks } = await db
+        .from('tasks').select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
-
-      if (error) { container.innerHTML = '<div class="empty-state">Błąd ładowania zadań.</div>'; return }
-      renderTasks(tasks)
+      renderTasks(tasks || [])
     }
 
     function renderTasks(tasks) {
       const container = document.getElementById('tasks-container')
-
-      if (!tasks || tasks.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="emoji">✏️</div>
-            <p>Brak zadań. Dodaj pierwsze zadanie powyżej!</p>
-          </div>`
+      if (tasks.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="emoji">✏️</div><p>Brak zadań. Dodaj pierwsze zadanie powyżej!</p></div>'
         return
       }
-
       const ul = document.createElement('ul')
       ul.className = 'task-list'
-
       tasks.forEach(task => {
-        const li       = document.createElement('li')
-        li.className   = 'task-item'
+        const li = document.createElement('li')
+        li.className = 'task-item'
 
         const checkbox = document.createElement('div')
         checkbox.className = 'task-checkbox' + (task.is_done ? ' done' : '')
         checkbox.textContent = task.is_done ? '✓' : ''
         checkbox.addEventListener('click', e => toggleTask(task.id, task.is_done, task.coin_reward, e))
 
-        const title    = document.createElement('span')
-        title.className  = 'task-title' + (task.is_done ? ' done' : '')
+        const title = document.createElement('span')
+        title.className = 'task-title' + (task.is_done ? ' done' : '')
         title.textContent = task.title
 
-        const reward   = document.createElement('span')
-        reward.className   = 'task-reward'
+        const reward = document.createElement('span')
+        reward.className = 'task-reward'
         reward.textContent = '+' + task.coin_reward + ' 🪙'
 
-        const del      = document.createElement('button')
-        del.className   = 'task-delete'
-        del.textContent = '✕'
-        del.title       = 'Usuń zadanie'
+        const del = document.createElement('button')
+        del.className = 'item-delete'; del.textContent = '✕'; del.title = 'Usuń'
         del.addEventListener('click', () => deleteTask(task.id))
 
         li.append(checkbox, title, reward, del)
         ul.appendChild(li)
       })
-
       container.innerHTML = ''
       container.appendChild(ul)
     }
@@ -570,17 +515,14 @@
       const title = input.value.trim()
       if (!title) return
       input.value = ''
-
-      await db.from('tasks').insert({
-        user_id: currentUser.id, title, coin_reward: 10, is_done: false
-      })
+      await db.from('tasks').insert({ user_id: currentUser.id, title, coin_reward: 10, is_done: false })
       await loadTasks()
     }
 
     async function toggleTask(taskId, isDone, coinReward, event) {
       const newDone = !isDone
       await db.from('tasks').update({
-        is_done:      newDone,
+        is_done: newDone,
         completed_at: newDone ? new Date().toISOString() : null
       }).eq('id', taskId)
       await addCoins(newDone ? coinReward : -coinReward, newDone ? event : null)
@@ -590,6 +532,169 @@
     async function deleteTask(taskId) {
       await db.from('tasks').delete().eq('id', taskId)
       await loadTasks()
+    }
+
+    // ===== NAWYKI =====
+
+    // Zwraca dzisiejszą datę jako string "YYYY-MM-DD" (bez godziny)
+    // Potrzebne do sprawdzania czy nawyk był już dziś odhaczony
+    function todayString() {
+      return new Date().toISOString().slice(0, 10)
+    }
+
+    async function loadHabits() {
+      const container = document.getElementById('habits-container')
+      container.innerHTML = '<div class="loading">Ładowanie...</div>'
+
+      // Pobierz nawyki usera
+      const { data: habits } = await db
+        .from('habits').select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: true })
+
+      if (!habits || habits.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="emoji">🌱</div><p>Brak nawyków. Dodaj pierwszy nawyk powyżej!</p></div>'
+        return
+      }
+
+      // Sprawdź które nawyki były już dziś odhaczone
+      // Pobieramy logi z dzisiaj dla tego usera
+      const { data: todayLogs } = await db
+        .from('habit_logs')
+        .select('habit_id')
+        .eq('user_id', currentUser.id)
+        .eq('completed_date', todayString())
+
+      // Robimy zbiór id nawyków odhaczonych dziś (szybkie sprawdzanie)
+      const doneTodayIds = new Set((todayLogs || []).map(log => log.habit_id))
+
+      renderHabits(habits, doneTodayIds)
+    }
+
+    function renderHabits(habits, doneTodayIds) {
+      const container = document.getElementById('habits-container')
+      const ul = document.createElement('ul')
+      ul.className = 'habit-list'
+
+      habits.forEach(habit => {
+        const doneToday = doneTodayIds.has(habit.id)
+        const streak    = habit.current_streak || 0
+
+        const li = document.createElement('li')
+        li.className = 'habit-item'
+
+        // Duży przycisk odhaczania
+        const checkBtn = document.createElement('div')
+        checkBtn.className = 'habit-check' + (doneToday ? ' done-today' : '')
+        // Emoji i napis pod spodem
+        checkBtn.innerHTML = doneToday
+          ? '<span style="font-size:20px">✓</span><span class="habit-check-label">ZROBIONE</span>'
+          : '<span style="font-size:20px">○</span><span class="habit-check-label">DZIŚ</span>'
+
+        // Kliknięcie odhaczyło nawyk — ale tylko jeśli jeszcze nie odhaczono dziś
+        if (!doneToday) {
+          checkBtn.style.cursor = 'pointer'
+          checkBtn.addEventListener('click', e => completeHabit(habit.id, habit.coin_reward, e))
+        }
+
+        // Info o nawyku: nazwa + streak
+        const info = document.createElement('div')
+        info.className = 'habit-info'
+
+        const titleEl = document.createElement('div')
+        titleEl.className = 'habit-title'
+        titleEl.textContent = habit.title
+
+        const streakEl = document.createElement('div')
+        streakEl.className = 'habit-streak' + (streak > 0 ? ' hot' : '')
+        streakEl.textContent = streak > 0 ? '🔥 ' + streak + ' dni z rzędu' : '○ Brak streaka — zacznij dziś!'
+
+        info.append(titleEl, streakEl)
+
+        // Prawa strona: nagroda + usuń
+        const right = document.createElement('div')
+        right.className = 'habit-right'
+
+        const reward = document.createElement('span')
+        reward.className = 'task-reward'
+        reward.textContent = '+' + habit.coin_reward + ' 🪙'
+
+        const del = document.createElement('button')
+        del.className = 'item-delete'; del.textContent = '✕'; del.title = 'Usuń nawyk'
+        del.addEventListener('click', () => deleteHabit(habit.id))
+
+        right.append(reward, del)
+        li.append(checkBtn, info, right)
+        ul.appendChild(li)
+      })
+
+      container.innerHTML = ''
+      container.appendChild(ul)
+    }
+
+    async function addHabit() {
+      const input = document.getElementById('new-habit-input')
+      const title = input.value.trim()
+      if (!title) return
+      input.value = ''
+
+      await db.from('habits').insert({
+        user_id: currentUser.id,
+        title,
+        frequency:      'daily',
+        current_streak: 0,
+        coin_reward:    5
+      })
+      await loadHabits()
+    }
+
+    async function completeHabit(habitId, coinReward, event) {
+      const today = todayString()
+
+      // 1. Zapisz log że dziś nawyk wykonany
+      await db.from('habit_logs').insert({
+        habit_id:       habitId,
+        user_id:        currentUser.id,
+        completed_date: today
+      })
+
+      // 2. Sprawdź czy był log wczoraj (żeby wiedzieć czy streak się ciągnie)
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      const yesterdayString = yesterday.toISOString().slice(0, 10)
+
+      const { data: yesterdayLog } = await db
+        .from('habit_logs')
+        .select('id')
+        .eq('habit_id', habitId)
+        .eq('user_id', currentUser.id)
+        .eq('completed_date', yesterdayString)
+        .single()
+
+      // 3. Pobierz aktualny streak
+      const { data: habitData } = await db
+        .from('habits')
+        .select('current_streak')
+        .eq('id', habitId)
+        .single()
+
+      // Jeśli wczoraj był log — streak rośnie o 1, jeśli nie — zaczyna od 1
+      const newStreak = yesterdayLog ? (habitData.current_streak || 0) + 1 : 1
+
+      // 4. Zaktualizuj streak w bazie
+      await db.from('habits').update({ current_streak: newStreak }).eq('id', habitId)
+
+      // 5. Daj monety
+      await addCoins(coinReward, event)
+
+      // 6. Odśwież listę nawyków
+      await loadHabits()
+    }
+
+    async function deleteHabit(habitId) {
+      // Usuwa nawyk i automatycznie wszystkie jego logi (ON DELETE CASCADE w bazie)
+      await db.from('habits').delete().eq('id', habitId)
+      await loadHabits()
     }
   </script>
 </body>
