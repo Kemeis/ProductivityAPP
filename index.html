@@ -2,42 +2,33 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <!-- To sprawia że strona dobrze wygląda na telefonie -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Productivity Garden 🌱</title>
-
-  <!-- Czcionki z Google Fonts: pixelowa do tytułów, okrągła do tekstu -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Biblioteka Supabase - daje nam dostęp do bazy danych -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
   <style>
-    /* ===== KOLORY I ZMIENNE ===== */
     :root {
-      --green-dark:   #3d6b4f;
-      --green-main:   #5a9e6f;
-      --green-light:  #a8d5b5;
-      --cream:        #f5f0e4;
-      --cream-dark:   #e8e0cc;
-      --brown:        #8b6f47;
-      --brown-light:  #c4a882;
-      --gold:         #e8b84b;
-      --gold-dark:    #c99a2e;
-      --text-dark:    #2d2416;
-      --text-mid:     #5c4a2a;
-      --text-light:   #8a7055;
-      --red:          #c0392b;
-      --shadow:       0 4px 0 rgba(0,0,0,0.15);
+      --green-dark:  #3d6b4f;
+      --green-main:  #5a9e6f;
+      --green-light: #a8d5b5;
+      --cream:       #f5f0e4;
+      --cream-dark:  #e8e0cc;
+      --brown:       #8b6f47;
+      --brown-light: #c4a882;
+      --gold:        #e8b84b;
+      --gold-dark:   #c99a2e;
+      --text-dark:   #2d2416;
+      --text-mid:    #5c4a2a;
+      --text-light:  #8a7055;
+      --red:         #c0392b;
+      --shadow:      0 4px 0 rgba(0,0,0,0.15);
     }
 
-    /* ===== RESET I PODSTAWY ===== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Nunito', sans-serif;
       background-color: var(--green-dark);
-      /* Kratka w tle jak ziemia w grze */
       background-image:
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
@@ -80,7 +71,6 @@
       margin-bottom: 32px;
     }
 
-    /* Przełącznik logowanie/rejestracja */
     .auth-tabs {
       display: flex;
       border: 2px solid var(--brown-light);
@@ -107,7 +97,6 @@
       color: white;
     }
 
-    /* ===== FORMULARZ ===== */
     .form-group {
       margin-bottom: 16px;
       text-align: left;
@@ -134,11 +123,8 @@
       transition: border-color 0.2s;
     }
 
-    .form-group input:focus {
-      border-color: var(--green-main);
-    }
+    .form-group input:focus { border-color: var(--green-main); }
 
-    /* ===== PRZYCISKI ===== */
     .btn {
       padding: 12px 24px;
       border: 2px solid transparent;
@@ -161,20 +147,6 @@
     .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--gold-dark); }
     .btn-primary:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--gold-dark); }
 
-    .btn-danger {
-      background: var(--red);
-      border-color: #922b21;
-      color: white;
-      box-shadow: 0 4px 0 #922b21;
-      padding: 8px 16px;
-      font-size: 13px;
-    }
-
-    .btn-small {
-      padding: 6px 14px;
-      font-size: 13px;
-    }
-
     .btn-green {
       background: var(--green-main);
       border-color: var(--green-dark);
@@ -185,7 +157,8 @@
     .btn-green:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--green-dark); }
     .btn-green:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--green-dark); }
 
-    /* ===== KOMUNIKATY BŁĘDÓW ===== */
+    .btn-small { padding: 6px 14px; font-size: 13px; }
+
     .message {
       padding: 12px;
       border-radius: 8px;
@@ -194,14 +167,12 @@
       display: none;
     }
 
-    .message.error   { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; }
-    .message.success { background: #e8f5e9; color: var(--green-dark); border: 1px solid #c6e6c6; }
-    .message.show    { display: block; }
+    .message.error   { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; display: block; }
+    .message.success { background: #e8f5e9; color: var(--green-dark); border: 1px solid #c6e6c6; display: block; }
 
     /* ===== GŁÓWNA APLIKACJA ===== */
     #app-screen { display: none; min-height: 100vh; }
 
-    /* Górny pasek */
     .topbar {
       background: var(--green-dark);
       border-bottom: 3px solid var(--brown);
@@ -222,7 +193,6 @@
       line-height: 1.6;
     }
 
-    /* Monety w górnym pasku */
     .coins-display {
       background: var(--gold);
       border: 2px solid var(--gold-dark);
@@ -251,14 +221,12 @@
       cursor: pointer;
     }
 
-    /* Zawartość aplikacji */
     .app-content {
       max-width: 700px;
       margin: 0 auto;
       padding: 24px 16px;
     }
 
-    /* ===== SEKCJA ZADAŃ ===== */
     .section-card {
       background: var(--cream);
       border: 2px solid var(--brown-light);
@@ -285,7 +253,6 @@
 
     .section-body { padding: 20px; }
 
-    /* Formularz dodawania zadania */
     .add-task-row {
       display: flex;
       gap: 10px;
@@ -305,7 +272,6 @@
 
     .add-task-row input:focus { border-color: var(--green-main); }
 
-    /* Lista zadań */
     .task-list { list-style: none; }
 
     .task-item {
@@ -318,7 +284,6 @@
 
     .task-item:last-child { border-bottom: none; }
 
-    /* Custom checkbox - pixelowy styl */
     .task-checkbox {
       width: 24px;
       height: 24px;
@@ -345,7 +310,6 @@
       font-size: 15px;
       font-weight: 600;
       color: var(--text-dark);
-      transition: all 0.2s;
     }
 
     .task-title.done {
@@ -366,14 +330,13 @@
       cursor: pointer;
       font-size: 16px;
       color: var(--text-light);
-      padding: 2px 4px;
+      padding: 2px 6px;
       border-radius: 4px;
       transition: color 0.15s;
     }
 
     .task-delete:hover { color: var(--red); }
 
-    /* Pusty stan */
     .empty-state {
       text-align: center;
       padding: 32px 0;
@@ -383,7 +346,6 @@
 
     .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
 
-    /* Loading spinner */
     .loading {
       text-align: center;
       padding: 24px;
@@ -391,9 +353,8 @@
       font-size: 14px;
     }
 
-    /* ===== ANIMACJA MONET ===== */
     @keyframes coin-pop {
-      0%   { transform: translateY(0) scale(1);   opacity: 1; }
+      0%   { transform: translateY(0) scale(1);     opacity: 1; }
       100% { transform: translateY(-60px) scale(1.4); opacity: 0; }
     }
 
@@ -406,26 +367,37 @@
       animation: coin-pop 1s ease-out forwards;
       z-index: 999;
     }
+
+    /* Baner błędu gdy Supabase nie załaduje */
+    #load-error {
+      display: none;
+      background: #fde8e8;
+      color: var(--red);
+      text-align: center;
+      padding: 20px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ==================== EKRAN LOGOWANIA ==================== -->
+  <div id="load-error">
+    ❌ Błąd ładowania biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.
+  </div>
+
+  <!-- ===== EKRAN LOGOWANIA ===== -->
   <div id="auth-screen">
     <div class="auth-card">
       <div class="logo">🌱 Productivity<br>Garden</div>
       <p class="subtitle">Twoja produktywna farma</p>
 
-      <!-- Przełącznik logowanie / rejestracja -->
       <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchTab('login')">Logowanie</button>
-        <button class="auth-tab" onclick="switchTab('register')">Rejestracja</button>
+        <button class="auth-tab active" id="tab-login">Logowanie</button>
+        <button class="auth-tab"        id="tab-register">Rejestracja</button>
       </div>
 
-      <!-- Komunikat błędu/sukcesu -->
       <div id="auth-message" class="message"></div>
 
-      <!-- Formularz -->
       <div class="form-group">
         <label for="auth-email">Adres e-mail</label>
         <input type="email" id="auth-email" placeholder="jan@example.com" />
@@ -435,269 +407,218 @@
         <input type="password" id="auth-password" placeholder="minimum 6 znaków" />
       </div>
 
-      <button class="btn btn-primary" onclick="handleAuth()">
-        <span id="auth-btn-text">Zaloguj się</span>
-      </button>
+      <button class="btn btn-primary" id="auth-submit-btn">Zaloguj się</button>
     </div>
   </div>
 
-  <!-- ==================== GŁÓWNA APLIKACJA ==================== -->
+  <!-- ===== GŁÓWNA APLIKACJA ===== -->
   <div id="app-screen">
-
-    <!-- Górny pasek -->
     <div class="topbar">
       <div class="topbar-logo">🌱 P.Garden</div>
       <div class="topbar-right">
-        <div class="coins-display">
-          🪙 <span id="coins-count">0</span>
-        </div>
-        <button class="btn-logout" onclick="logout()">Wyloguj</button>
+        <div class="coins-display">🪙 <span id="coins-count">0</span></div>
+        <button class="btn-logout" id="logout-btn">Wyloguj</button>
       </div>
     </div>
 
-    <!-- Zawartość -->
     <div class="app-content">
 
-      <!-- SEKCJA: ZADANIA -->
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">📋 To-Do Lista</span>
           <span style="font-size:12px; color:var(--text-light);">+10 🪙 za zadanie</span>
         </div>
         <div class="section-body">
-
-          <!-- Dodawanie nowego zadania -->
           <div class="add-task-row">
-            <input
-              type="text"
-              id="new-task-input"
-              placeholder="Wpisz nowe zadanie..."
-              onkeydown="if(event.key==='Enter') addTask()"
-            />
-            <button class="btn btn-green btn-small" onclick="addTask()">Dodaj</button>
+            <input type="text" id="new-task-input" placeholder="Wpisz nowe zadanie..." />
+            <button class="btn btn-green btn-small" id="add-task-btn">Dodaj</button>
           </div>
-
-          <!-- Lista zadań będzie tu wstrzykiwana przez JavaScript -->
           <div id="tasks-container">
             <div class="loading">Ładowanie zadań...</div>
           </div>
-
-        </div>
-      </div>
-
-      <!-- PLACEHOLDER na przyszłe sekcje -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="section-title">🔁 Nawyki</span>
-        </div>
-        <div class="section-body">
-          <div class="empty-state">
-            <div class="emoji">🚧</div>
-            <p>Nawyki pojawią się w następnym kroku!</p>
-          </div>
         </div>
       </div>
 
       <div class="section-card">
-        <div class="section-header">
-          <span class="section-title">🎯 Cele</span>
-        </div>
+        <div class="section-header"><span class="section-title">🔁 Nawyki</span></div>
         <div class="section-body">
-          <div class="empty-state">
-            <div class="emoji">🚧</div>
-            <p>Cele pojawią się w następnym kroku!</p>
-          </div>
+          <div class="empty-state"><div class="emoji">🚧</div><p>Nawyki — następny krok!</p></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">🎯 Cele</span></div>
+        <div class="section-body">
+          <div class="empty-state"><div class="emoji">🚧</div><p>Cele — następny krok!</p></div>
         </div>
       </div>
 
     </div>
   </div>
 
+  <!-- Supabase - używamy unpkg jako bardziej niezawodny CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
   <script>
-    // ==================== KONFIGURACJA SUPABASE ====================
-    // To są Twoje klucze - łączą aplikację z bazą danych
+    // ===== SPRAWDZENIE CZY SUPABASE SIĘ ZAŁADOWAŁ =====
+    if (typeof window.supabase === 'undefined') {
+      document.getElementById('load-error').style.display = 'block'
+      document.getElementById('auth-screen').style.display = 'none'
+      throw new Error('Supabase nie załadowany')
+    }
+
+    // ===== KONFIGURACJA =====
     const SUPABASE_URL = 'https://nndonweuhrlinoakunyn.supabase.co'
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng'
 
-    // Tworzymy "klienta" Supabase - obiekt przez który rozmawiamy z bazą
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-    // Zmienna przechowująca aktualnie zalogowanego usera
     let currentUser = null
+    let currentTab  = 'login'
 
-    // ==================== LOGOWANIE / REJESTRACJA ====================
+    // ===== POCZEKAJ AŻ STRONA SIĘ ZAŁADUJE, POTEM PODEPNIJ PRZYCISKI =====
+    // To jest kluczowa zmiana - zamiast onclick="..." w HTML,
+    // podpinamy eventy tutaj, gdy mamy pewność że wszystko istnieje
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Przełączanie zakładek Logowanie/Rejestracja
-    let currentTab = 'login'
+      // Zakładki logowanie / rejestracja
+      document.getElementById('tab-login').addEventListener('click', function () {
+        switchTab('login')
+      })
+      document.getElementById('tab-register').addEventListener('click', function () {
+        switchTab('register')
+      })
 
+      // Przycisk zaloguj/zarejestruj
+      document.getElementById('auth-submit-btn').addEventListener('click', handleAuth)
+
+      // Enter w polu hasła też wysyła formularz
+      document.getElementById('auth-password').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') handleAuth()
+      })
+
+      // Przycisk wyloguj
+      document.getElementById('logout-btn').addEventListener('click', logout)
+
+      // Przycisk dodaj zadanie
+      document.getElementById('add-task-btn').addEventListener('click', addTask)
+
+      // Enter w polu nowego zadania
+      document.getElementById('new-task-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') addTask()
+      })
+    })
+
+    // ===== ZAKŁADKI =====
     function switchTab(tab) {
       currentTab = tab
-      // Aktualizuj wygląd zakładek
-      document.querySelectorAll('.auth-tab').forEach((el, i) => {
-        el.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'))
-      })
-      // Zmień tekst przycisku
-      document.getElementById('auth-btn-text').textContent =
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login')
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register')
+      document.getElementById('auth-submit-btn').textContent =
         tab === 'login' ? 'Zaloguj się' : 'Zarejestruj się'
       hideMessage()
     }
 
-    // Obsługa formularza logowania/rejestracji
+    // ===== LOGOWANIE / REJESTRACJA =====
     async function handleAuth() {
       const email    = document.getElementById('auth-email').value.trim()
       const password = document.getElementById('auth-password').value
 
-      if (!email || !password) {
-        showMessage('Wypełnij oba pola!', 'error')
-        return
-      }
+      if (!email || !password) { showMessage('Wypełnij oba pola!', 'error'); return }
 
       if (currentTab === 'login') {
-        // === LOGOWANIE ===
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) {
-          showMessage('Błąd logowania: ' + translateError(error.message), 'error')
-        }
-        // Jeśli sukces, onAuthStateChange poniżej obsłuży resztę automatycznie
-
+        const { error } = await db.auth.signInWithPassword({ email, password })
+        if (error) showMessage(translateError(error.message), 'error')
       } else {
-        // === REJESTRACJA ===
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        const { error } = await db.auth.signUp({ email, password })
         if (error) {
-          showMessage('Błąd rejestracji: ' + translateError(error.message), 'error')
+          showMessage(translateError(error.message), 'error')
         } else {
-          showMessage('Konto założone! Sprawdź e-mail aby potwierdzić, lub zaloguj się od razu.', 'success')
+          showMessage('Konto założone! Możesz się teraz zalogować.', 'success')
+          switchTab('login')
         }
       }
     }
 
-    // Tłumaczenie angielskich błędów Supabase na polski
     function translateError(msg) {
-      if (msg.includes('Invalid login'))    return 'Nieprawidłowy e-mail lub hasło.'
+      if (msg.includes('Invalid login'))      return 'Nieprawidłowy e-mail lub hasło.'
       if (msg.includes('already registered')) return 'Ten e-mail jest już zarejestrowany.'
-      if (msg.includes('Password should'))  return 'Hasło musi mieć co najmniej 6 znaków.'
+      if (msg.includes('Password should'))    return 'Hasło musi mieć minimum 6 znaków.'
       return msg
     }
 
-    // Wylogowanie
     async function logout() {
-      await supabase.auth.signOut()
+      await db.auth.signOut()
     }
 
-    // Pokaż/ukryj komunikaty pod formularzem
     function showMessage(text, type) {
       const el = document.getElementById('auth-message')
       el.textContent = text
-      el.className = `message ${type} show`
+      el.className   = 'message ' + type
     }
 
     function hideMessage() {
-      document.getElementById('auth-message').className = 'message'
+      const el = document.getElementById('auth-message')
+      el.className = 'message'
+      el.textContent = ''
     }
 
-    // ==================== NASŁUCHIWANIE NA ZMIANY SESJI ====================
-    // Ta funkcja odpala się automatycznie gdy user się loguje lub wylogowuje
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // ===== ZMIANA STANU SESJI =====
+    db.auth.onAuthStateChange(async function (event, session) {
       if (session) {
-        // User zalogowany - pokaż aplikację
         currentUser = session.user
-        showApp()
+        document.getElementById('auth-screen').style.display = 'none'
+        document.getElementById('app-screen').style.display  = 'block'
+        await loadCoins()
+        await loadTasks()
       } else {
-        // User wylogowany - pokaż ekran logowania
         currentUser = null
-        showAuthScreen()
+        document.getElementById('auth-screen').style.display = 'flex'
+        document.getElementById('app-screen').style.display  = 'none'
       }
     })
 
-    // Pokaż główną aplikację
-    async function showApp() {
-      document.getElementById('auth-screen').style.display = 'none'
-      document.getElementById('app-screen').style.display  = 'block'
-      await loadCoins()
-      await loadTasks()
-    }
-
-    // Pokaż ekran logowania
-    function showAuthScreen() {
-      document.getElementById('auth-screen').style.display = 'flex'
-      document.getElementById('app-screen').style.display  = 'none'
-    }
-
-    // ==================== MONETY ====================
-
+    // ===== MONETY =====
     async function loadCoins() {
-      // Pobierz profil usera z bazy (tam są monety)
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', currentUser.id)  // tylko wiersz tego usera
-        .single()                  // oczekujemy jednego wiersza
-
+      const { data } = await db.from('profiles').select('coins').eq('id', currentUser.id).single()
       if (data) {
-        updateCoinsDisplay(data.coins)
+        document.getElementById('coins-count').textContent = data.coins
       } else {
-        // Profil nie istnieje - utwórz go przy pierwszym logowaniu
-        await supabase.from('profiles').insert({ id: currentUser.id, coins: 0 })
-        updateCoinsDisplay(0)
+        await db.from('profiles').insert({ id: currentUser.id, coins: 0 })
+        document.getElementById('coins-count').textContent = 0
       }
     }
 
-    function updateCoinsDisplay(amount) {
-      document.getElementById('coins-count').textContent = amount
-    }
-
-    // Dodaj monety do profilu usera
-    async function addCoins(amount, clickEvent) {
-      // Pobierz aktualne monety
-      const { data } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', currentUser.id)
-        .single()
-
+    async function addCoins(amount, event) {
+      const { data } = await db.from('profiles').select('coins').eq('id', currentUser.id).single()
       const newCoins = (data?.coins || 0) + amount
-
-      // Zapisz nową liczbę
-      await supabase
-        .from('profiles')
-        .update({ coins: newCoins })
-        .eq('id', currentUser.id)
-
-      updateCoinsDisplay(newCoins)
-
-      // Animacja monet (latający tekst +10🪙)
-      if (clickEvent) spawnCoinAnimation(clickEvent, amount)
+      await db.from('profiles').update({ coins: newCoins }).eq('id', currentUser.id)
+      document.getElementById('coins-count').textContent = newCoins
+      if (event && amount > 0) spawnCoinAnimation(event, amount)
     }
 
-    // Animacja monet - pojawia się przy kliknięciu checkboxa
     function spawnCoinAnimation(event, amount) {
       const el = document.createElement('div')
-      el.className = 'coin-animation'
-      el.textContent = `+${amount} 🪙`
-      el.style.left = (event.clientX - 20) + 'px'
-      el.style.top  = (event.clientY - 10) + 'px'
+      el.className   = 'coin-animation'
+      el.textContent = '+' + amount + ' 🪙'
+      el.style.left  = (event.clientX - 20) + 'px'
+      el.style.top   = (event.clientY - 10) + 'px'
       document.body.appendChild(el)
-      setTimeout(() => el.remove(), 1000)
+      setTimeout(function () { el.remove() }, 1000)
     }
 
-    // ==================== ZADANIA ====================
-
+    // ===== ZADANIA =====
     async function loadTasks() {
       const container = document.getElementById('tasks-container')
       container.innerHTML = '<div class="loading">Ładowanie...</div>'
 
-      // Pobierz wszystkie zadania tego usera, najnowsze na górze
-      const { data: tasks, error } = await supabase
+      const { data: tasks, error } = await db
         .from('tasks')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        container.innerHTML = '<div class="empty-state">Błąd ładowania zadań.</div>'
-        return
-      }
-
+      if (error) { container.innerHTML = '<div class="empty-state">Błąd ładowania zadań.</div>'; return }
       renderTasks(tasks)
     }
 
@@ -713,85 +634,80 @@
         return
       }
 
-      // Budujemy HTML listy zadań
-      const html = `<ul class="task-list">` +
-        tasks.map(task => `
-          <li class="task-item" id="task-${task.id}">
-            <div
-              class="task-checkbox ${task.is_done ? 'done' : ''}"
-              onclick="toggleTask('${task.id}', ${task.is_done}, ${task.coin_reward}, event)"
-            >
-              ${task.is_done ? '✓' : ''}
-            </div>
-            <span class="task-title ${task.is_done ? 'done' : ''}">${escapeHtml(task.title)}</span>
-            <span class="task-reward">+${task.coin_reward} 🪙</span>
-            <button class="task-delete" onclick="deleteTask('${task.id}')" title="Usuń">✕</button>
-          </li>`
-        ).join('') +
-      `</ul>`
+      const ul = document.createElement('ul')
+      ul.className = 'task-list'
 
-      container.innerHTML = html
+      tasks.forEach(function (task) {
+        const li = document.createElement('li')
+        li.className = 'task-item'
+        li.id = 'task-' + task.id
+
+        // Checkbox
+        const checkbox = document.createElement('div')
+        checkbox.className = 'task-checkbox' + (task.is_done ? ' done' : '')
+        checkbox.textContent = task.is_done ? '✓' : ''
+        checkbox.addEventListener('click', function (e) {
+          toggleTask(task.id, task.is_done, task.coin_reward, e)
+        })
+
+        // Tytuł
+        const title = document.createElement('span')
+        title.className = 'task-title' + (task.is_done ? ' done' : '')
+        title.textContent = task.title
+
+        // Nagroda
+        const reward = document.createElement('span')
+        reward.className   = 'task-reward'
+        reward.textContent = '+' + task.coin_reward + ' 🪙'
+
+        // Przycisk usuń
+        const del = document.createElement('button')
+        del.className   = 'task-delete'
+        del.textContent = '✕'
+        del.title       = 'Usuń zadanie'
+        del.addEventListener('click', function () { deleteTask(task.id) })
+
+        li.appendChild(checkbox)
+        li.appendChild(title)
+        li.appendChild(reward)
+        li.appendChild(del)
+        ul.appendChild(li)
+      })
+
+      container.innerHTML = ''
+      container.appendChild(ul)
     }
 
-    // Dodaj nowe zadanie
     async function addTask() {
       const input = document.getElementById('new-task-input')
       const title = input.value.trim()
       if (!title) return
+      input.value = ''
 
-      input.value = '' // wyczyść pole
-
-      const { error } = await supabase.from('tasks').insert({
+      await db.from('tasks').insert({
         user_id:     currentUser.id,
         title:       title,
-        coin_reward: 10,    // domyślna nagroda za zadanie
+        coin_reward: 10,
         is_done:     false
       })
 
-      if (!error) await loadTasks() // odśwież listę
+      await loadTasks()
     }
 
-    // Odhacz / cofnij zadanie
     async function toggleTask(taskId, isDone, coinReward, event) {
       const newDone = !isDone
+      await db.from('tasks').update({
+        is_done:      newDone,
+        completed_at: newDone ? new Date().toISOString() : null
+      }).eq('id', taskId)
 
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          is_done:      newDone,
-          completed_at: newDone ? new Date().toISOString() : null
-        })
-        .eq('id', taskId)
-
-      if (!error) {
-        if (newDone) {
-          // Zadanie ukończone - daj monety!
-          await addCoins(coinReward, event)
-        } else {
-          // Cofnięto - odbierz monety
-          await addCoins(-coinReward, null)
-        }
-        await loadTasks()
-      }
+      await addCoins(newDone ? coinReward : -coinReward, newDone ? event : null)
+      await loadTasks()
     }
 
-    // Usuń zadanie
     async function deleteTask(taskId) {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId)
-
-      if (!error) await loadTasks()
-    }
-
-    // Zabezpieczenie przed XSS - zamiana znaków specjalnych w tytułach zadań
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+      await db.from('tasks').delete().eq('id', taskId)
+      await loadTasks()
     }
   </script>
 </body>
