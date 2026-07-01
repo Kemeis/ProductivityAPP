@@ -1,701 +1,1552 @@
-<!DOCTYPE html>
-<html lang="pl">
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Productivity Garden 🌱</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#355e3b" />
+  <title>Task Garden</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --green-dark:  #3d6b4f;
-      --green-main:  #5a9e6f;
-      --green-light: #a8d5b5;
-      --cream:       #f5f0e4;
-      --cream-dark:  #e8e0cc;
-      --brown:       #8b6f47;
-      --brown-light: #c4a882;
-      --gold:        #e8b84b;
-      --gold-dark:   #c99a2e;
-      --text-dark:   #2d2416;
-      --text-mid:    #5c4a2a;
-      --text-light:  #8a7055;
-      --red:         #c0392b;
-      --shadow:      0 4px 0 rgba(0,0,0,0.15);
+      --ink: #2e2518;
+      --muted: #7d6a4c;
+      --paper: #fff8e8;
+      --paper-deep: #f1e1bd;
+      --grass: #77ad53;
+      --grass-dark: #3e723d;
+      --grass-deep: #294d31;
+      --wood: #8c603d;
+      --wood-dark: #654126;
+      --gold: #f3bf42;
+      --gold-dark: #b77b1e;
+      --red: #b54a38;
+      --blue: #5f9fc9;
+      --line: rgba(87, 57, 31, .22);
+      --shadow: 0 4px 0 rgba(74, 47, 25, .2);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
     body {
-      font-family: 'Nunito', sans-serif;
-      background-color: var(--green-dark);
-      background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
       min-height: 100vh;
-      color: var(--text-dark);
+      margin: 0;
+      font-family: "Nunito", system-ui, sans-serif;
+      color: var(--ink);
+      background-color: var(--grass-deep);
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 28px 28px;
     }
 
-    /* ===== EKRAN LOGOWANIA ===== */
+    button, input, select { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:disabled { cursor: not-allowed; opacity: .6; transform: none !important; }
+
+    .hidden { display: none !important; }
+
+    /* Auth */
     #auth-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: grid;
       min-height: 100vh;
-      padding: 20px;
+      place-items: center;
+      padding: 24px;
     }
 
     .auth-card {
-      background: var(--cream);
-      border: 3px solid var(--brown);
-      border-radius: 12px;
-      box-shadow: var(--shadow), 0 8px 0 var(--brown);
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
+      width: min(100%, 430px);
+      padding: 34px;
+      border: 3px solid var(--wood-dark);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: 0 8px 0 var(--wood-dark), 0 16px 32px rgba(0, 0, 0, .22);
     }
 
-    .logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 13px;
-      color: var(--green-dark);
-      line-height: 1.8;
-      margin-bottom: 8px;
+    .brand-mark, .app-brand {
+      font-family: "Press Start 2P", monospace;
+      color: var(--grass-dark);
+      letter-spacing: -.04em;
     }
-
-    .subtitle { color: var(--text-light); font-size: 14px; margin-bottom: 32px; }
+    .brand-mark { font-size: 15px; line-height: 1.85; }
+    .auth-subtitle { margin: 12px 0 27px; color: var(--muted); }
 
     .auth-tabs {
-      display: flex;
-      border: 2px solid var(--brown-light);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 2px solid var(--paper-deep);
+      border-radius: 11px;
+      background: var(--paper-deep);
     }
-
     .auth-tab {
-      flex: 1; padding: 10px;
-      background: var(--cream-dark);
-      border: none; cursor: pointer;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700; font-size: 14px;
-      color: var(--text-light); transition: all 0.2s;
+      min-height: 40px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
     }
+    .auth-tab.active { background: var(--grass); color: #fff; box-shadow: 0 2px 0 var(--grass-dark); }
 
-    .auth-tab.active { background: var(--green-main); color: white; }
-
-    .form-group { margin-bottom: 16px; text-align: left; }
-
-    .form-group label {
-      display: block; font-weight: 700;
-      font-size: 13px; color: var(--text-mid); margin-bottom: 6px;
+    .field { display: grid; gap: 6px; margin-bottom: 15px; }
+    .field label { color: #634628; font-size: 13px; font-weight: 800; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 2px solid #cda97a;
+      border-radius: 9px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
     }
+    .field input:focus, .field select:focus { border-color: var(--grass-dark); box-shadow: 0 0 0 3px rgba(119,173,83,.18); }
 
-    .form-group input {
-      width: 100%; padding: 12px 14px;
-      border: 2px solid var(--brown-light); border-radius: 8px;
-      background: white; font-family: 'Nunito', sans-serif;
-      font-size: 15px; color: var(--text-dark); outline: none; transition: border-color 0.2s;
+    .form-hint { margin: -7px 0 14px; color: var(--muted); font-size: 12px; }
+    .form-message {
+      display: none;
+      margin: 0 0 15px;
+      padding: 11px 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
     }
-
-    .form-group input:focus { border-color: var(--green-main); }
+    .form-message.error { display: block; color: #82271b; background: #ffe7e0; border: 1px solid #efb4aa; }
+    .form-message.success { display: block; color: #245b30; background: #e4f4d8; border: 1px solid #b8dca5; }
 
     .btn {
-      padding: 12px 24px; border: 2px solid transparent; border-radius: 8px;
-      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 15px;
-      cursor: pointer; transition: all 0.15s;
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 15px;
+      border: 2px solid transparent;
+      border-radius: 9px;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
     }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.03); }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn-primary { width: 100%; border-color: var(--gold-dark); background: var(--gold); color: #39270f; box-shadow: 0 4px 0 var(--gold-dark); }
+    .btn-green { border-color: var(--grass-dark); background: var(--grass); color: #fff; box-shadow: 0 3px 0 var(--grass-dark); }
+    .btn-plain { border-color: #bea37d; background: #fff8e8; color: #5d4429; box-shadow: 0 3px 0 #bea37d; }
+    .btn-danger { border-color: #8b2e22; background: #d65a49; color: white; box-shadow: 0 3px 0 #8b2e22; }
+    .btn-sm { min-height: 36px; padding: 8px 11px; font-size: 13px; }
+    .icon-btn { min-width: 36px; padding: 8px; }
 
-    .btn-primary {
-      width: 100%; background: var(--gold); border-color: var(--gold-dark);
-      color: var(--text-dark); box-shadow: 0 4px 0 var(--gold-dark);
-    }
-
-    .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--gold-dark); }
-    .btn-primary:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--gold-dark); }
-
-    .btn-green {
-      background: var(--green-main); border-color: var(--green-dark);
-      color: white; box-shadow: 0 4px 0 var(--green-dark);
-    }
-
-    .btn-green:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--green-dark); }
-    .btn-green:active { transform: translateY(2px);  box-shadow: 0 2px 0 var(--green-dark); }
-    .btn-small { padding: 8px 16px; font-size: 14px; }
-
-    .message { padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; display: none; text-align: left; }
-    .message.error   { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; display: block; }
-    .message.success { background: #e8f5e9; color: var(--green-dark); border: 1px solid #c6e6c6; display: block; }
-
-    /* ===== APLIKACJA ===== */
+    /* Main app */
     #app-screen { display: none; min-height: 100vh; }
-
     .topbar {
-      background: var(--green-dark); border-bottom: 3px solid var(--brown);
-      padding: 0 20px; display: flex; align-items: center;
-      justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 10;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 10px clamp(14px, 4vw, 34px);
+      border-bottom: 3px solid var(--wood-dark);
+      background: rgba(41, 77, 49, .97);
+      backdrop-filter: blur(8px);
     }
-
-    .topbar-logo { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--green-light); line-height: 1.6; }
-
-    .coins-display {
-      background: var(--gold); border: 2px solid var(--gold-dark); border-radius: 20px;
-      padding: 6px 14px; font-weight: 700; font-size: 15px; color: var(--text-dark);
-      box-shadow: 0 3px 0 var(--gold-dark); display: flex; align-items: center; gap: 6px;
+    .app-brand { color: #e2f7c8; font-size: 10px; line-height: 1.65; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .coin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 2px solid var(--gold-dark);
+      border-radius: 999px;
+      background: var(--gold);
+      color: #3b2a0e;
+      font-weight: 900;
+      box-shadow: 0 3px 0 var(--gold-dark);
+      white-space: nowrap;
     }
+    .logout-btn { border-color: rgba(228,247,200,.68); background: transparent; color: #e2f7c8; box-shadow: none; }
 
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-
-    .btn-logout {
-      background: none; border: 2px solid var(--brown-light); border-radius: 8px;
-      color: var(--green-light); font-family: 'Nunito', sans-serif;
-      font-size: 13px; font-weight: 700; padding: 6px 12px; cursor: pointer;
+    .shell { width: min(100%, 980px); margin: 0 auto; padding: 22px 16px 48px; }
+    .farm-hero {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 16px 18px;
+      border: 2px solid #b3d38f;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #dff0bd, #fbf0c5);
+      box-shadow: var(--shadow);
     }
+    .eyebrow { margin: 0 0 7px; color: #697f3d; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; color: #365f37; font-family: "Press Start 2P", monospace; font-size: clamp(12px, 3vw, 17px); line-height: 1.7; }
+    .farm-hero p { margin: 8px 0 0; color: #65533a; font-size: 14px; }
+    .farm-name { max-width: 220px; text-align: right; color: #3c6a3e; font-family: "Press Start 2P", monospace; font-size: 9px; line-height: 1.7; }
 
-    .app-content { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
-
-    .section-card {
-      background: var(--cream); border: 2px solid var(--brown-light);
-      border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden;
+    .nav {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 18px;
     }
-
-    .section-header {
-      background: var(--cream-dark); border-bottom: 2px solid var(--brown-light);
-      padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    .nav-btn {
+      min-height: 42px;
+      padding: 9px 8px;
+      border: 2px solid #aa8054;
+      border-radius: 9px;
+      background: #f7e6be;
+      color: #604429;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #aa8054;
     }
+    .nav-btn.active { border-color: var(--grass-dark); background: var(--grass); color: #fff; box-shadow: 0 3px 0 var(--grass-dark); }
 
-    .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--green-dark); }
-    .section-body { padding: 20px; }
+    .view { display: none; }
+    .view.active { display: block; }
 
-    /* Rząd dodawania (zadania i nawyki) */
-    .add-row { display: flex; gap: 10px; margin-bottom: 20px; }
-
-    .add-row input {
-      flex: 1; padding: 11px 14px; border: 2px solid var(--brown-light);
-      border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 15px;
-      background: white; outline: none;
+    .card {
+      overflow: hidden;
+      margin-bottom: 18px;
+      border: 2px solid #b99365;
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
     }
-
-    .add-row input:focus { border-color: var(--green-main); }
-
-    /* ===== LISTA ZADAŃ ===== */
-    .task-list { list-style: none; }
-
-    .task-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--cream-dark);
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 17px;
+      border-bottom: 2px solid #d8bd91;
+      background: var(--paper-deep);
     }
+    .card-title { color: #3c663d; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.6; }
+    .card-subtitle { color: var(--muted); font-size: 12px; font-weight: 800; text-align: right; }
+    .card-body { padding: 17px; }
 
-    .task-item:last-child { border-bottom: none; }
-
-    .task-checkbox {
-      width: 24px; height: 24px; min-width: 24px;
-      border: 2px solid var(--brown-light); border-radius: 4px;
-      background: white; cursor: pointer; display: flex;
-      align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s;
+    .add-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 112px auto;
+      gap: 9px;
+      margin-bottom: 14px;
     }
-
-    .task-checkbox.done { background: var(--green-main); border-color: var(--green-dark); color: white; }
-
-    .task-title { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-dark); }
-    .task-title.done { text-decoration: line-through; color: var(--text-light); }
-
-    .task-reward { font-size: 12px; font-weight: 700; color: var(--gold-dark); white-space: nowrap; }
-
-    .item-delete {
-      background: none; border: none; cursor: pointer; font-size: 16px;
-      color: var(--text-light); padding: 2px 6px; border-radius: 4px; transition: color 0.15s;
+    .add-row.goal-row { grid-template-columns: minmax(0, 1fr) 100px 142px auto; }
+    .inline-input, .inline-select {
+      min-width: 0;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 2px solid #cfae7d;
+      border-radius: 8px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
     }
+    .inline-input:focus, .inline-select:focus { border-color: var(--grass-dark); box-shadow: 0 0 0 3px rgba(119,173,83,.16); }
 
-    .item-delete:hover { color: var(--red); }
-
-    /* ===== LISTA NAWYKÓW ===== */
-    .habit-list { list-style: none; }
+    .list { margin: 0; padding: 0; list-style: none; }
+    .list-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .list-item:last-child { border-bottom: 0; }
+    .check-btn {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      place-items: center;
+      padding: 0;
+      border: 2px solid #b59368;
+      border-radius: 7px;
+      background: #fff;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .check-btn.done { border-color: var(--grass-dark); background: var(--grass); }
+    .check-btn[disabled] { opacity: 1; cursor: default; }
+    .item-main { min-width: 0; }
+    .item-title { overflow: hidden; color: var(--ink); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .item-title.done { color: var(--muted); text-decoration: line-through; }
+    .item-meta { margin-top: 3px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .reward { color: #9a6217; font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .delete-btn {
+      width: 32px;
+      min-height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #9b7353;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .delete-btn:hover { background: #ffe5df; color: var(--red); }
 
     .habit-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--cream-dark);
+      display: grid;
+      grid-template-columns: 48px minmax(0,1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 68px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
     }
-
-    .habit-item:last-child { border-bottom: none; }
-
-    /* Duży przycisk odhaczania nawyku */
+    .habit-item:last-child { border-bottom: 0; }
     .habit-check {
-      width: 44px; height: 44px; min-width: 44px;
-      border: 2px solid var(--brown-light); border-radius: 8px;
-      background: white; cursor: pointer; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; font-size: 18px;
-      transition: all 0.2s; gap: 1px;
+      display: grid;
+      width: 45px;
+      height: 45px;
+      place-items: center;
+      padding: 0;
+      border: 2px solid #b59368;
+      border-radius: 9px;
+      background: #fff;
+      color: #734c2e;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 900;
     }
+    .habit-check.done { border-color: var(--grass-dark); background: var(--grass); color: #fff; }
+    .streak { color: #c56b24; font-size: 12px; font-weight: 900; }
 
-    /* Odhaczony na dziś */
-    .habit-check.done-today {
-      background: var(--green-main); border-color: var(--green-dark);
-      color: white; cursor: default;
+    .empty {
+      padding: 30px 14px;
+      color: var(--muted);
+      text-align: center;
     }
+    .empty-icon { margin-bottom: 8px; font-size: 32px; }
+    .loading { padding: 22px; color: var(--muted); text-align: center; font-size: 14px; font-weight: 700; }
 
-    .habit-check-label { font-size: 8px; font-weight: 700; line-height: 1; }
-
-    .habit-info { flex: 1; }
-    .habit-title { font-size: 15px; font-weight: 600; color: var(--text-dark); }
-
-    /* Licznik streaka (płomień) */
-    .habit-streak {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 13px; font-weight: 700; color: var(--text-light);
-      margin-top: 3px;
+    /* Farm */
+    .farm-layout { display: grid; gap: 17px; }
+    .farm-help { margin: 0; color: var(--muted); font-size: 14px; }
+    .farm-grid-wrap {
+      overflow-x: auto;
+      padding: 10px;
+      border: 2px solid #6c9b51;
+      border-radius: 13px;
+      background: #c5e28e;
     }
-
-    .habit-streak.hot { color: #e07b2a; }   /* pomarańczowy gdy streak > 0 */
-
-    .habit-right { display: flex; align-items: center; gap: 8px; }
-
-    /* ===== WSPÓLNE ===== */
-    .empty-state { text-align: center; padding: 32px 0; color: var(--text-light); font-size: 14px; }
-    .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
-    .loading { text-align: center; padding: 24px; color: var(--text-light); font-size: 14px; }
-
-    @keyframes coin-pop {
-      0%   { transform: translateY(0) scale(1);      opacity: 1; }
-      100% { transform: translateY(-60px) scale(1.4); opacity: 0; }
+    .farm-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 2px;
+      width: min(100%, 560px);
+      min-width: 322px;
+      margin: 0 auto;
     }
+    .farm-tile {
+      position: relative;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      min-width: 30px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(57,103,57,.42);
+      border-radius: 4px;
+      background-color: #94c869;
+      background-image:
+        radial-gradient(rgba(255,255,255,.23) 1px, transparent 1px),
+        radial-gradient(rgba(44,100,42,.16) 1px, transparent 1px);
+      background-position: 0 0, 6px 6px;
+      background-size: 12px 12px;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: clamp(19px, 4vw, 31px);
+    }
+    .farm-tile:hover, .farm-tile.selected { outline: 3px solid #fff6b1; outline-offset: -3px; }
+    .farm-tile.occupied { background-color: #9fca72; }
+    .farm-tile .tile-index {
+      position: absolute;
+      right: 2px;
+      bottom: 1px;
+      color: rgba(45,80,35,.5);
+      font-size: 7px;
+      font-weight: 900;
+    }
+    .shop-title { margin: 0 0 10px; color: #3d653c; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.7; }
+    .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 9px; }
+    .shop-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 58px;
+      padding: 8px;
+      border: 2px solid #c9aa78;
+      border-radius: 9px;
+      background: #fffaf0;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+    .shop-item.selected { border-color: var(--grass-dark); background: #e5f3ce; box-shadow: inset 0 0 0 2px rgba(119,173,83,.25); }
+    .shop-icon { font-size: 26px; text-align: center; }
+    .shop-name { display: block; overflow: hidden; font-size: 13px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+    .shop-price { display: block; margin-top: 2px; color: #9a6217; font-size: 12px; font-weight: 900; }
+    .farm-note { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: 22px;
+      width: min(calc(100% - 32px), 430px);
+      transform: translate(-50%, 90px);
+      padding: 12px 14px;
+      border: 2px solid #755332;
+      border-radius: 10px;
+      background: #fff4d5;
+      box-shadow: 0 4px 0 rgba(70,45,25,.22);
+      color: #4e331d;
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    #toast.show { transform: translate(-50%, 0); opacity: 1; }
+    #toast.error { border-color: #9b382a; background: #ffe5df; color: #812b20; }
+    #toast.success { border-color: #5c8d46; background: #e6f4d7; color: #2f6235; }
 
     .coin-animation {
-      position: fixed; font-weight: 700; font-size: 18px; color: var(--gold-dark);
-      pointer-events: none; animation: coin-pop 1s ease-out forwards; z-index: 999;
+      position: fixed;
+      z-index: 50;
+      pointer-events: none;
+      color: #8f5915;
+      font-size: 18px;
+      font-weight: 900;
+      animation: coin-pop .9s ease-out forwards;
+    }
+    @keyframes coin-pop {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to { transform: translateY(-58px) scale(1.35); opacity: 0; }
+    }
+
+    @media (max-width: 640px) {
+      .auth-card { padding: 28px 22px; }
+      .shell { padding-inline: 12px; }
+      .topbar { min-height: 60px; }
+      .app-brand { font-size: 8px; }
+      .logout-btn { display: none; }
+      .farm-hero { align-items: flex-start; flex-direction: column; }
+      .farm-name { max-width: none; text-align: left; }
+      .add-row, .add-row.goal-row { grid-template-columns: minmax(0, 1fr) 92px; }
+      .add-row .btn { grid-column: 1 / -1; }
+      .add-row.goal-row input[type="date"] { grid-column: 1 / -1; }
+      .card-header { align-items: flex-start; flex-direction: column; }
+      .card-subtitle { text-align: left; }
+      .list-item { grid-template-columns: auto minmax(0,1fr) auto auto; gap: 8px; }
+      .habit-item { grid-template-columns: 44px minmax(0,1fr) auto auto; gap: 8px; }
+      .habit-check { width: 42px; height: 42px; }
+    }
+
+    @media (max-width: 390px) {
+      .nav-btn { font-size: 12px; }
+      .coin-pill { padding: 7px 10px; }
+      .list-item { grid-template-columns: auto minmax(0,1fr) auto; }
+      .list-item .delete-btn { grid-column: 3; }
+      .habit-item { grid-template-columns: 42px minmax(0,1fr) auto; }
+      .habit-item .delete-btn { grid-column: 3; }
     }
   </style>
 </head>
 <body>
+  <main id="auth-screen">
+    <section class="auth-card" aria-labelledby="auth-title">
+      <div id="auth-title" class="brand-mark">TASK<br>GARDEN</div>
+      <p class="auth-subtitle">Turn finished tasks into a farm you build yourself.</p>
 
-  <!-- ===== EKRAN LOGOWANIA ===== -->
-  <div id="auth-screen">
-    <div class="auth-card">
-      <div class="logo">🌱 Productivity<br>Garden</div>
-      <p class="subtitle">Twoja produktywna farma</p>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login">Logowanie</button>
-        <button class="auth-tab"        id="tab-register">Rejestracja</button>
+      <div class="auth-tabs" role="tablist" aria-label="Authentication">
+        <button class="auth-tab active" id="tab-login" type="button" role="tab" aria-selected="true">Log in</button>
+        <button class="auth-tab" id="tab-register" type="button" role="tab" aria-selected="false">Create account</button>
       </div>
 
-      <div id="auth-message" class="message"></div>
+      <div id="auth-message" class="form-message" role="status" aria-live="polite"></div>
 
-      <div class="form-group">
-        <label for="auth-email">Adres e-mail</label>
-        <input type="email" id="auth-email" placeholder="jan@example.com" />
-      </div>
-      <div class="form-group">
-        <label for="auth-password">Hasło</label>
-        <input type="password" id="auth-password" placeholder="minimum 6 znaków" />
-      </div>
+      <form id="auth-form">
+        <div class="field">
+          <label for="auth-email">Email</label>
+          <input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="field">
+          <label for="auth-password">Password</label>
+          <input id="auth-password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required />
+        </div>
+        <div class="field hidden" id="confirm-password-group">
+          <label for="confirm-password">Confirm password</label>
+          <input id="confirm-password" type="password" autocomplete="new-password" minlength="6" placeholder="Repeat your password" />
+        </div>
+        <p id="auth-hint" class="form-hint">Use your email and password to access your own farm.</p>
+        <button class="btn btn-primary" id="auth-submit-btn" type="submit">Log in</button>
+      </form>
+    </section>
+  </main>
 
-      <button class="btn btn-primary" id="auth-submit-btn">Zaloguj się</button>
-    </div>
-  </div>
-
-  <!-- ===== GŁÓWNA APLIKACJA ===== -->
-  <div id="app-screen">
-    <div class="topbar">
-      <div class="topbar-logo">🌱 P.Garden</div>
+  <main id="app-screen">
+    <header class="topbar">
+      <div class="app-brand">TASK<br>GARDEN</div>
       <div class="topbar-right">
-        <div class="coins-display">🪙 <span id="coins-count">0</span></div>
-        <button class="btn-logout" id="logout-btn">Wyloguj</button>
+        <div class="coin-pill" aria-label="Your coins">🪙 <span id="coins-count">0</span></div>
+        <button class="btn btn-sm logout-btn" id="logout-btn" type="button">Log out</button>
       </div>
+    </header>
+
+    <div class="shell">
+      <section class="farm-hero">
+        <div>
+          <p class="eyebrow">Your private productivity space</p>
+          <h1>One task at a time.</h1>
+          <p>Finish tasks, earn coins, then grow your farm.</p>
+        </div>
+        <div class="farm-name" id="farm-name">MY FARM</div>
+      </section>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-btn active" type="button" data-view="today">Today</button>
+        <button class="nav-btn" type="button" data-view="habits">Habits</button>
+        <button class="nav-btn" type="button" data-view="goals">Goals</button>
+        <button class="nav-btn" type="button" data-view="farm">Farm</button>
+      </nav>
+
+      <section id="view-today" class="view active">
+        <article class="card">
+          <div class="card-header">
+            <span class="card-title">TODAY'S TASKS</span>
+            <span class="card-subtitle">Choose the reward when you create a task.</span>
+          </div>
+          <div class="card-body">
+            <form class="add-row" id="task-form">
+              <input class="inline-input" id="new-task-input" type="text" maxlength="160" placeholder="Add a task…" aria-label="New task title" required />
+              <select class="inline-select" id="task-reward-input" aria-label="Task coin reward">
+                <option value="5">5 coins</option>
+                <option value="10" selected>10 coins</option>
+                <option value="20">20 coins</option>
+                <option value="40">40 coins</option>
+              </select>
+              <button class="btn btn-green btn-sm" type="submit">Add task</button>
+            </form>
+            <div id="tasks-container"><div class="loading">Loading tasks…</div></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-habits" class="view">
+        <article class="card">
+          <div class="card-header">
+            <span class="card-title">DAILY HABITS</span>
+            <span class="card-subtitle">Two starter habits are added to every new account.</span>
+          </div>
+          <div class="card-body">
+            <form class="add-row" id="habit-form">
+              <input class="inline-input" id="new-habit-input" type="text" maxlength="120" placeholder="Add a daily habit…" aria-label="New habit title" required />
+              <select class="inline-select" id="habit-reward-input" aria-label="Habit coin reward">
+                <option value="3">3 coins</option>
+                <option value="5" selected>5 coins</option>
+                <option value="10">10 coins</option>
+                <option value="15">15 coins</option>
+              </select>
+              <button class="btn btn-green btn-sm" type="submit">Add habit</button>
+            </form>
+            <div id="habits-container"><div class="loading">Loading habits…</div></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-goals" class="view">
+        <article class="card">
+          <div class="card-header">
+            <span class="card-title">BIGGER GOALS</span>
+            <span class="card-subtitle">A goal gives coins once when it is completed.</span>
+          </div>
+          <div class="card-body">
+            <form class="add-row goal-row" id="goal-form">
+              <input class="inline-input" id="new-goal-input" type="text" maxlength="160" placeholder="Add a bigger goal…" aria-label="New goal title" required />
+              <select class="inline-select" id="goal-reward-input" aria-label="Goal coin reward">
+                <option value="25">25 coins</option>
+                <option value="50" selected>50 coins</option>
+                <option value="100">100 coins</option>
+                <option value="200">200 coins</option>
+              </select>
+              <input class="inline-input" id="goal-deadline-input" type="date" aria-label="Optional goal deadline" />
+              <button class="btn btn-green btn-sm" type="submit">Add goal</button>
+            </form>
+            <div id="goals-container"><div class="loading">Loading goals…</div></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-farm" class="view">
+        <article class="card">
+          <div class="card-header">
+            <span class="card-title">YOUR FARM</span>
+            <span class="card-subtitle">Each account only sees and edits its own tiles.</span>
+          </div>
+          <div class="card-body">
+            <p class="farm-help">Choose an item below, then tap an empty grass tile to buy and place it. Removing an item does not refund coins yet.</p>
+            <div class="farm-layout">
+              <div class="farm-grid-wrap">
+                <div id="farm-grid" class="farm-grid" aria-label="Your 10 by 10 farm map"></div>
+              </div>
+              <div>
+                <h2 class="shop-title">FARM SHOP</h2>
+                <div id="shop-container" class="shop-grid"><div class="loading">Loading shop…</div></div>
+                <p class="farm-note" id="farm-note">Select one item to start building.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
     </div>
+  </main>
 
-    <div class="app-content">
-
-      <!-- ZADANIA -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="section-title">📋 To-Do Lista</span>
-          <span style="font-size:12px; color:var(--text-light);">+10 🪙 za zadanie</span>
-        </div>
-        <div class="section-body">
-          <div class="add-row">
-            <input type="text" id="new-task-input" placeholder="Wpisz nowe zadanie..." />
-            <button class="btn btn-green btn-small" id="add-task-btn">Dodaj</button>
-          </div>
-          <div id="tasks-container">
-            <div class="loading">Ładowanie...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- NAWYKI -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="section-title">🔁 Nawyki</span>
-          <span style="font-size:12px; color:var(--text-light);">+5 🪙 dziennie</span>
-        </div>
-        <div class="section-body">
-          <div class="add-row">
-            <input type="text" id="new-habit-input" placeholder="Nowy nawyk (np. Medytacja)..." />
-            <button class="btn btn-green btn-small" id="add-habit-btn">Dodaj</button>
-          </div>
-          <div id="habits-container">
-            <div class="loading">Ładowanie...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CELE - placeholder na następny krok -->
-      <div class="section-card">
-        <div class="section-header"><span class="section-title">🎯 Cele</span></div>
-        <div class="section-body">
-          <div class="empty-state"><div class="emoji">🚧</div><p>Cele — następny krok!</p></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const SUPABASE_URL = 'https://nndonweuhrlinoakunyn.supabase.co'
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng'
+    /*
+      The key below must be your Supabase ANON / PUBLISHABLE key.
+      Never paste a service_role key into a GitHub Pages site.
+    */
+    const SUPABASE_URL = "https://nndonweuhrlinoakunyn.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng";
 
-    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
-    let currentUser = null
-    let currentTab  = 'login'
+    const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-    // ===== PODPINANIE PRZYCISKÓW =====
-    document.getElementById('tab-login').addEventListener('click', () => switchTab('login'))
-    document.getElementById('tab-register').addEventListener('click', () => switchTab('register'))
-    document.getElementById('auth-submit-btn').addEventListener('click', handleAuth)
-    document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth() })
-    document.getElementById('logout-btn').addEventListener('click', () => db.auth.signOut())
-    document.getElementById('add-task-btn').addEventListener('click', addTask)
-    document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask() })
-    document.getElementById('add-habit-btn').addEventListener('click', addHabit)
-    document.getElementById('new-habit-input').addEventListener('keydown', e => { if (e.key === 'Enter') addHabit() })
+    const STARTER_HABITS = [
+      { title: "Complete today's task list", coin_reward: 5 },
+      { title: "Prepare tomorrow's task list", coin_reward: 5 }
+    ];
 
-    // ===== AUTH =====
-    function switchTab(tab) {
-      currentTab = tab
-      document.getElementById('tab-login').classList.toggle('active', tab === 'login')
-      document.getElementById('tab-register').classList.toggle('active', tab === 'register')
-      document.getElementById('auth-submit-btn').textContent = tab === 'login' ? 'Zaloguj się' : 'Zarejestruj się'
-      hideMessage()
+    const TILE_ICONS = {
+      path: "·",
+      flower: "🌷",
+      tree: "🌳",
+      pond: "💧",
+      house: "🏡",
+      bush: "🌿",
+      bench: "🪑",
+      default: "🌱"
+    };
+
+    const GRID_COLUMNS = 10;
+    const GRID_ROWS = 10;
+
+    let currentUser = null;
+    let currentTab = "login";
+    let profile = null;
+    let mapTiles = [];
+    let shopItems = [];
+    let selectedShopItem = null;
+    let toastTimer = null;
+    const busyActions = new Set();
+
+    const $ = (selector) => document.querySelector(selector);
+
+    // ===== UI helpers =====
+    function showAuthMessage(text, type = "error") {
+      const el = $("#auth-message");
+      el.textContent = text;
+      el.className = "form-message " + type;
     }
 
-    async function handleAuth() {
-      const email    = document.getElementById('auth-email').value.trim()
-      const password = document.getElementById('auth-password').value
-      if (!email || !password) { showMessage('Wypełnij oba pola!', 'error'); return }
-
-      if (currentTab === 'login') {
-        const { error } = await db.auth.signInWithPassword({ email, password })
-        if (error) showMessage(translateError(error.message), 'error')
-      } else {
-        const { error } = await db.auth.signUp({ email, password })
-        if (error) {
-          showMessage(translateError(error.message), 'error')
-        } else {
-          showMessage('Konto założone! Możesz się teraz zalogować.', 'success')
-          switchTab('login')
-        }
-      }
+    function hideAuthMessage() {
+      const el = $("#auth-message");
+      el.textContent = "";
+      el.className = "form-message";
     }
 
-    function translateError(msg) {
-      if (msg.includes('Invalid login'))      return 'Nieprawidłowy e-mail lub hasło.'
-      if (msg.includes('already registered')) return 'Ten e-mail jest już zarejestrowany.'
-      if (msg.includes('Password should'))    return 'Hasło musi mieć minimum 6 znaków.'
-      return msg
-    }
-
-    function showMessage(text, type) {
-      const el = document.getElementById('auth-message')
-      el.textContent = text; el.className = 'message ' + type
-    }
-
-    function hideMessage() {
-      const el = document.getElementById('auth-message')
-      el.textContent = ''; el.className = 'message'
-    }
-
-    // ===== SESJA =====
-    db.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        currentUser = session.user
-        document.getElementById('auth-screen').style.display = 'none'
-        document.getElementById('app-screen').style.display  = 'block'
-        await loadCoins()
-        await loadTasks()
-        await loadHabits()
-      } else {
-        currentUser = null
-        document.getElementById('auth-screen').style.display = 'flex'
-        document.getElementById('app-screen').style.display  = 'none'
-      }
-    })
-
-    // ===== MONETY =====
-    async function loadCoins() {
-      const { data } = await db.from('profiles').select('coins').eq('id', currentUser.id).single()
-      if (data) {
-        document.getElementById('coins-count').textContent = data.coins
-      } else {
-        await db.from('profiles').insert({ id: currentUser.id, coins: 0 })
-        document.getElementById('coins-count').textContent = 0
-      }
-    }
-
-    async function addCoins(amount, event) {
-      const { data } = await db.from('profiles').select('coins').eq('id', currentUser.id).single()
-      const newCoins = (data?.coins || 0) + amount
-      await db.from('profiles').update({ coins: newCoins }).eq('id', currentUser.id)
-      document.getElementById('coins-count').textContent = newCoins
-      if (event && amount > 0) spawnCoinAnimation(event, amount)
+    function showToast(text, type = "") {
+      const toast = $("#toast");
+      toast.textContent = text;
+      toast.className = type ? `show ${type}` : "show";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.className = "";
+      }, 3200);
     }
 
     function spawnCoinAnimation(event, amount) {
-      const el = document.createElement('div')
-      el.className = 'coin-animation'
-      el.textContent = '+' + amount + ' 🪙'
-      el.style.left = (event.clientX - 20) + 'px'
-      el.style.top  = (event.clientY - 10) + 'px'
-      document.body.appendChild(el)
-      setTimeout(() => el.remove(), 1000)
+      if (!event || amount <= 0) return;
+      const el = document.createElement("div");
+      el.className = "coin-animation";
+      el.textContent = `+${amount} 🪙`;
+      el.style.left = `${Math.max(8, event.clientX - 20)}px`;
+      el.style.top = `${Math.max(8, event.clientY - 16)}px`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 950);
     }
 
-    // ===== ZADANIA =====
+    function iconFor(itemType) {
+      return TILE_ICONS[itemType] || TILE_ICONS.default;
+    }
+
+    function localDateString(date = new Date()) {
+      const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+      return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+    }
+
+    function yesterdayString() {
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      return localDateString(date);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString + "T12:00:00");
+      return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date);
+    }
+
+    function setLoading(containerId, message) {
+      $(containerId).innerHTML = `<div class="loading">${message}</div>`;
+    }
+
+    function renderEmpty(containerId, icon, text) {
+      const container = $(containerId);
+      container.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "empty";
+      const emoji = document.createElement("div");
+      emoji.className = "empty-icon";
+      emoji.textContent = icon;
+      const paragraph = document.createElement("p");
+      paragraph.textContent = text;
+      wrap.append(emoji, paragraph);
+      container.append(wrap);
+    }
+
+    function reportError(error, fallback = "Something went wrong. Please try again.") {
+      console.error(error);
+      showToast(error?.message || fallback, "error");
+    }
+
+    // ===== Auth =====
+    function switchTab(tab) {
+      currentTab = tab;
+      const isRegister = tab === "register";
+      $("#tab-login").classList.toggle("active", !isRegister);
+      $("#tab-register").classList.toggle("active", isRegister);
+      $("#tab-login").setAttribute("aria-selected", String(!isRegister));
+      $("#tab-register").setAttribute("aria-selected", String(isRegister));
+      $("#confirm-password-group").classList.toggle("hidden", !isRegister);
+      $("#confirm-password").required = isRegister;
+      $("#auth-password").autocomplete = isRegister ? "new-password" : "current-password";
+      $("#auth-submit-btn").textContent = isRegister ? "Create account" : "Log in";
+      $("#auth-hint").textContent = isRegister
+        ? "Passwords must match. Your farm and tasks are private to your account."
+        : "Use your email and password to access your own farm.";
+      hideAuthMessage();
+    }
+
+    async function handleAuth(event) {
+      event.preventDefault();
+      hideAuthMessage();
+
+      const email = $("#auth-email").value.trim();
+      const password = $("#auth-password").value;
+      const confirmation = $("#confirm-password").value;
+      const submit = $("#auth-submit-btn");
+
+      if (!email || !password) {
+        showAuthMessage("Enter both your email and password.");
+        return;
+      }
+      if (currentTab === "register" && password !== confirmation) {
+        showAuthMessage("Passwords do not match.");
+        return;
+      }
+
+      submit.disabled = true;
+      try {
+        if (currentTab === "login") {
+          const { error } = await db.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        } else {
+          const { data, error } = await db.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin + window.location.pathname
+            }
+          });
+          if (error) throw error;
+
+          if (data.session) {
+            showAuthMessage("Account created. Welcome to your farm!", "success");
+          } else {
+            showAuthMessage("Account created. Check your email to confirm it, then log in.", "success");
+            switchTab("login");
+          }
+        }
+      } catch (error) {
+        const message = String(error?.message || "");
+        if (message.toLowerCase().includes("invalid login")) {
+          showAuthMessage("Incorrect email or password.");
+        } else if (message.toLowerCase().includes("already registered")) {
+          showAuthMessage("This email is already registered.");
+        } else if (message.toLowerCase().includes("password")) {
+          showAuthMessage("Use a password with at least 6 characters.");
+        } else {
+          showAuthMessage(message || "Could not complete authentication.");
+        }
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function applySession(session) {
+      if (!session?.user) {
+        currentUser = null;
+        profile = null;
+        mapTiles = [];
+        $("#auth-screen").style.display = "grid";
+        $("#app-screen").style.display = "none";
+        return;
+      }
+
+      currentUser = session.user;
+      $("#auth-screen").style.display = "none";
+      $("#app-screen").style.display = "block";
+
+      try {
+        await ensureProfileAndStarterHabits();
+        await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadShopItems(), loadMapTiles()]);
+      } catch (error) {
+        reportError(error, "Your farm could not be loaded.");
+      }
+    }
+
+    // ===== Profile and defaults =====
+    async function ensureProfileAndStarterHabits() {
+      const { data: profileRow, error: profileError } = await db
+        .from("profiles")
+        .select("id")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (!profileRow) {
+        const { error } = await db
+          .from("profiles")
+          .insert({ id: currentUser.id, farm_name: "My Farm", coins: 0 });
+        if (error) throw error;
+      }
+
+      // Fallback for accounts created before the SQL trigger was installed.
+      const { count, error: habitsError } = await db
+        .from("habits")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", currentUser.id);
+
+      if (habitsError) throw habitsError;
+
+      if (count === 0) {
+        const { error } = await db.from("habits").insert(
+          STARTER_HABITS.map((habit) => ({
+            user_id: currentUser.id,
+            title: habit.title,
+            frequency: "daily",
+            current_streak: 0,
+            coin_reward: habit.coin_reward
+          }))
+        );
+        if (error) throw error;
+      }
+    }
+
+    async function loadProfile() {
+      const { data, error } = await db
+        .from("profiles")
+        .select("id, farm_name, coins")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (error) throw error;
+      profile = data;
+      $("#coins-count").textContent = String(profile.coins ?? 0);
+      $("#farm-name").textContent = (profile.farm_name || "My Farm").toUpperCase();
+    }
+
+    async function addCoins(amount, event) {
+      const nextAmount = Math.max(0, Number(profile?.coins || 0) + Number(amount || 0));
+      const { data, error } = await db
+        .from("profiles")
+        .update({ coins: nextAmount })
+        .eq("id", currentUser.id)
+        .select("id, farm_name, coins")
+        .single();
+
+      if (error) throw error;
+      profile = data;
+      $("#coins-count").textContent = String(profile.coins);
+      spawnCoinAnimation(event, amount);
+    }
+
+    // ===== Tasks =====
     async function loadTasks() {
-      const container = document.getElementById('tasks-container')
-      container.innerHTML = '<div class="loading">Ładowanie...</div>'
-      const { data: tasks } = await db
-        .from('tasks').select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false })
-      renderTasks(tasks || [])
+      setLoading("#tasks-container", "Loading tasks…");
+      const { data, error } = await db
+        .from("tasks")
+        .select("id, title, is_done, coin_reward, created_at, completed_at")
+        .eq("user_id", currentUser.id)
+        .order("is_done", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      renderTasks(data || []);
     }
 
     function renderTasks(tasks) {
-      const container = document.getElementById('tasks-container')
-      if (tasks.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="emoji">✏️</div><p>Brak zadań. Dodaj pierwsze zadanie powyżej!</p></div>'
-        return
+      if (!tasks.length) {
+        renderEmpty("#tasks-container", "📝", "No tasks yet. Add one above.");
+        return;
       }
-      const ul = document.createElement('ul')
-      ul.className = 'task-list'
-      tasks.forEach(task => {
-        const li = document.createElement('li')
-        li.className = 'task-item'
 
-        const checkbox = document.createElement('div')
-        checkbox.className = 'task-checkbox' + (task.is_done ? ' done' : '')
-        checkbox.textContent = task.is_done ? '✓' : ''
-        checkbox.addEventListener('click', e => toggleTask(task.id, task.is_done, task.coin_reward, e))
+      const list = document.createElement("ul");
+      list.className = "list";
 
-        const title = document.createElement('span')
-        title.className = 'task-title' + (task.is_done ? ' done' : '')
-        title.textContent = task.title
+      for (const task of tasks) {
+        const item = document.createElement("li");
+        item.className = "list-item";
 
-        const reward = document.createElement('span')
-        reward.className = 'task-reward'
-        reward.textContent = '+' + task.coin_reward + ' 🪙'
+        const check = document.createElement("button");
+        check.className = "check-btn" + (task.is_done ? " done" : "");
+        check.type = "button";
+        check.textContent = task.is_done ? "✓" : "";
+        check.title = task.is_done ? "Completed" : "Mark as complete";
+        check.disabled = task.is_done;
+        if (!task.is_done) check.addEventListener("click", (event) => completeTask(task, event));
 
-        const del = document.createElement('button')
-        del.className = 'item-delete'; del.textContent = '✕'; del.title = 'Usuń'
-        del.addEventListener('click', () => deleteTask(task.id))
+        const main = document.createElement("div");
+        main.className = "item-main";
+        const title = document.createElement("div");
+        title.className = "item-title" + (task.is_done ? " done" : "");
+        title.textContent = task.title;
+        main.append(title);
+        if (task.is_done && task.completed_at) {
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          meta.textContent = `Completed ${new Intl.DateTimeFormat("en", { day: "numeric", month: "short" }).format(new Date(task.completed_at))}`;
+          main.append(meta);
+        }
 
-        li.append(checkbox, title, reward, del)
-        ul.appendChild(li)
-      })
-      container.innerHTML = ''
-      container.appendChild(ul)
+        const reward = document.createElement("span");
+        reward.className = "reward";
+        reward.textContent = `+${task.coin_reward} 🪙`;
+
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.type = "button";
+        del.title = "Delete task";
+        del.setAttribute("aria-label", `Delete task: ${task.title}`);
+        del.textContent = "×";
+        del.addEventListener("click", () => deleteTask(task.id));
+
+        item.append(check, main, reward, del);
+        list.append(item);
+      }
+
+      const container = $("#tasks-container");
+      container.innerHTML = "";
+      container.append(list);
     }
 
-    async function addTask() {
-      const input = document.getElementById('new-task-input')
-      const title = input.value.trim()
-      if (!title) return
-      input.value = ''
-      await db.from('tasks').insert({ user_id: currentUser.id, title, coin_reward: 10, is_done: false })
-      await loadTasks()
+    async function addTask(event) {
+      event.preventDefault();
+      const input = $("#new-task-input");
+      const title = input.value.trim();
+      const coinReward = Number($("#task-reward-input").value);
+      if (!title) return;
+
+      const { error } = await db.from("tasks").insert({
+        user_id: currentUser.id,
+        title,
+        coin_reward: coinReward,
+        is_done: false
+      });
+      if (error) return reportError(error);
+
+      input.value = "";
+      await loadTasks();
     }
 
-    async function toggleTask(taskId, isDone, coinReward, event) {
-      const newDone = !isDone
-      await db.from('tasks').update({
-        is_done: newDone,
-        completed_at: newDone ? new Date().toISOString() : null
-      }).eq('id', taskId)
-      await addCoins(newDone ? coinReward : -coinReward, newDone ? event : null)
-      await loadTasks()
+    async function completeTask(task, event) {
+      const lock = `task-${task.id}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
+
+      try {
+        const { data, error } = await db
+          .from("tasks")
+          .update({ is_done: true, completed_at: new Date().toISOString() })
+          .eq("id", task.id)
+          .eq("user_id", currentUser.id)
+          .eq("is_done", false)
+          .select("id")
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+          showToast("This task was already completed.", "error");
+          return;
+        }
+
+        await addCoins(task.coin_reward, event);
+        showToast(`Task completed! +${task.coin_reward} coins`, "success");
+        await loadTasks();
+      } catch (error) {
+        reportError(error);
+      } finally {
+        busyActions.delete(lock);
+      }
     }
 
     async function deleteTask(taskId) {
-      await db.from('tasks').delete().eq('id', taskId)
-      await loadTasks()
-    }
-
-    // ===== NAWYKI =====
-
-    // Zwraca dzisiejszą datę jako string "YYYY-MM-DD" (bez godziny)
-    // Potrzebne do sprawdzania czy nawyk był już dziś odhaczony
-    function todayString() {
-      return new Date().toISOString().slice(0, 10)
-    }
-
-    async function loadHabits() {
-      const container = document.getElementById('habits-container')
-      container.innerHTML = '<div class="loading">Ładowanie...</div>'
-
-      // Pobierz nawyki usera
-      const { data: habits } = await db
-        .from('habits').select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: true })
-
-      if (!habits || habits.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="emoji">🌱</div><p>Brak nawyków. Dodaj pierwszy nawyk powyżej!</p></div>'
-        return
+      if (!window.confirm("Delete this task?")) return;
+      try {
+        const { error } = await db.from("tasks").delete().eq("id", taskId).eq("user_id", currentUser.id);
+        if (error) throw error;
+        await loadTasks();
+      } catch (error) {
+        reportError(error);
       }
+    }
 
-      // Sprawdź które nawyki były już dziś odhaczone
-      // Pobieramy logi z dzisiaj dla tego usera
-      const { data: todayLogs } = await db
-        .from('habit_logs')
-        .select('habit_id')
-        .eq('user_id', currentUser.id)
-        .eq('completed_date', todayString())
+    // ===== Habits =====
+    async function loadHabits() {
+      setLoading("#habits-container", "Loading habits…");
+      const today = localDateString();
 
-      // Robimy zbiór id nawyków odhaczonych dziś (szybkie sprawdzanie)
-      const doneTodayIds = new Set((todayLogs || []).map(log => log.habit_id))
+      const [{ data: habits, error: habitsError }, { data: todayLogs, error: logsError }] = await Promise.all([
+        db.from("habits")
+          .select("id, title, frequency, current_streak, coin_reward, created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: true }),
+        db.from("habit_logs")
+          .select("habit_id")
+          .eq("user_id", currentUser.id)
+          .eq("completed_date", today)
+      ]);
 
-      renderHabits(habits, doneTodayIds)
+      if (habitsError) throw habitsError;
+      if (logsError) throw logsError;
+
+      renderHabits(habits || [], new Set((todayLogs || []).map((log) => log.habit_id)));
     }
 
     function renderHabits(habits, doneTodayIds) {
-      const container = document.getElementById('habits-container')
-      const ul = document.createElement('ul')
-      ul.className = 'habit-list'
+      if (!habits.length) {
+        renderEmpty("#habits-container", "🌱", "No habits yet. Add a daily habit above.");
+        return;
+      }
 
-      habits.forEach(habit => {
-        const doneToday = doneTodayIds.has(habit.id)
-        const streak    = habit.current_streak || 0
+      const list = document.createElement("ul");
+      list.className = "list";
 
-        const li = document.createElement('li')
-        li.className = 'habit-item'
+      for (const habit of habits) {
+        const doneToday = doneTodayIds.has(habit.id);
+        const item = document.createElement("li");
+        item.className = "habit-item";
 
-        // Duży przycisk odhaczania
-        const checkBtn = document.createElement('div')
-        checkBtn.className = 'habit-check' + (doneToday ? ' done-today' : '')
-        // Emoji i napis pod spodem
-        checkBtn.innerHTML = doneToday
-          ? '<span style="font-size:20px">✓</span><span class="habit-check-label">ZROBIONE</span>'
-          : '<span style="font-size:20px">○</span><span class="habit-check-label">DZIŚ</span>'
+        const check = document.createElement("button");
+        check.className = "habit-check" + (doneToday ? " done" : "");
+        check.type = "button";
+        check.textContent = doneToday ? "✓" : "○";
+        check.title = doneToday ? "Completed today" : "Complete today";
+        check.disabled = doneToday;
+        if (!doneToday) check.addEventListener("click", (event) => completeHabit(habit, event));
 
-        // Kliknięcie odhaczyło nawyk — ale tylko jeśli jeszcze nie odhaczono dziś
-        if (!doneToday) {
-          checkBtn.style.cursor = 'pointer'
-          checkBtn.addEventListener('click', e => completeHabit(habit.id, habit.coin_reward, e))
-        }
+        const main = document.createElement("div");
+        main.className = "item-main";
+        const title = document.createElement("div");
+        title.className = "item-title";
+        title.textContent = habit.title;
+        const streak = document.createElement("div");
+        streak.className = "streak";
+        streak.textContent = habit.current_streak > 0
+          ? `🔥 ${habit.current_streak} day streak`
+          : "Start your streak today";
+        main.append(title, streak);
 
-        // Info o nawyku: nazwa + streak
-        const info = document.createElement('div')
-        info.className = 'habit-info'
+        const reward = document.createElement("span");
+        reward.className = "reward";
+        reward.textContent = `+${habit.coin_reward} 🪙`;
 
-        const titleEl = document.createElement('div')
-        titleEl.className = 'habit-title'
-        titleEl.textContent = habit.title
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.type = "button";
+        del.title = "Delete habit";
+        del.setAttribute("aria-label", `Delete habit: ${habit.title}`);
+        del.textContent = "×";
+        del.addEventListener("click", () => deleteHabit(habit.id));
 
-        const streakEl = document.createElement('div')
-        streakEl.className = 'habit-streak' + (streak > 0 ? ' hot' : '')
-        streakEl.textContent = streak > 0 ? '🔥 ' + streak + ' dni z rzędu' : '○ Brak streaka — zacznij dziś!'
+        item.append(check, main, reward, del);
+        list.append(item);
+      }
 
-        info.append(titleEl, streakEl)
-
-        // Prawa strona: nagroda + usuń
-        const right = document.createElement('div')
-        right.className = 'habit-right'
-
-        const reward = document.createElement('span')
-        reward.className = 'task-reward'
-        reward.textContent = '+' + habit.coin_reward + ' 🪙'
-
-        const del = document.createElement('button')
-        del.className = 'item-delete'; del.textContent = '✕'; del.title = 'Usuń nawyk'
-        del.addEventListener('click', () => deleteHabit(habit.id))
-
-        right.append(reward, del)
-        li.append(checkBtn, info, right)
-        ul.appendChild(li)
-      })
-
-      container.innerHTML = ''
-      container.appendChild(ul)
+      const container = $("#habits-container");
+      container.innerHTML = "";
+      container.append(list);
     }
 
-    async function addHabit() {
-      const input = document.getElementById('new-habit-input')
-      const title = input.value.trim()
-      if (!title) return
-      input.value = ''
+    async function addHabit(event) {
+      event.preventDefault();
+      const input = $("#new-habit-input");
+      const title = input.value.trim();
+      const coinReward = Number($("#habit-reward-input").value);
+      if (!title) return;
 
-      await db.from('habits').insert({
+      const { error } = await db.from("habits").insert({
         user_id: currentUser.id,
         title,
-        frequency:      'daily',
+        frequency: "daily",
         current_streak: 0,
-        coin_reward:    5
-      })
-      await loadHabits()
+        coin_reward: coinReward
+      });
+      if (error) return reportError(error);
+
+      input.value = "";
+      await loadHabits();
     }
 
-    async function completeHabit(habitId, coinReward, event) {
-      const today = todayString()
+    async function completeHabit(habit, event) {
+      const lock = `habit-${habit.id}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
 
-      // 1. Zapisz log że dziś nawyk wykonany
-      await db.from('habit_logs').insert({
-        habit_id:       habitId,
-        user_id:        currentUser.id,
-        completed_date: today
-      })
+      try {
+        const today = localDateString();
+        const { data: existingLog, error: existingLogError } = await db
+          .from("habit_logs")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .eq("habit_id", habit.id)
+          .eq("completed_date", today)
+          .maybeSingle();
 
-      // 2. Sprawdź czy był log wczoraj (żeby wiedzieć czy streak się ciągnie)
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      const yesterdayString = yesterday.toISOString().slice(0, 10)
+        if (existingLogError) throw existingLogError;
+        if (existingLog) {
+          showToast("This habit is already completed for today.", "error");
+          await loadHabits();
+          return;
+        }
 
-      const { data: yesterdayLog } = await db
-        .from('habit_logs')
-        .select('id')
-        .eq('habit_id', habitId)
-        .eq('user_id', currentUser.id)
-        .eq('completed_date', yesterdayString)
-        .single()
+        const { error: insertError } = await db.from("habit_logs").insert({
+          habit_id: habit.id,
+          user_id: currentUser.id,
+          completed_date: today
+        });
+        if (insertError) throw insertError;
 
-      // 3. Pobierz aktualny streak
-      const { data: habitData } = await db
-        .from('habits')
-        .select('current_streak')
-        .eq('id', habitId)
-        .single()
+        const { data: yesterdayLog, error: yesterdayError } = await db
+          .from("habit_logs")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .eq("habit_id", habit.id)
+          .eq("completed_date", yesterdayString())
+          .maybeSingle();
+        if (yesterdayError) throw yesterdayError;
 
-      // Jeśli wczoraj był log — streak rośnie o 1, jeśli nie — zaczyna od 1
-      const newStreak = yesterdayLog ? (habitData.current_streak || 0) + 1 : 1
+        const newStreak = yesterdayLog ? Number(habit.current_streak || 0) + 1 : 1;
+        const { error: streakError } = await db
+          .from("habits")
+          .update({ current_streak: newStreak })
+          .eq("id", habit.id)
+          .eq("user_id", currentUser.id);
+        if (streakError) throw streakError;
 
-      // 4. Zaktualizuj streak w bazie
-      await db.from('habits').update({ current_streak: newStreak }).eq('id', habitId)
-
-      // 5. Daj monety
-      await addCoins(coinReward, event)
-
-      // 6. Odśwież listę nawyków
-      await loadHabits()
+        await addCoins(habit.coin_reward, event);
+        showToast(`Habit completed! +${habit.coin_reward} coins`, "success");
+        await loadHabits();
+      } catch (error) {
+        reportError(error);
+      } finally {
+        busyActions.delete(lock);
+      }
     }
 
     async function deleteHabit(habitId) {
-      // Usuwa nawyk i automatycznie wszystkie jego logi (ON DELETE CASCADE w bazie)
-      await db.from('habits').delete().eq('id', habitId)
-      await loadHabits()
+      if (!window.confirm("Delete this habit and its history?")) return;
+      try {
+        const { error } = await db.from("habits").delete().eq("id", habitId).eq("user_id", currentUser.id);
+        if (error) throw error;
+        await loadHabits();
+      } catch (error) {
+        reportError(error);
+      }
     }
+
+    // ===== Goals =====
+    async function loadGoals() {
+      setLoading("#goals-container", "Loading goals…");
+      const { data, error } = await db
+        .from("goals")
+        .select("id, title, description, is_done, coin_reward, deadline, created_at")
+        .eq("user_id", currentUser.id)
+        .order("is_done", { ascending: true })
+        .order("deadline", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      renderGoals(data || []);
+    }
+
+    function renderGoals(goals) {
+      if (!goals.length) {
+        renderEmpty("#goals-container", "🎯", "No bigger goals yet. Add one above.");
+        return;
+      }
+
+      const list = document.createElement("ul");
+      list.className = "list";
+
+      for (const goal of goals) {
+        const item = document.createElement("li");
+        item.className = "list-item";
+
+        const check = document.createElement("button");
+        check.className = "check-btn" + (goal.is_done ? " done" : "");
+        check.type = "button";
+        check.textContent = goal.is_done ? "✓" : "";
+        check.title = goal.is_done ? "Completed" : "Mark goal as complete";
+        check.disabled = goal.is_done;
+        if (!goal.is_done) check.addEventListener("click", (event) => completeGoal(goal, event));
+
+        const main = document.createElement("div");
+        main.className = "item-main";
+        const title = document.createElement("div");
+        title.className = "item-title" + (goal.is_done ? " done" : "");
+        title.textContent = goal.title;
+        main.append(title);
+        if (goal.deadline) {
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          meta.textContent = `Deadline: ${formatDate(goal.deadline)}`;
+          main.append(meta);
+        }
+
+        const reward = document.createElement("span");
+        reward.className = "reward";
+        reward.textContent = `+${goal.coin_reward} 🪙`;
+
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.type = "button";
+        del.title = "Delete goal";
+        del.setAttribute("aria-label", `Delete goal: ${goal.title}`);
+        del.textContent = "×";
+        del.addEventListener("click", () => deleteGoal(goal.id));
+
+        item.append(check, main, reward, del);
+        list.append(item);
+      }
+
+      const container = $("#goals-container");
+      container.innerHTML = "";
+      container.append(list);
+    }
+
+    async function addGoal(event) {
+      event.preventDefault();
+      const input = $("#new-goal-input");
+      const title = input.value.trim();
+      const coinReward = Number($("#goal-reward-input").value);
+      const deadline = $("#goal-deadline-input").value || null;
+      if (!title) return;
+
+      const { error } = await db.from("goals").insert({
+        user_id: currentUser.id,
+        title,
+        coin_reward: coinReward,
+        deadline,
+        is_done: false
+      });
+      if (error) return reportError(error);
+
+      input.value = "";
+      $("#goal-deadline-input").value = "";
+      await loadGoals();
+    }
+
+    async function completeGoal(goal, event) {
+      const lock = `goal-${goal.id}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
+
+      try {
+        const { data, error } = await db
+          .from("goals")
+          .update({ is_done: true })
+          .eq("id", goal.id)
+          .eq("user_id", currentUser.id)
+          .eq("is_done", false)
+          .select("id")
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+          showToast("This goal was already completed.", "error");
+          return;
+        }
+
+        await addCoins(goal.coin_reward, event);
+        showToast(`Goal completed! +${goal.coin_reward} coins`, "success");
+        await loadGoals();
+      } catch (error) {
+        reportError(error);
+      } finally {
+        busyActions.delete(lock);
+      }
+    }
+
+    async function deleteGoal(goalId) {
+      if (!window.confirm("Delete this goal?")) return;
+      try {
+        const { error } = await db.from("goals").delete().eq("id", goalId).eq("user_id", currentUser.id);
+        if (error) throw error;
+        await loadGoals();
+      } catch (error) {
+        reportError(error);
+      }
+    }
+
+    // ===== Farm and shop =====
+    async function loadShopItems() {
+      const { data, error } = await db
+        .from("shop_items")
+        .select("id, name, price, item_type, icon_url")
+        .order("price", { ascending: true });
+
+      if (error) throw error;
+      shopItems = data || [];
+      if (!selectedShopItem && shopItems.length) selectedShopItem = shopItems[0];
+      renderShop();
+    }
+
+    async function loadMapTiles() {
+      const { data, error } = await db
+        .from("map_tiles")
+        .select("id, x, y, item_type, placed_at")
+        .eq("user_id", currentUser.id);
+
+      if (error) throw error;
+      mapTiles = data || [];
+      renderFarmGrid();
+    }
+
+    function renderFarmGrid() {
+      const grid = $("#farm-grid");
+      grid.innerHTML = "";
+      const byPosition = new Map(mapTiles.map((tile) => [`${tile.x},${tile.y}`, tile]));
+
+      for (let y = 0; y < GRID_ROWS; y += 1) {
+        for (let x = 0; x < GRID_COLUMNS; x += 1) {
+          const tile = byPosition.get(`${x},${y}`);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "farm-tile" + (tile ? " occupied" : "");
+          button.title = tile
+            ? `${tile.item_type}. Click to remove it.`
+            : selectedShopItem
+              ? `Place ${selectedShopItem.name} here`
+              : "Choose an item from the farm shop.";
+          button.setAttribute("aria-label", tile
+            ? `${tile.item_type} at column ${x + 1}, row ${y + 1}. Remove it.`
+            : `Empty grass tile, column ${x + 1}, row ${y + 1}.`);
+
+          if (tile) {
+            const icon = document.createElement("span");
+            icon.textContent = iconFor(tile.item_type);
+            button.append(icon);
+            button.addEventListener("click", () => removeMapTile(tile));
+          } else {
+            button.addEventListener("click", () => buyAndPlace(selectedShopItem, x, y));
+          }
+
+          const index = document.createElement("span");
+          index.className = "tile-index";
+          index.textContent = `${x + 1},${y + 1}`;
+          button.append(index);
+          grid.append(button);
+        }
+      }
+    }
+
+    function renderShop() {
+      const container = $("#shop-container");
+      container.innerHTML = "";
+
+      if (!shopItems.length) {
+        renderEmpty("#shop-container", "🛒", "The shop is empty. Add items in Supabase first.");
+        return;
+      }
+
+      for (const item of shopItems) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
+
+        const icon = document.createElement("span");
+        icon.className = "shop-icon";
+        icon.textContent = iconFor(item.item_type);
+
+        const info = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "shop-name";
+        name.textContent = item.name;
+        const price = document.createElement("span");
+        price.className = "shop-price";
+        price.textContent = `${item.price} 🪙`;
+        info.append(name, price);
+
+        button.append(icon, info);
+        button.addEventListener("click", () => {
+          selectedShopItem = item;
+          $("#farm-note").textContent = `${item.name} selected — click an empty tile to buy and place it.`;
+          renderShop();
+          renderFarmGrid();
+        });
+
+        container.append(button);
+      }
+    }
+
+    async function buyAndPlace(item, x, y) {
+      if (!item) {
+        showToast("Choose an item from the farm shop first.", "error");
+        return;
+      }
+      if (Number(profile?.coins || 0) < Number(item.price || 0)) {
+        showToast(`You need ${item.price} coins for ${item.name}.`, "error");
+        return;
+      }
+
+      const lock = `tile-${x}-${y}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
+
+      try {
+        // The database patch adds a unique (user_id, x, y) constraint as a final safety net.
+        const { data: existing, error: existingError } = await db
+          .from("map_tiles")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .eq("x", x)
+          .eq("y", y)
+          .maybeSingle();
+
+        if (existingError) throw existingError;
+        if (existing) {
+          showToast("That farm tile is already occupied.", "error");
+          await loadMapTiles();
+          return;
+        }
+
+        const { data: placedTile, error: placeError } = await db
+          .from("map_tiles")
+          .insert({
+            user_id: currentUser.id,
+            x,
+            y,
+            item_type: item.item_type
+          })
+          .select("id, x, y, item_type, placed_at")
+          .single();
+
+        if (placeError) throw placeError;
+
+        try {
+          await addCoins(-Number(item.price || 0));
+        } catch (coinError) {
+          // Best-effort rollback so a tile is not kept when coin deduction failed.
+          await db.from("map_tiles").delete().eq("id", placedTile.id).eq("user_id", currentUser.id);
+          throw coinError;
+        }
+
+        mapTiles.push(placedTile);
+        renderFarmGrid();
+        showToast(`${item.name} placed! -${item.price} coins`, "success");
+      } catch (error) {
+        reportError(error);
+      } finally {
+        busyActions.delete(lock);
+      }
+    }
+
+    async function removeMapTile(tile) {
+      if (!window.confirm("Remove this item from your farm? There is no refund yet.")) return;
+      try {
+        const { error } = await db
+          .from("map_tiles")
+          .delete()
+          .eq("id", tile.id)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+        mapTiles = mapTiles.filter((entry) => entry.id !== tile.id);
+        renderFarmGrid();
+        showToast("Item removed from your farm.", "success");
+      } catch (error) {
+        reportError(error);
+      }
+    }
+
+    // ===== App navigation and startup =====
+    function setView(viewName) {
+      document.querySelectorAll(".nav-btn").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === viewName);
+      });
+      document.querySelectorAll(".view").forEach((view) => {
+        view.classList.toggle("active", view.id === `view-${viewName}`);
+      });
+    }
+
+    $("#tab-login").addEventListener("click", () => switchTab("login"));
+    $("#tab-register").addEventListener("click", () => switchTab("register"));
+    $("#auth-form").addEventListener("submit", handleAuth);
+    $("#logout-btn").addEventListener("click", async () => {
+      const { error } = await db.auth.signOut();
+      if (error) reportError(error);
+    });
+    $("#task-form").addEventListener("submit", addTask);
+    $("#habit-form").addEventListener("submit", addHabit);
+    $("#goal-form").addEventListener("submit", addGoal);
+    document.querySelectorAll(".nav-btn").forEach((button) => {
+      button.addEventListener("click", () => setView(button.dataset.view));
+    });
+
+    db.auth.onAuthStateChange((_event, session) => {
+      // Keep the auth callback synchronous; load data immediately after it returns.
+      window.setTimeout(() => applySession(session), 0);
+    });
+
+    const { data: initialSession } = await db.auth.getSession();
+    await applySession(initialSession.session);
   </script>
 </body>
 </html>
