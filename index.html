@@ -24,7 +24,6 @@
       --red: #bd4d3a;
       --red-dark: #842f23;
       --shadow: 0 4px 0 rgba(73, 48, 27, .24);
-      --topbar-height: 66px;
     }
 
     * { box-sizing: border-box; }
@@ -166,24 +165,11 @@
 
     /* App shell and full-page map */
     #app-screen { display: none; min-height: 100vh; }
-    .topbar {
+    .coin-hud {
       position: fixed;
-      z-index: 30;
-      top: 0;
-      right: 0;
-      left: 0;
-      display: flex;
-      min-height: var(--topbar-height);
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px clamp(14px, 3vw, 30px);
-      border-bottom: 3px solid #704a2a;
-      background: rgba(31, 69, 43, .98);
-      box-shadow: 0 3px 0 rgba(34, 56, 30, .24);
-    }
-    .app-brand { color: #e8f8c8; font-size: 10px; line-height: 1.65; }
-    .coin-pill {
+      z-index: 61;
+      top: 16px;
+      right: 18px;
       display: inline-flex;
       min-height: 39px;
       align-items: center;
@@ -191,16 +177,17 @@
       padding: 8px 13px;
       border: 2px solid var(--gold-dark);
       border-radius: 999px;
-      background: var(--gold);
+      background: rgba(255, 201, 77, .97);
       color: #432c0e;
       font-weight: 900;
-      box-shadow: 0 3px 0 var(--gold-dark);
+      box-shadow: 0 3px 0 var(--gold-dark), 0 8px 18px rgba(13, 52, 22, .18);
+      pointer-events: none;
     }
 
     .garden-stage {
       position: fixed;
       z-index: 0;
-      inset: var(--topbar-height) 0 0;
+      inset: 0;
       display: block;
       overflow: hidden;
       background-color: #32633c;
@@ -267,7 +254,7 @@
     .map-status {
       position: fixed;
       z-index: 4;
-      top: calc(var(--topbar-height) + 12px);
+      top: 12px;
       left: 50%;
       transform: translateX(-50%);
       max-width: calc(100vw - 32px);
@@ -287,7 +274,7 @@
     .panel-layer {
       position: fixed;
       z-index: 20;
-      inset: var(--topbar-height) 0 0;
+      inset: 0;
       display: grid;
       min-height: 0;
       padding: clamp(34px, 6vh, 64px) clamp(24px, 10vw, 230px) clamp(28px, 5vh, 58px);
@@ -359,7 +346,7 @@
       left: 50%;
       width: min(560px, calc(100vw - 40px));
       height: auto;
-      max-height: min(540px, calc(100vh - var(--topbar-height) - 64px));
+      max-height: min(540px, calc(100vh - 64px));
       transform: translate(-50%, -50%);
     }
     .panel-header {
@@ -591,14 +578,12 @@
     }
 
     @media (max-width: 720px) {
-      :root { --topbar-height: 60px; }
       .auth-card { padding: 27px 22px; }
-      .app-brand { font-size: 8px; }
       .panel-layer { display: block; padding: 0; }
       .panel-window,
       .panel-layer[data-shop-open="true"] .plants-panel {
         position: fixed;
-        top: calc(var(--topbar-height) + 45px) !important;
+        top: 45px !important;
         right: 12px !important;
         bottom: 79px !important;
         left: 12px !important;
@@ -608,9 +593,10 @@
         transform: none !important;
       }
       .panel-subtitle { max-width: 145px; font-size: 10px; }
+      .coin-hud { top: 10px; right: 10px; min-height: 35px; padding: 7px 10px; font-size: 13px; }
       .app-menu { right: 10px; bottom: 10px; width: 126px; }
       .app-menu.is-collapsed { width: 48px; }
-      .map-status { top: calc(var(--topbar-height) + 10px); font-size: 10px; }
+      .map-status { top: 10px; font-size: 10px; }
       .plants-panel .panel-body { padding: 12px; }
       .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .placement-bar {
@@ -668,10 +654,7 @@
   </main>
 
   <main id="app-screen">
-    <header class="topbar">
-      <div class="app-brand">TASK<br>GARDEN</div>
-      <div class="coin-pill" aria-label="Your coins">🪙 <span id="coins-count">0</span></div>
-    </header>
+    <div class="coin-hud" aria-label="Your coins">🪙 <span id="coins-count">0</span></div>
 
     <section class="garden-stage" aria-label="Your garden map">
       <div id="garden-grid" class="garden-grid" aria-label="Garden map. Drag to explore."></div>
@@ -1491,9 +1474,8 @@
     }
 
     function calculateView() {
-      const topbarHeight = window.innerWidth <= 720 ? 60 : 66;
       const width = Math.max(320, window.innerWidth);
-      const usableHeight = Math.max(300, window.innerHeight - topbarHeight);
+      const usableHeight = Math.max(300, window.innerHeight);
       const targetSize = window.innerWidth <= 720 ? 46 : 58;
       const cols = odd(Math.max(9, Math.ceil(width / targetSize)));
       const rows = odd(Math.max(9, Math.ceil(usableHeight / targetSize)));
