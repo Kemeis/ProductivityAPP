@@ -201,9 +201,8 @@
       position: fixed;
       z-index: 0;
       inset: var(--topbar-height) 0 0;
-      display: grid;
+      display: block;
       overflow: hidden;
-      place-items: center;
       background-color: #32633c;
       background-image:
         linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
@@ -214,14 +213,14 @@
     }
     .garden-grid {
       display: grid;
-      grid-template-columns: repeat(var(--cols), var(--tile-size));
-      grid-template-rows: repeat(var(--rows), var(--tile-size));
-      width: calc(var(--cols) * var(--tile-size));
-      height: calc(var(--rows) * var(--tile-size));
-      border: 2px solid rgba(20, 69, 35, .75);
-      border-radius: 6px;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 0;
       background: #7db65a;
-      box-shadow: 0 0 0 5px rgba(230,250,181,.12), 0 14px 28px rgba(8,37,20,.23);
+      box-shadow: none;
       touch-action: none;
       user-select: none;
       cursor: grab;
@@ -285,11 +284,23 @@
     }
 
     /* Floating work panels */
-    .panel-layer { position: fixed; z-index: 20; inset: 0; pointer-events: none; }
-    .panel-window {
+    .panel-layer {
       position: fixed;
+      z-index: 20;
+      inset: var(--topbar-height) 0 0;
+      display: grid;
+      min-height: 0;
+      padding: clamp(34px, 6vh, 64px) clamp(24px, 10vw, 230px) clamp(28px, 5vh, 58px);
+      gap: clamp(18px, 4vw, 72px);
+      pointer-events: none;
+    }
+    .panel-window {
+      position: relative;
       z-index: 21;
       display: none;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
       overflow: hidden;
       flex-direction: column;
       border: 2px solid #b9905f;
@@ -299,29 +310,57 @@
       pointer-events: auto;
     }
     .panel-window.open { display: flex; }
-    .task-panel {
-      top: calc(var(--topbar-height) + 34px);
-      bottom: 30px;
-      left: clamp(16px, 8vw, 160px);
-      width: min(380px, 32vw);
+
+    /* One panel: centre it. Two panels: share the screen. Three panels: task list left, habits/goals right. */
+    .panel-layer[data-layout="single"] {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
+      place-items: center;
     }
-    .habits-panel {
-      top: calc(var(--topbar-height) + 34px);
-      left: clamp(420px, 42vw, 720px);
-      width: min(410px, 34vw);
-      height: min(34vh, 285px);
+    .panel-layer[data-layout="single"] .panel-window.open:not(.plants-panel) {
+      width: min(440px, 100%);
+      height: min(620px, 100%);
     }
-    .goals-panel {
-      top: calc(var(--topbar-height) + min(34vh, 285px) + 54px);
-      bottom: 30px;
-      left: clamp(420px, 42vw, 720px);
-      width: min(410px, 34vw);
+    .panel-layer[data-layout="two"] {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
+      align-items: center;
+      justify-items: center;
     }
-    .plants-panel {
-      right: max(125px, 13vw);
-      bottom: 28px;
-      width: min(485px, 47vw);
-      max-height: min(405px, 57vh);
+    .panel-layer[data-layout="two"] .panel-window.open:not(.plants-panel) {
+      width: min(440px, 100%);
+      height: min(620px, 100%);
+    }
+    .panel-layer[data-layout="two"][data-open-panels="tasks-habits"] #panel-tasks,
+    .panel-layer[data-layout="two"][data-open-panels="tasks-goals"] #panel-tasks,
+    .panel-layer[data-layout="two"][data-open-panels="habits-goals"] #panel-habits { grid-column: 1; grid-row: 1; }
+    .panel-layer[data-layout="two"][data-open-panels="tasks-habits"] #panel-habits,
+    .panel-layer[data-layout="two"][data-open-panels="tasks-goals"] #panel-goals,
+    .panel-layer[data-layout="two"][data-open-panels="habits-goals"] #panel-goals { grid-column: 2; grid-row: 1; }
+
+    .panel-layer[data-layout="three"] {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: stretch;
+      justify-items: center;
+    }
+    .panel-layer[data-layout="three"] .panel-window.open:not(.plants-panel) {
+      width: min(440px, 100%);
+      height: 100%;
+    }
+    .panel-layer[data-layout="three"] #panel-tasks { grid-column: 1; grid-row: 1 / span 2; }
+    .panel-layer[data-layout="three"] #panel-habits { grid-column: 2; grid-row: 1; }
+    .panel-layer[data-layout="three"] #panel-goals { grid-column: 2; grid-row: 2; }
+
+    /* The shop is a temporary overlay. It closes as soon as an item is selected. */
+    .panel-layer[data-shop-open="true"] .plants-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(560px, calc(100vw - 40px));
+      height: auto;
+      max-height: min(540px, calc(100vh - var(--topbar-height) - 64px));
+      transform: translate(-50%, -50%);
     }
     .panel-header {
       display: flex;
@@ -399,7 +438,7 @@
     .empty-icon { margin-bottom: 7px; font-size: 30px; }
     .loading { padding: 20px 10px; color: var(--muted); font-size: 13px; font-weight: 800; text-align: center; }
 
-    /* Plants / shop */
+    /* Shop */
     .plants-help { margin: 0 0 11px; color: var(--muted); font-size: 13px; }
     .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 9px; }
     .shop-item {
@@ -422,6 +461,29 @@
     .shop-price { display: block; margin-top: 2px; color: #9b6518; font-size: 11px; font-weight: 900; }
     .plants-note { margin: 11px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; }
 
+    .placement-bar {
+      position: fixed;
+      z-index: 55;
+      bottom: 20px;
+      left: 50%;
+      display: inline-flex;
+      max-width: min(calc(100vw - 220px), 560px);
+      align-items: center;
+      gap: 12px;
+      padding: 9px 10px 9px 14px;
+      border: 2px solid #6c914e;
+      border-radius: 999px;
+      background: rgba(247, 255, 221, .97);
+      box-shadow: 0 4px 0 rgba(33, 79, 34, .26), 0 10px 22px rgba(10, 45, 20, .2);
+      color: #345f37;
+      font-size: 13px;
+      font-weight: 900;
+      transform: translateX(-50%);
+      pointer-events: auto;
+    }
+    .placement-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .placement-bar .btn { min-height: 34px; padding: 7px 11px; }
+
     /* Menu */
     .app-menu {
       position: fixed;
@@ -429,16 +491,16 @@
       right: 18px;
       bottom: 18px;
       display: grid;
-      width: 136px;
-      gap: 7px;
-      padding: 9px;
+      width: 148px;
+      gap: 6px;
+      padding: 8px;
       border: 2px solid #b9905f;
       border-radius: 13px;
       background: rgba(255,249,233,.97);
       box-shadow: var(--shadow), 0 12px 24px rgba(16,53,27,.19);
       pointer-events: auto;
+      transition: width .16s ease, padding .16s ease;
     }
-    .menu-title { margin: 2px 4px 5px; color: #3d673c; font-size: 8px; line-height: 1.55; }
     .menu-action {
       display: flex;
       min-height: 35px;
@@ -456,7 +518,12 @@
     }
     .menu-action:hover, .menu-action.active { border-color: #b3d28a; background: #e5f2ca; color: #315e38; }
     .menu-action.danger:hover { border-color: #e7aba0; background: #ffe9e4; color: #94382b; }
+    .menu-toggle { border-color: #c8db9d; background: #edf6d5; color: #315e38; }
     .menu-icon { width: 15px; text-align: center; }
+    .app-menu.is-collapsed { width: 48px; padding: 5px; }
+    .app-menu.is-collapsed .menu-action:not(.menu-toggle) { display: none; }
+    .app-menu.is-collapsed .menu-toggle { width: 34px; min-height: 34px; justify-content: center; padding: 0; }
+    .app-menu.is-collapsed .menu-toggle .menu-text { display: none; }
 
     /* Settings */
     .modal {
@@ -517,16 +584,14 @@
       to { transform: translateY(-58px) scale(1.35); opacity: 0; }
     }
 
-    @media (max-width: 980px) {
-      .task-panel { left: 20px; width: min(370px, 43vw); }
-      .habits-panel, .goals-panel { left: calc(43vw + 34px); width: min(390px, 42vw); }
-      .plants-panel { right: 145px; width: min(430px, 53vw); }
-    }
     @media (max-width: 720px) {
       :root { --topbar-height: 60px; }
       .auth-card { padding: 27px 22px; }
       .app-brand { font-size: 8px; }
-      .panel-window {
+      .panel-layer { display: block; padding: 0; }
+      .panel-window,
+      .panel-layer[data-shop-open="true"] .plants-panel {
+        position: fixed;
         top: calc(var(--topbar-height) + 45px) !important;
         right: 12px !important;
         bottom: 79px !important;
@@ -534,12 +599,19 @@
         width: auto !important;
         height: auto !important;
         max-height: none !important;
+        transform: none !important;
       }
       .panel-subtitle { max-width: 145px; font-size: 10px; }
       .app-menu { right: 10px; bottom: 10px; width: 126px; }
+      .app-menu.is-collapsed { width: 48px; }
       .map-status { top: calc(var(--topbar-height) + 10px); font-size: 10px; }
       .plants-panel .panel-body { padding: 12px; }
       .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .placement-bar {
+        bottom: 76px;
+        max-width: calc(100vw - 24px);
+        font-size: 12px;
+      }
     }
     @media (max-width: 400px) {
       .panel-header { padding-inline: 12px; }
@@ -548,6 +620,7 @@
       .list-item .delete-btn { grid-column: 3; }
       .habit-item { grid-template-columns: 43px minmax(0, 1fr) auto; }
       .habit-item .delete-btn { grid-column: 3; }
+      .placement-bar { gap: 8px; padding-left: 10px; }
     }
   </style>
 </head>
@@ -670,31 +743,36 @@
         </div>
       </section>
 
-      <section class="panel-window plants-panel" id="panel-plants" aria-label="Plants shop">
+      <section class="panel-window plants-panel" id="panel-plants" aria-label="Shop">
         <header class="panel-header">
           <div>
-            <div class="panel-title">PLANTS</div>
+            <div class="panel-title">SHOP</div>
             <div class="panel-subtitle">Choose an item, then click an empty map tile.</div>
           </div>
-          <button class="icon-button" type="button" data-close-panel="plants" aria-label="Close Plants">×</button>
+          <button class="icon-button" type="button" data-close-panel="plants" aria-label="Close Shop">×</button>
         </header>
         <div class="panel-body">
           <p class="plants-help">Items are bought with your coins. Click an existing item on the map to remove it; removals do not refund coins yet.</p>
-          <div id="shop-container" class="shop-grid"><div class="loading">Loading plants…</div></div>
+          <div id="shop-container" class="shop-grid"><div class="loading">Loading shop…</div></div>
           <p class="plants-note" id="plants-note">Choose an item to begin placing it.</p>
         </div>
       </section>
     </div>
 
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
-      <div class="menu-title">MENU</div>
-      <button class="menu-action active" type="button" data-toggle-panel="tasks"><span class="menu-icon">☑</span>Task List</button>
-      <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span>Habits</button>
-      <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span>Goals</button>
-      <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span>Plants</button>
-      <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span>Settings</button>
-      <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span>Log out</button>
+      <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
+      <button class="menu-action active" type="button" data-toggle-panel="tasks"><span class="menu-icon">☑</span><span>Task List</span></button>
+      <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span><span>Habits</span></button>
+      <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span><span>Goals</span></button>
+      <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
+      <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Settings</span></button>
+      <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span><span>Log out</span></button>
     </aside>
+
+    <div class="placement-bar hidden" id="placement-bar" aria-live="polite">
+      <span id="placement-message">Select a tile to place an item.</span>
+      <button class="btn btn-paper btn-sm" id="placement-undo-btn" type="button">Undo</button>
+    </div>
 
     <section class="modal hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="settings-card">
@@ -746,7 +824,8 @@
     let selectedShopItem = null;
     let mapTiles = [];
     let camera = { x: 0, y: 0 };
-    let view = { cols: 17, rows: 13, tile: 54 };
+    let view = { cols: 17, rows: 13, tile: 54, cellWidth: 54, cellHeight: 54 };
+    let menuCollapsed = false;
     let panState = null;
     let mapRequestVersion = 0;
     let mapLoadTimer = null;
@@ -914,6 +993,8 @@
         currentUser = null;
         profile = null;
         mapTiles = [];
+        selectedShopItem = null;
+        updatePlacementBar();
         $("#auth-screen").style.display = "grid";
         $("#app-screen").style.display = "none";
         return;
@@ -1391,12 +1472,16 @@
     }
 
     function calculateView() {
-      const usableHeight = Math.max(360, window.innerHeight - 66);
-      const targetSize = window.innerWidth <= 720 ? 48 : 63;
-      const cols = odd(Math.max(9, Math.min(25, Math.floor(window.innerWidth / targetSize))));
-      const rows = odd(Math.max(11, Math.min(17, Math.floor(usableHeight / targetSize))));
-      const tile = Math.max(34, Math.floor(Math.min((window.innerWidth - 12) / cols, (usableHeight - 12) / rows)));
-      view = { cols, rows, tile };
+      const topbarHeight = window.innerWidth <= 720 ? 60 : 66;
+      const width = Math.max(320, window.innerWidth);
+      const usableHeight = Math.max(300, window.innerHeight - topbarHeight);
+      const targetSize = window.innerWidth <= 720 ? 46 : 58;
+      const cols = odd(Math.max(9, Math.ceil(width / targetSize)));
+      const rows = odd(Math.max(9, Math.ceil(usableHeight / targetSize)));
+      const cellWidth = width / cols;
+      const cellHeight = usableHeight / rows;
+      const tile = Math.max(28, Math.floor(Math.min(cellWidth, cellHeight)));
+      view = { cols, rows, tile, cellWidth, cellHeight };
     }
 
     function visibleBounds() {
@@ -1517,12 +1602,35 @@
         button.append(icon, info);
         button.addEventListener("click", () => {
           selectedShopItem = item;
-          $("#plants-note").textContent = `${item.name} selected — click any empty map tile to place it.`;
+          $("#plants-note").textContent = `${item.name} selected. Choose a tile on the map.`;
+          closePanel("plants");
+          updatePlacementBar();
           renderShop();
           renderGardenGrid();
         });
         container.append(button);
       }
+    }
+
+    function updatePlacementBar() {
+      const bar = $("#placement-bar");
+      if (!selectedShopItem) {
+        bar.classList.add("hidden");
+        return;
+      }
+      $("#placement-message").textContent = `Select a tile to place ${selectedShopItem.name}.`;
+      bar.classList.remove("hidden");
+    }
+
+    function undoPlacement() {
+      selectedShopItem = null;
+      updatePlacementBar();
+      $("#plants-note").textContent = "Choose an item to begin placing it.";
+      $("#panel-plants").classList.add("open");
+      updatePanelLayout();
+      updateMenuPanelStates();
+      renderShop();
+      renderGardenGrid();
     }
 
     async function handleGardenTileClick(x, y) {
@@ -1533,7 +1641,7 @@
 
     async function buyAndPlace(item, x, y) {
       if (!item) {
-        showToast("Open Plants and choose an item first.", "error");
+        showToast("Open Shop and choose an item first.", "error");
         return;
       }
       if (Number(profile?.coins || 0) < Number(item.price || 0)) {
@@ -1627,8 +1735,8 @@
       if (Math.abs(deltaX) > 7 || Math.abs(deltaY) > 7) panState.dragged = true;
       if (!panState.dragged) return;
 
-      const nextX = panState.startCameraX - Math.round(deltaX / view.tile);
-      const nextY = panState.startCameraY - Math.round(deltaY / view.tile);
+      const nextX = panState.startCameraX - Math.round(deltaX / view.cellWidth);
+      const nextY = panState.startCameraY - Math.round(deltaY / view.cellHeight);
       if (nextX !== camera.x || nextY !== camera.y) {
         camera = { x: nextX, y: nextY };
         $("#garden-grid").classList.add("grabbing");
@@ -1652,15 +1760,38 @@
     }
 
     /* Panels, menu, settings */
+    function updatePanelLayout() {
+      const layer = $(".panel-layer");
+      const openWorkPanels = ["tasks", "habits", "goals"].filter((name) => $(`#panel-${name}`)?.classList.contains("open"));
+      const shopOpen = $("#panel-plants")?.classList.contains("open");
+      const layout = openWorkPanels.length === 1 ? "single" : openWorkPanels.length === 2 ? "two" : openWorkPanels.length === 3 ? "three" : "none";
+      layer.dataset.layout = layout;
+      layer.dataset.openPanels = openWorkPanels.join("-");
+      layer.dataset.shopOpen = String(Boolean(shopOpen));
+    }
+
     function updateMenuPanelStates() {
       document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
-        const panel = $(`#panel-${button.dataset.togglePanel}`);
-        button.classList.toggle("active", Boolean(panel?.classList.contains("open")));
+        const panelName = button.dataset.togglePanel;
+        const panel = $(`#panel-${panelName}`);
+        const isPlacementMode = panelName === "plants" && Boolean(selectedShopItem);
+        button.classList.toggle("active", Boolean(panel?.classList.contains("open")) || isPlacementMode);
       });
+    }
+
+    function setMenuCollapsed(collapsed) {
+      menuCollapsed = Boolean(collapsed);
+      const menu = $("#app-menu");
+      menu.classList.toggle("is-collapsed", menuCollapsed);
+      $("#menu-toggle-icon").textContent = menuCollapsed ? "☰" : "×";
+      $("#menu-toggle-text").textContent = menuCollapsed ? "Open menu" : "Hide menu";
+      $("#menu-toggle-btn").setAttribute("aria-label", menuCollapsed ? "Open menu" : "Hide menu");
+      $("#menu-toggle-btn").title = menuCollapsed ? "Open menu" : "Hide menu";
     }
 
     function closePanel(panelName) {
       $(`#panel-${panelName}`)?.classList.remove("open");
+      updatePanelLayout();
       updateMenuPanelStates();
     }
 
@@ -1671,7 +1802,13 @@
       if (opening && window.innerWidth <= 720) {
         PANEL_NAMES.forEach((name) => $(`#panel-${name}`)?.classList.remove("open"));
       }
+      if (opening && panelName === "plants" && selectedShopItem) {
+        selectedShopItem = null;
+        updatePlacementBar();
+        renderGardenGrid();
+      }
       panel.classList.toggle("open", opening);
+      updatePanelLayout();
       updateMenuPanelStates();
     }
 
@@ -1708,6 +1845,7 @@
         await ensureProfileAndStarterHabits();
         selectedShopItem = null;
         mapTiles = [];
+        updatePlacementBar();
         await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadVisibleMapTiles()]);
         renderShop();
         closeSettings();
@@ -1742,6 +1880,8 @@
     $("#garden-grid").addEventListener("pointermove", handlePointerMove);
     $("#garden-grid").addEventListener("pointerup", handlePointerUp);
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
+    $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
+    $("#placement-undo-btn").addEventListener("click", undoPlacement);
     document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
       button.addEventListener("click", () => togglePanel(button.dataset.togglePanel));
     });
@@ -1768,8 +1908,12 @@
       }
     });
 
-    // The menu is deliberately always visible. Clear the old saved "hidden" preference.
+    // Menu starts open on every page load; the user can collapse it for the current session.
     localStorage.removeItem("task-garden-menu-collapsed");
+    setMenuCollapsed(false);
+    updatePanelLayout();
+    updateMenuPanelStates();
+    updatePlacementBar();
     db.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => applySession(session), 0);
     });
