@@ -199,6 +199,7 @@
 
     .garden-stage {
       position: fixed;
+      z-index: 0;
       inset: var(--topbar-height) 0 0;
       display: grid;
       overflow: hidden;
@@ -424,7 +425,7 @@
     /* Menu */
     .app-menu {
       position: fixed;
-      z-index: 45;
+      z-index: 60;
       right: 18px;
       bottom: 18px;
       display: grid;
@@ -435,6 +436,7 @@
       border-radius: 13px;
       background: rgba(255,249,233,.97);
       box-shadow: var(--shadow), 0 12px 24px rgba(16,53,27,.19);
+      pointer-events: auto;
     }
     .menu-title { margin: 2px 4px 5px; color: #3d673c; font-size: 8px; line-height: 1.55; }
     .menu-action {
@@ -455,32 +457,11 @@
     .menu-action:hover, .menu-action.active { border-color: #b3d28a; background: #e5f2ca; color: #315e38; }
     .menu-action.danger:hover { border-color: #e7aba0; background: #ffe9e4; color: #94382b; }
     .menu-icon { width: 15px; text-align: center; }
-    .menu-open-button {
-      position: fixed;
-      z-index: 45;
-      right: 18px;
-      bottom: 18px;
-      display: none;
-      width: 47px;
-      height: 47px;
-      place-items: center;
-      padding: 0;
-      border: 2px solid #b9905f;
-      border-radius: 14px;
-      background: var(--paper);
-      color: #3d673c;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      font-size: 21px;
-      font-weight: 900;
-    }
-    .app-menu.collapsed { display: none; }
-    .menu-open-button.visible { display: grid; }
 
     /* Settings */
     .modal {
       position: fixed;
-      z-index: 60;
+      z-index: 80;
       inset: 0;
       display: grid;
       place-items: center;
@@ -502,7 +483,7 @@
     /* Feedback */
     #toast {
       position: fixed;
-      z-index: 80;
+      z-index: 90;
       bottom: 18px;
       left: 50%;
       width: min(calc(100% - 32px), 430px);
@@ -524,7 +505,7 @@
     #toast.success { border-color: #5c8d46; background: #e6f4d7; color: #2f6235; }
     .coin-animation {
       position: fixed;
-      z-index: 90;
+      z-index: 100;
       pointer-events: none;
       color: #8f5915;
       font-size: 18px;
@@ -556,7 +537,6 @@
       }
       .panel-subtitle { max-width: 145px; font-size: 10px; }
       .app-menu { right: 10px; bottom: 10px; width: 126px; }
-      .menu-open-button { right: 11px; bottom: 11px; }
       .map-status { top: calc(var(--topbar-height) + 10px); font-size: 10px; }
       .plants-panel .panel-body { padding: 12px; }
       .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -708,7 +688,6 @@
 
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <div class="menu-title">MENU</div>
-      <button class="menu-action" id="hide-menu-btn" type="button"><span class="menu-icon">−</span>Hide menu</button>
       <button class="menu-action active" type="button" data-toggle-panel="tasks"><span class="menu-icon">☑</span>Task List</button>
       <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span>Habits</button>
       <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span>Goals</button>
@@ -716,7 +695,6 @@
       <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span>Settings</button>
       <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span>Log out</button>
     </aside>
-    <button class="menu-open-button" id="open-menu-btn" type="button" aria-label="Open menu">☰</button>
 
     <section class="modal hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="settings-card">
@@ -760,7 +738,6 @@
       default: "🌱"
     };
     const PANEL_NAMES = ["tasks", "habits", "goals", "plants"];
-    const MENU_STATE_KEY = "task-garden-menu-collapsed";
 
     let currentUser = null;
     let currentTab = "login";
@@ -1698,12 +1675,6 @@
       updateMenuPanelStates();
     }
 
-    function setMenuCollapsed(collapsed) {
-      $("#app-menu").classList.toggle("collapsed", collapsed);
-      $("#open-menu-btn").classList.toggle("visible", collapsed);
-      localStorage.setItem(MENU_STATE_KEY, String(collapsed));
-    }
-
     function openSettings() {
       $("#settings-modal").classList.remove("hidden");
     }
@@ -1777,8 +1748,6 @@
     document.querySelectorAll("[data-close-panel]").forEach((button) => {
       button.addEventListener("click", () => closePanel(button.dataset.closePanel));
     });
-    $("#hide-menu-btn").addEventListener("click", () => setMenuCollapsed(true));
-    $("#open-menu-btn").addEventListener("click", () => setMenuCollapsed(false));
     $("#settings-btn").addEventListener("click", openSettings);
     $("#close-settings-btn").addEventListener("click", closeSettings);
     $("#settings-modal").addEventListener("click", (event) => {
@@ -1799,7 +1768,8 @@
       }
     });
 
-    setMenuCollapsed(localStorage.getItem(MENU_STATE_KEY) === "true");
+    // The menu is deliberately always visible. Clear the old saved "hidden" preference.
+    localStorage.removeItem("task-garden-menu-collapsed");
     db.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => applySession(session), 0);
     });
