@@ -318,7 +318,7 @@
       place-items: center;
     }
     .panel-layer[data-layout="single"] .panel-window.open:not(.plants-panel) {
-      width: min(440px, 100%);
+      width: min(660px, 100%);
       height: min(620px, 100%);
     }
     .panel-layer[data-layout="two"] {
@@ -328,7 +328,7 @@
       justify-items: center;
     }
     .panel-layer[data-layout="two"] .panel-window.open:not(.plants-panel) {
-      width: min(440px, 100%);
+      width: min(660px, 100%);
       height: min(620px, 100%);
     }
     .panel-layer[data-layout="two"][data-open-panels="tasks-habits"] #panel-tasks,
@@ -345,7 +345,7 @@
       justify-items: center;
     }
     .panel-layer[data-layout="three"] .panel-window.open:not(.plants-panel) {
-      width: min(440px, 100%);
+      width: min(660px, 100%);
       height: 100%;
     }
     .panel-layer[data-layout="three"] #panel-tasks { grid-column: 1; grid-row: 1 / span 2; }
@@ -546,6 +546,12 @@
     }
     .settings-body { display: grid; gap: 10px; padding: 17px; }
     .settings-caption { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+    .confirm-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
 
     /* Feedback */
     #toast {
@@ -677,7 +683,6 @@
         <header class="panel-header">
           <div>
             <div class="panel-title">TASK LIST</div>
-            <div class="panel-subtitle">Completed tasks stay until tomorrow.</div>
           </div>
           <button class="icon-button" type="button" data-close-panel="tasks" aria-label="Close Task List">×</button>
         </header>
@@ -723,7 +728,6 @@
         <header class="panel-header">
           <div>
             <div class="panel-title">GOALS</div>
-            <div class="panel-subtitle">Bigger milestones earn larger rewards.</div>
           </div>
           <button class="icon-button" type="button" data-close-panel="goals" aria-label="Close Goals">×</button>
         </header>
@@ -771,7 +775,7 @@
 
     <div class="placement-bar hidden" id="placement-bar" aria-live="polite">
       <span id="placement-message">Select a tile to place an item.</span>
-      <button class="btn btn-paper btn-sm" id="placement-undo-btn" type="button">Undo</button>
+      <button class="btn btn-paper btn-sm" id="placement-close-btn" type="button">Close</button>
     </div>
 
     <section class="modal hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
@@ -786,6 +790,21 @@
           <button class="btn btn-danger" id="delete-account-btn" type="button">Delete account</button>
           <a class="btn btn-paper" href="./privacy.html">Privacy Policy</a>
           <a class="btn btn-paper" href="https://kemeis.github.io/Portfolio/" target="_blank" rel="noopener noreferrer">Credentials</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <div class="settings-card">
+        <header class="panel-header">
+          <div class="panel-title" id="confirm-title">CONFIRM</div>
+        </header>
+        <div class="settings-body">
+          <p class="settings-caption" id="confirm-message"></p>
+          <div class="confirm-actions">
+            <button class="btn btn-paper" id="confirm-cancel-btn" type="button">Cancel</button>
+            <button class="btn btn-danger" id="confirm-ok-btn" type="button">OK</button>
+          </div>
         </div>
       </div>
     </section>
@@ -830,6 +849,7 @@
     let mapRequestVersion = 0;
     let mapLoadTimer = null;
     let toastTimer = null;
+    let confirmAction = null;
     const busyActions = new Set();
 
     const $ = (selector) => document.querySelector(selector);
@@ -1190,7 +1210,6 @@
     }
 
     async function deleteTask(taskId) {
-      if (!window.confirm("Delete this task?")) return;
       try {
         const { error } = await db.from("tasks").delete().eq("id", taskId).eq("user_id", currentUser.id);
         if (error) throw error;
@@ -1622,12 +1641,10 @@
       bar.classList.remove("hidden");
     }
 
-    function undoPlacement() {
+    function closePlacement() {
       selectedShopItem = null;
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
-      $("#panel-plants").classList.add("open");
-      updatePanelLayout();
       updateMenuPanelStates();
       renderShop();
       renderGardenGrid();
@@ -1799,17 +1816,21 @@
       const panel = $(`#panel-${panelName}`);
       if (!panel) return;
       const opening = !panel.classList.contains("open");
-      if (opening && window.innerWidth <= 720) {
+
+      if (opening && panelName === "plants") {
+        ["tasks", "habits", "goals"].forEach((name) => $(`#panel-${name}`)?.classList.remove("open"));
+        if (selectedShopItem) closePlacement();
+      } else if (opening && window.innerWidth <= 720) {
         PANEL_NAMES.forEach((name) => $(`#panel-${name}`)?.classList.remove("open"));
       }
-      if (opening && panelName === "plants" && selectedShopItem) {
-        selectedShopItem = null;
-        updatePlacementBar();
-        renderGardenGrid();
-      }
+
       panel.classList.toggle("open", opening);
       updatePanelLayout();
       updateMenuPanelStates();
+
+      if (opening && window.innerWidth <= 720) {
+        setMenuCollapsed(true);
+      }
     }
 
     function openSettings() {
@@ -1820,9 +1841,37 @@
       $("#settings-modal").classList.add("hidden");
     }
 
+    function openConfirmDialog({ title, message, confirmClass = "btn-danger", onConfirm }) {
+      $("#confirm-title").textContent = title;
+      $("#confirm-message").textContent = message;
+      const confirmButton = $("#confirm-ok-btn");
+      confirmButton.className = `btn ${confirmClass}`;
+      confirmAction = onConfirm;
+      $("#confirm-modal").classList.remove("hidden");
+    }
+
+    function closeConfirmDialog() {
+      confirmAction = null;
+      $("#confirm-modal").classList.add("hidden");
+    }
+
+    function askToResetProgress() {
+      openConfirmDialog({
+        title: "RESET PROGRESS",
+        message: "This will delete your tasks, habits, goals, map items and coins. This cannot be undone.",
+        onConfirm: resetProgress
+      });
+    }
+
+    function askToDeleteAccount() {
+      openConfirmDialog({
+        title: "DELETE ACCOUNT",
+        message: "This permanently deletes your account and all associated data. This cannot be undone.",
+        onConfirm: deleteAccount
+      });
+    }
+
     async function resetProgress() {
-      const answer = window.prompt("This will delete your tasks, habits, goals, map items and coins. Type RESET to continue.");
-      if (answer !== "RESET") return;
       try {
         const userId = currentUser.id;
         const deletions = [
@@ -1856,8 +1905,6 @@
     }
 
     async function deleteAccount() {
-      const answer = window.prompt("This permanently deletes your account and its data. Type DELETE to continue.");
-      if (answer !== "DELETE") return;
       try {
         const { error } = await db.functions.invoke("delete-account");
         if (error) throw error;
@@ -1881,7 +1928,7 @@
     $("#garden-grid").addEventListener("pointerup", handlePointerUp);
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
-    $("#placement-undo-btn").addEventListener("click", undoPlacement);
+    $("#placement-close-btn").addEventListener("click", closePlacement);
     document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
       button.addEventListener("click", () => togglePanel(button.dataset.togglePanel));
     });
@@ -1893,8 +1940,17 @@
     $("#settings-modal").addEventListener("click", (event) => {
       if (event.target === $("#settings-modal")) closeSettings();
     });
-    $("#reset-progress-btn").addEventListener("click", resetProgress);
-    $("#delete-account-btn").addEventListener("click", deleteAccount);
+    $("#confirm-modal").addEventListener("click", (event) => {
+      if (event.target === $("#confirm-modal")) closeConfirmDialog();
+    });
+    $("#confirm-cancel-btn").addEventListener("click", closeConfirmDialog);
+    $("#confirm-ok-btn").addEventListener("click", async () => {
+      const action = confirmAction;
+      closeConfirmDialog();
+      if (typeof action === "function") await action();
+    });
+    $("#reset-progress-btn").addEventListener("click", askToResetProgress);
+    $("#delete-account-btn").addEventListener("click", askToDeleteAccount);
     $("#logout-btn").addEventListener("click", async () => {
       const { error } = await db.auth.signOut();
       if (error) reportError(error, "Could not log out.");
