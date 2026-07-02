@@ -165,6 +165,20 @@
 
     /* App shell and full-page map */
     #app-screen { display: none; min-height: 100vh; }
+    .floating-brand {
+      position: fixed;
+      z-index: 61;
+      top: 16px;
+      left: 18px;
+      color: #f4ffe2;
+      font-family: "Press Start 2P", monospace;
+      font-size: 10px;
+      line-height: 1.5;
+      letter-spacing: -.06em;
+      text-shadow: 1px 2px 0 rgba(18, 57, 28, .68);
+      pointer-events: none;
+      user-select: none;
+    }
     .coin-hud {
       position: fixed;
       z-index: 61;
@@ -374,7 +388,7 @@
     .list { margin: 0; padding: 0; list-style: none; }
     .list-item, .habit-item {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto minmax(0, 1fr) auto auto auto;
       align-items: center;
       gap: 9px;
       min-height: 55px;
@@ -406,7 +420,7 @@
     .item-meta, .streak { margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 800; }
     .streak { color: #bd6c24; }
     .reward { color: #9b6518; font-size: 11px; font-weight: 900; white-space: nowrap; }
-    .delete-btn {
+    .edit-btn, .delete-btn {
       display: grid;
       width: 29px;
       height: 29px;
@@ -420,6 +434,8 @@
       font-size: 18px;
       font-weight: 900;
     }
+    .edit-btn { color: #786145; font-size: 16px; }
+    .edit-btn:hover { background: #e9f2d7; color: var(--green-dark); }
     .delete-btn:hover { background: #ffe7e1; color: var(--red); }
     .empty { padding: 25px 10px; color: var(--muted); text-align: center; }
     .empty-icon { margin-bottom: 7px; font-size: 30px; }
@@ -539,6 +555,50 @@
       gap: 10px;
       margin-top: 4px;
     }
+    .feedback-card, .edit-card { width: min(100%, 510px); }
+    .form-stack { display: grid; gap: 13px; }
+    .form-stack .field { margin: 0; }
+    .form-stack textarea {
+      width: 100%;
+      min-height: 112px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 2px solid #d0ab77;
+      border-radius: 9px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+    .form-stack textarea:focus { border-color: var(--green-dark); box-shadow: 0 0 0 3px rgba(95,158,80,.17); }
+    .feedback-group {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .feedback-group legend { padding: 0; color: #66472a; font-size: 13px; font-weight: 900; }
+    .feedback-options { display: flex; flex-wrap: wrap; gap: 7px; }
+    .feedback-option {
+      display: inline-flex;
+      min-height: 33px;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border: 1px solid #d6b07b;
+      border-radius: 8px;
+      background: #fffdf6;
+      color: #5c4127;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .feedback-option input { accent-color: var(--green); }
+    .updates-list { display: grid; gap: 11px; }
+    .update-entry { padding: 11px; border: 1px solid #dec49a; border-radius: 9px; background: #fffdf4; }
+    .update-entry strong { display: block; margin-bottom: 4px; color: #365f38; font-size: 13px; }
+    .update-entry p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 
     /* Feedback */
     #toast {
@@ -593,6 +653,7 @@
         transform: none !important;
       }
       .panel-subtitle { max-width: 145px; font-size: 10px; }
+      .floating-brand { top: 12px; left: 11px; font-size: 8px; }
       .coin-hud { top: 10px; right: 10px; min-height: 35px; padding: 7px 10px; font-size: 13px; }
       .app-menu { right: 10px; bottom: 10px; width: 126px; }
       .app-menu.is-collapsed { width: 48px; }
@@ -654,6 +715,7 @@
   </main>
 
   <main id="app-screen">
+    <div class="floating-brand" aria-label="Task Garden">TASK<br>GARDEN</div>
     <div class="coin-hud" aria-label="Your coins">🪙 <span id="coins-count">0</span></div>
 
     <section class="garden-stage" aria-label="Your garden map">
@@ -739,7 +801,7 @@
           <button class="icon-button" type="button" data-close-panel="plants" aria-label="Close Shop">×</button>
         </header>
         <div class="panel-body">
-          <p class="plants-help">Items are bought with your coins. Click an existing item on the map to remove it; removals do not refund coins yet.</p>
+          <p class="plants-help">Items are bought with your coins. Removing an item refunds 50% of its current shop price (odd prices round down).</p>
           <div id="shop-container" class="shop-grid"><div class="loading">Loading shop…</div></div>
           <p class="plants-note" id="plants-note">Choose an item to begin placing it.</p>
         </div>
@@ -748,6 +810,7 @@
 
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
+      <button class="menu-action" id="return-center-btn" type="button"><span class="menu-icon">⌖</span><span>Return to center</span></button>
       <button class="menu-action active" type="button" data-toggle-panel="tasks"><span class="menu-icon">☑</span><span>Task List</span></button>
       <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span><span>Habits</span></button>
       <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span><span>Goals</span></button>
@@ -769,11 +832,99 @@
         </header>
         <div class="settings-body">
           <p class="settings-caption">Manage your account and garden data.</p>
+          <button class="btn btn-paper" id="feedback-btn" type="button">Feedback / report error</button>
+          <button class="btn btn-paper" id="updates-btn" type="button">Updates</button>
           <button class="btn btn-paper" id="reset-progress-btn" type="button">Reset progress</button>
           <button class="btn btn-danger" id="delete-account-btn" type="button">Delete account</button>
           <a class="btn btn-paper" href="./privacy.html">Privacy Policy</a>
           <a class="btn btn-paper" href="https://kemeis.github.io/Portfolio/" target="_blank" rel="noopener noreferrer">Credentials</a>
         </div>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="settings-card feedback-card">
+        <header class="panel-header">
+          <div class="panel-title" id="feedback-title">FEEDBACK</div>
+          <button class="icon-button" type="button" id="close-feedback-btn" aria-label="Close feedback form">×</button>
+        </header>
+        <form class="settings-body form-stack" id="feedback-form">
+          <p class="settings-caption">Feedback is stored privately in the project database for review.</p>
+          <fieldset class="feedback-group">
+            <legend>Report type</legend>
+            <div class="feedback-options">
+              <label class="feedback-option"><input type="radio" name="feedback-type" value="bug" checked /> Report bug</label>
+              <label class="feedback-option"><input type="radio" name="feedback-type" value="error" /> Report error</label>
+            </div>
+          </fieldset>
+          <fieldset class="feedback-group">
+            <legend>How does the current version feel?</legend>
+            <div class="feedback-options">
+              <label class="feedback-option"><input type="radio" name="feedback-rating" value="very_negative" /> Very negative</label>
+              <label class="feedback-option"><input type="radio" name="feedback-rating" value="negative" /> Negative</label>
+              <label class="feedback-option"><input type="radio" name="feedback-rating" value="okay" checked /> OK</label>
+              <label class="feedback-option"><input type="radio" name="feedback-rating" value="positive" /> Positive</label>
+              <label class="feedback-option"><input type="radio" name="feedback-rating" value="very_positive" /> Very positive</label>
+            </div>
+          </fieldset>
+          <label class="field" for="feedback-comment">
+            <span>Comment</span>
+            <textarea id="feedback-comment" maxlength="2000" placeholder="Describe the issue or share an idea…" required></textarea>
+          </label>
+          <label class="field" for="feedback-email">
+            <span>Email for feedback <small>(optional)</small></span>
+            <input id="feedback-email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <button class="btn btn-green" id="send-feedback-btn" type="submit">Send feedback</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="updates-modal" role="dialog" aria-modal="true" aria-labelledby="updates-title">
+      <div class="settings-card">
+        <header class="panel-header">
+          <div class="panel-title" id="updates-title">UPDATES</div>
+          <button class="icon-button" type="button" id="close-updates-btn" aria-label="Close updates">×</button>
+        </header>
+        <div class="settings-body">
+          <div class="updates-list">
+            <article class="update-entry">
+              <strong>Current build</strong>
+              <p>Full-screen garden, movable camera, floating panels, shop placement, reward editing and streak bonuses.</p>
+            </article>
+            <article class="update-entry">
+              <strong>Feedback</strong>
+              <p>Use Feedback / report error in Settings to save a private report for review in Supabase.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="edit-item-modal" role="dialog" aria-modal="true" aria-labelledby="edit-item-title-label">
+      <div class="settings-card edit-card">
+        <header class="panel-header">
+          <div class="panel-title" id="edit-item-title-label">EDIT ITEM</div>
+          <button class="icon-button" type="button" id="close-edit-item-btn" aria-label="Close editor">×</button>
+        </header>
+        <form class="settings-body form-stack" id="edit-item-form">
+          <label class="field" for="edit-item-name">
+            <span>Title</span>
+            <input id="edit-item-name" type="text" maxlength="160" required />
+          </label>
+          <label class="field" for="edit-item-reward">
+            <span>Coin reward</span>
+            <select class="inline-select" id="edit-item-reward"></select>
+          </label>
+          <label class="field hidden" id="edit-item-deadline-group" for="edit-item-deadline">
+            <span>Deadline <small>(optional)</small></span>
+            <input id="edit-item-deadline" type="date" />
+          </label>
+          <div class="confirm-actions">
+            <button class="btn btn-paper" id="cancel-edit-item-btn" type="button">Cancel</button>
+            <button class="btn btn-green" type="submit">Save changes</button>
+          </div>
+        </form>
       </div>
     </section>
 
@@ -818,6 +969,17 @@
       default: "🌱"
     };
     const PANEL_NAMES = ["tasks", "habits", "goals", "plants"];
+    const TASK_REWARDS = [5, 10, 20, 40];
+    const GOAL_REWARDS = [25, 50, 100, 200];
+    const SHOP_DISPLAY_NAMES = {
+      path: "Path",
+      flower: "Flower",
+      tree: "Tree",
+      pond: "Pond",
+      house: "House",
+      bush: "Bush",
+      bench: "Bench"
+    };
 
     let currentUser = null;
     let currentTab = "login";
@@ -833,6 +995,7 @@
     let mapLoadTimer = null;
     let toastTimer = null;
     let confirmAction = null;
+    let editingItem = null;
     const busyActions = new Set();
 
     const $ = (selector) => document.querySelector(selector);
@@ -864,6 +1027,24 @@
 
     function iconFor(itemType) {
       return TILE_ICONS[itemType] || TILE_ICONS.default;
+    }
+
+    function shopDisplayName(itemOrType) {
+      const itemType = typeof itemOrType === "string" ? itemOrType : itemOrType?.item_type;
+      return SHOP_DISPLAY_NAMES[itemType] || cleanText(itemOrType?.name, 80) || "Garden item";
+    }
+
+    function habitBonusForStreak(streak) {
+      return Math.min(7, Math.max(0, Number(streak || 0) - 1));
+    }
+
+    function getShopItemForType(itemType) {
+      return shopItems.find((item) => item.item_type === itemType) || null;
+    }
+
+    function refundForTile(tile) {
+      const shopItem = getShopItemForType(tile.item_type);
+      return Math.floor(Math.max(0, Number(shopItem?.price || 0)) / 2);
     }
 
     function showAuthMessage(text, type = "error") {
@@ -1134,6 +1315,18 @@
         const reward = document.createElement("span");
         reward.className = "reward";
         reward.textContent = `+${task.coin_reward} 🪙`;
+        if (!task.is_done) {
+          const edit = document.createElement("button");
+          edit.className = "edit-btn";
+          edit.type = "button";
+          edit.textContent = "✎";
+          edit.title = "Edit task and reward";
+          edit.setAttribute("aria-label", `Edit task: ${task.title}`);
+          edit.addEventListener("click", () => openEditItem("task", task));
+          item.append(check, main, reward, edit);
+        } else {
+          item.append(check, main, reward);
+        }
         const remove = document.createElement("button");
         remove.className = "delete-btn";
         remove.type = "button";
@@ -1141,7 +1334,7 @@
         remove.title = "Delete task";
         remove.setAttribute("aria-label", `Delete task: ${task.title}`);
         remove.addEventListener("click", () => deleteTask(task.id));
-        item.append(check, main, reward, remove);
+        item.append(remove);
         list.append(item);
       }
       const container = $("#tasks-container");
@@ -1247,21 +1440,25 @@
         title.textContent = habit.title;
         const streak = document.createElement("div");
         streak.className = "streak";
+        const currentBonus = habitBonusForStreak(habit.current_streak);
         streak.textContent = habit.current_streak > 0
-          ? `🔥 ${habit.current_streak} day streak`
+          ? doneToday
+            ? `🔥 ${habit.current_streak} day streak · +${currentBonus} streak bonus earned`
+            : `🔥 ${habit.current_streak} day streak · +1 each day, up to +7`
           : "Start your streak today";
         main.append(title, streak);
 
         const reward = document.createElement("span");
         reward.className = "reward";
-        reward.textContent = `+${habit.coin_reward} 🪙`;
+        reward.title = `Base reward ${habit.coin_reward}, plus a streak bonus up to 7 coins`;
+        reward.textContent = `+${habit.coin_reward}–${Number(habit.coin_reward) + 7} 🪙`;
         const remove = document.createElement("button");
         remove.className = "delete-btn";
         remove.type = "button";
         remove.textContent = "×";
         remove.title = "Delete habit";
         remove.setAttribute("aria-label", `Delete habit: ${habit.title}`);
-        remove.addEventListener("click", () => deleteHabit(habit.id));
+        remove.addEventListener("click", () => askToDeleteHabit(habit));
         item.append(check, main, reward, remove);
         list.append(item);
       }
@@ -1328,8 +1525,10 @@
           .eq("user_id", currentUser.id);
         if (streakError) throw streakError;
 
-        await addCoins(habit.coin_reward, event);
-        showToast(`Habit completed! +${habit.coin_reward} coins`, "success");
+        const streakBonus = habitBonusForStreak(newStreak);
+        const totalReward = Number(habit.coin_reward) + streakBonus;
+        await addCoins(totalReward, event);
+        showToast(`Habit completed! +${totalReward} coins${streakBonus ? ` (${streakBonus} streak bonus)` : ""}`, "success");
         await loadHabits();
       } catch (error) {
         reportError(error, "The habit could not be completed.");
@@ -1338,8 +1537,15 @@
       }
     }
 
+    function askToDeleteHabit(habit) {
+      openConfirmDialog({
+        title: "DELETE HABIT",
+        message: `Delete “${habit.title}” and its history? This cannot be undone.`,
+        onConfirm: () => deleteHabit(habit.id)
+      });
+    }
+
     async function deleteHabit(habitId) {
-      if (!window.confirm("Delete this habit and its history?")) return;
       try {
         const { error } = await db.from("habits").delete().eq("id", habitId).eq("user_id", currentUser.id);
         if (error) throw error;
@@ -1397,14 +1603,26 @@
         const reward = document.createElement("span");
         reward.className = "reward";
         reward.textContent = `+${goal.coin_reward} 🪙`;
+        if (!goal.is_done) {
+          const edit = document.createElement("button");
+          edit.className = "edit-btn";
+          edit.type = "button";
+          edit.textContent = "✎";
+          edit.title = "Edit goal and reward";
+          edit.setAttribute("aria-label", `Edit goal: ${goal.title}`);
+          edit.addEventListener("click", () => openEditItem("goal", goal));
+          item.append(check, main, reward, edit);
+        } else {
+          item.append(check, main, reward);
+        }
         const remove = document.createElement("button");
         remove.className = "delete-btn";
         remove.type = "button";
         remove.textContent = "×";
         remove.title = "Delete goal";
         remove.setAttribute("aria-label", `Delete goal: ${goal.title}`);
-        remove.addEventListener("click", () => deleteGoal(goal.id));
-        item.append(check, main, reward, remove);
+        remove.addEventListener("click", () => askToDeleteGoal(goal));
+        item.append(remove);
         list.append(item);
       }
       const container = $("#goals-container");
@@ -1457,14 +1675,81 @@
       }
     }
 
+    function askToDeleteGoal(goal) {
+      openConfirmDialog({
+        title: "DELETE GOAL",
+        message: `Delete “${goal.title}”? This cannot be undone.`,
+        onConfirm: () => deleteGoal(goal.id)
+      });
+    }
+
     async function deleteGoal(goalId) {
-      if (!window.confirm("Delete this goal?")) return;
       try {
         const { error } = await db.from("goals").delete().eq("id", goalId).eq("user_id", currentUser.id);
         if (error) throw error;
         await loadGoals();
       } catch (error) {
         reportError(error, "The goal could not be deleted.");
+      }
+    }
+
+    /* Edit tasks and goals */
+    function setRewardOptions(select, values, currentValue) {
+      select.innerHTML = "";
+      const uniqueValues = [...new Set([...values, Number(currentValue)])].sort((a, b) => a - b);
+      for (const value of uniqueValues) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = `${value} coins`;
+        option.selected = Number(value) === Number(currentValue);
+        select.append(option);
+      }
+    }
+
+    function openEditItem(kind, item) {
+      if (item.is_done) return;
+      editingItem = { kind, id: item.id };
+      const isGoal = kind === "goal";
+      $("#edit-item-title-label").textContent = isGoal ? "EDIT GOAL" : "EDIT TASK";
+      $("#edit-item-name").value = item.title || "";
+      setRewardOptions($("#edit-item-reward"), isGoal ? GOAL_REWARDS : TASK_REWARDS, item.coin_reward);
+      $("#edit-item-deadline-group").classList.toggle("hidden", !isGoal);
+      $("#edit-item-deadline").value = isGoal ? (item.deadline || "") : "";
+      $("#edit-item-modal").classList.remove("hidden");
+      window.setTimeout(() => $("#edit-item-name").focus(), 0);
+    }
+
+    function closeEditItem() {
+      editingItem = null;
+      $("#edit-item-modal").classList.add("hidden");
+    }
+
+    async function submitEditItem(event) {
+      event.preventDefault();
+      if (!editingItem) return closeEditItem();
+      const kind = editingItem.kind;
+      const title = cleanText($("#edit-item-name").value, 160);
+      const coinReward = Number($("#edit-item-reward").value);
+      if (!title || !Number.isFinite(coinReward) || coinReward < 0) {
+        showToast("Enter a title and a valid coin reward.", "error");
+        return;
+      }
+      const updates = { title, coin_reward: coinReward };
+      if (kind === "goal") updates.deadline = $("#edit-item-deadline").value || null;
+      const table = kind === "goal" ? "goals" : "tasks";
+      try {
+        const { error } = await db
+          .from(table)
+          .update(updates)
+          .eq("id", editingItem.id)
+          .eq("user_id", currentUser.id)
+          .eq("is_done", false);
+        if (error) throw error;
+        closeEditItem();
+        await (kind === "goal" ? loadGoals() : loadTasks());
+        showToast(`${kind === "goal" ? "Goal" : "Task"} updated.`, "success");
+      } catch (error) {
+        reportError(error, `The ${kind} could not be updated.`);
       }
     }
 
@@ -1521,12 +1806,12 @@
           cell.dataset.x = String(x);
           cell.dataset.y = String(y);
           cell.setAttribute("aria-label", placed
-            ? `${placed.item_type} at ${x}, ${y}`
+            ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}`
             : `Empty garden tile at ${x}, ${y}`);
           cell.title = placed
-            ? `${placed.item_type} at ${x}, ${y}. Click to remove.`
+            ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}. Click to remove.`
             : selectedShopItem
-              ? `Place ${selectedShopItem.name} at ${x}, ${y}`
+              ? `Place ${shopDisplayName(selectedShopItem)} at ${x}, ${y}`
               : `Empty tile at ${x}, ${y}`;
 
           if (placed) {
@@ -1586,6 +1871,7 @@
         return;
       }
       for (const item of shopItems) {
+        const itemName = shopDisplayName(item);
         const button = document.createElement("button");
         button.type = "button";
         button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
@@ -1595,7 +1881,7 @@
         const info = document.createElement("span");
         const name = document.createElement("span");
         name.className = "shop-name";
-        name.textContent = item.name;
+        name.textContent = itemName;
         const price = document.createElement("span");
         price.className = "shop-price";
         price.textContent = `${item.price} 🪙`;
@@ -1603,7 +1889,7 @@
         button.append(icon, info);
         button.addEventListener("click", () => {
           selectedShopItem = item;
-          $("#plants-note").textContent = `${item.name} selected. Choose a tile on the map.`;
+          $("#plants-note").textContent = `${shopDisplayName(item)} selected. Choose a tile on the map.`;
           closePanel("plants");
           updatePlacementBar();
           renderShop();
@@ -1619,7 +1905,7 @@
         bar.classList.add("hidden");
         return;
       }
-      $("#placement-message").textContent = `Select a tile to place ${selectedShopItem.name}.`;
+      $("#placement-message").textContent = `Select a tile to place ${shopDisplayName(selectedShopItem)}.`;
       bar.classList.remove("hidden");
     }
 
@@ -1634,7 +1920,7 @@
 
     async function handleGardenTileClick(x, y) {
       const existing = mapTiles.find((tile) => tile.x === x && tile.y === y);
-      if (existing) return removeMapTile(existing);
+      if (existing) return askToRemoveMapTile(existing);
       return buyAndPlace(selectedShopItem, x, y);
     }
 
@@ -1644,7 +1930,7 @@
         return;
       }
       if (Number(profile?.coins || 0) < Number(item.price || 0)) {
-        showToast(`You need ${item.price} coins for ${item.name}.`, "error");
+        showToast(`You need ${item.price} coins for ${shopDisplayName(item)}.`, "error");
         return;
       }
       const lock = `tile-${x}-${y}`;
@@ -1680,7 +1966,7 @@
         }
         mapTiles.push(placedTile);
         renderGardenGrid();
-        showToast(`${item.name} placed! -${item.price} coins`, "success");
+        showToast(`${shopDisplayName(item)} placed! -${item.price} coins`, "success");
       } catch (error) {
         reportError(error, "The item could not be placed.");
       } finally {
@@ -1688,8 +1974,17 @@
       }
     }
 
-    async function removeMapTile(tile) {
-      if (!window.confirm("Remove this item from your garden? There is no coin refund yet.")) return;
+    function askToRemoveMapTile(tile) {
+      const refund = refundForTile(tile);
+      const itemName = shopDisplayName(tile.item_type);
+      openConfirmDialog({
+        title: "REMOVE ITEM",
+        message: `Remove ${itemName} from your garden? You will receive ${refund} coins back.`,
+        onConfirm: () => removeMapTile(tile, refund)
+      });
+    }
+
+    async function removeMapTile(tile, refund) {
       try {
         const { error } = await db
           .from("map_tiles")
@@ -1697,9 +1992,10 @@
           .eq("id", tile.id)
           .eq("user_id", currentUser.id);
         if (error) throw error;
+        if (refund > 0) await addCoins(refund);
         mapTiles = mapTiles.filter((item) => item.id !== tile.id);
         renderGardenGrid();
-        showToast("Item removed from your garden.", "success");
+        showToast(`${shopDisplayName(tile.item_type)} removed. +${refund} coins refunded.`, "success");
       } catch (error) {
         reportError(error, "The item could not be removed.");
       }
@@ -1815,12 +2111,70 @@
       }
     }
 
+    function returnToCenter() {
+      camera = { x: 0, y: 0 };
+      renderGardenGrid();
+      loadVisibleMapTiles().catch((error) => reportError(error, "The garden could not return to the center."));
+      if (window.innerWidth <= 720) setMenuCollapsed(true);
+    }
+
     function openSettings() {
       $("#settings-modal").classList.remove("hidden");
     }
 
     function closeSettings() {
       $("#settings-modal").classList.add("hidden");
+    }
+
+    function openFeedback() {
+      closeSettings();
+      $("#feedback-modal").classList.remove("hidden");
+    }
+
+    function closeFeedback() {
+      $("#feedback-modal").classList.add("hidden");
+    }
+
+    function openUpdates() {
+      closeSettings();
+      $("#updates-modal").classList.remove("hidden");
+    }
+
+    function closeUpdates() {
+      $("#updates-modal").classList.add("hidden");
+    }
+
+    async function submitFeedback(event) {
+      event.preventDefault();
+      const comment = cleanText($("#feedback-comment").value, 2000);
+      const feedbackEmail = cleanText($("#feedback-email").value, 254);
+      const reportType = document.querySelector('input[name="feedback-type"]:checked')?.value;
+      const rating = document.querySelector('input[name="feedback-rating"]:checked')?.value;
+      if (!comment || !reportType || !rating) {
+        showToast("Choose a report type, a rating and add a comment.", "error");
+        return;
+      }
+      const submit = $("#send-feedback-btn");
+      submit.disabled = true;
+      try {
+        const { error } = await db.from("feedback_reports").insert({
+          user_id: currentUser.id,
+          report_type: reportType,
+          rating,
+          comment,
+          feedback_email: feedbackEmail || null
+        });
+        if (error) throw error;
+        $("#feedback-form").reset();
+        document.querySelector('input[name="feedback-type"][value="bug"]').checked = true;
+        document.querySelector('input[name="feedback-rating"][value="okay"]').checked = true;
+        closeFeedback();
+        showToast("Feedback sent. Thank you!", "success");
+      } catch (error) {
+        reportError(error, "Feedback could not be sent. Run the feedback SQL update first.");
+      } finally {
+        submit.disabled = false;
+      }
     }
 
     function openConfirmDialog({ title, message, confirmClass = "btn-danger", onConfirm }) {
@@ -1910,6 +2264,7 @@
     $("#garden-grid").addEventListener("pointerup", handlePointerUp);
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
+    $("#return-center-btn").addEventListener("click", returnToCenter);
     $("#placement-close-btn").addEventListener("click", closePlacement);
     document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
       button.addEventListener("click", () => togglePanel(button.dataset.togglePanel));
@@ -1919,8 +2274,25 @@
     });
     $("#settings-btn").addEventListener("click", openSettings);
     $("#close-settings-btn").addEventListener("click", closeSettings);
+    $("#feedback-btn").addEventListener("click", openFeedback);
+    $("#updates-btn").addEventListener("click", openUpdates);
+    $("#close-feedback-btn").addEventListener("click", closeFeedback);
+    $("#close-updates-btn").addEventListener("click", closeUpdates);
+    $("#feedback-form").addEventListener("submit", submitFeedback);
+    $("#edit-item-form").addEventListener("submit", submitEditItem);
+    $("#close-edit-item-btn").addEventListener("click", closeEditItem);
+    $("#cancel-edit-item-btn").addEventListener("click", closeEditItem);
     $("#settings-modal").addEventListener("click", (event) => {
       if (event.target === $("#settings-modal")) closeSettings();
+    });
+    $("#feedback-modal").addEventListener("click", (event) => {
+      if (event.target === $("#feedback-modal")) closeFeedback();
+    });
+    $("#updates-modal").addEventListener("click", (event) => {
+      if (event.target === $("#updates-modal")) closeUpdates();
+    });
+    $("#edit-item-modal").addEventListener("click", (event) => {
+      if (event.target === $("#edit-item-modal")) closeEditItem();
     });
     $("#confirm-modal").addEventListener("click", (event) => {
       if (event.target === $("#confirm-modal")) closeConfirmDialog();
