@@ -528,6 +528,46 @@
     .app-menu.is-collapsed .menu-toggle { width: 34px; min-height: 34px; justify-content: center; padding: 0; }
     .app-menu.is-collapsed .menu-toggle .menu-text { display: none; }
 
+
+
+    /* Dynamic task lists */
+    #task-panels { display: contents; }
+    #task-menu-items { display: grid; gap: 6px; }
+    .app-menu.is-collapsed #task-menu-items { display: none; }
+    .duplicate-hint {
+      grid-column: 1 / -1;
+      margin: -3px 0 2px;
+      padding: 8px 10px;
+      border: 1px solid #d5b06f;
+      border-radius: 8px;
+      background: #fff4ce;
+      color: #7c5318;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .task-list-manager { display: grid; gap: 10px; }
+    .task-list-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(110,77,46,.19);
+    }
+    .task-list-row:last-child { border-bottom: 0; }
+    .task-list-row .inline-input { min-height: 38px; }
+    .task-list-row .btn { min-height: 36px; padding: 8px 10px; font-size: 12px; }
+    .task-list-row.is-open { background: rgba(229,242,202,.45); border-radius: 9px; padding-inline: 8px; }
+    .panel-layer[data-layout="many"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      overflow: hidden;
+    }
+    .panel-layer[data-layout="many"] .panel-window.open:not(.plants-panel) {
+      width: min(620px, 100%);
+      height: 100%;
+    }
+
     /* Settings */
     .modal {
       position: fixed;
@@ -665,6 +705,8 @@
         max-width: calc(100vw - 24px);
         font-size: 12px;
       }
+      .task-list-row { grid-template-columns: minmax(0, 1fr) auto; }
+      .task-list-row .btn { width: 100%; }
     }
     @media (max-width: 400px) {
       .panel-header { padding-inline: 12px; }
@@ -724,25 +766,22 @@
     <div class="map-status" id="map-status">Drag the garden to explore · Camera: 0, 0</div>
 
     <div class="panel-layer" aria-live="polite">
-      <section class="panel-window task-panel open" id="panel-tasks" aria-label="Task List">
+      <div id="task-panels"></div>
+
+      <section class="panel-window task-lists-panel" id="panel-task-lists" aria-label="Task Lists">
         <header class="panel-header">
           <div>
-            <div class="panel-title">TASK LIST</div>
+            <div class="panel-title">TASK LISTS</div>
+            <div class="panel-subtitle">Create and open separate task lists.</div>
           </div>
-          <button class="icon-button" type="button" data-close-panel="tasks" aria-label="Close Task List">×</button>
+          <button class="icon-button" type="button" data-close-panel="task-lists" aria-label="Close Task Lists">×</button>
         </header>
         <div class="panel-body">
-          <form class="add-row" id="task-form">
-            <input class="inline-input" id="new-task-input" type="text" maxlength="160" placeholder="Add a task…" aria-label="New task title" required />
-            <select class="inline-select" id="task-reward-input" aria-label="Task coin reward">
-              <option value="5">5 coins</option>
-              <option value="10" selected>10 coins</option>
-              <option value="20">20 coins</option>
-              <option value="40">40 coins</option>
-            </select>
-            <button class="btn btn-green btn-sm" type="submit">Add task</button>
+          <form class="add-row" id="task-list-form">
+            <input class="inline-input" id="new-task-list-input" type="text" maxlength="80" placeholder="New list name…" aria-label="New task list name" required />
+            <button class="btn btn-green btn-sm" type="submit">Add list</button>
           </form>
-          <div id="tasks-container"><div class="loading">Loading tasks…</div></div>
+          <div id="task-lists-container"><div class="loading">Loading lists…</div></div>
         </div>
       </section>
 
@@ -811,7 +850,7 @@
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
       <button class="menu-action" id="return-center-btn" type="button"><span class="menu-icon">⌖</span><span>Return to center</span></button>
-      <button class="menu-action active" type="button" data-toggle-panel="tasks"><span class="menu-icon">☑</span><span>Task List</span></button>
+      <div id="task-menu-items"></div>
       <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span><span>Habits</span></button>
       <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span><span>Goals</span></button>
       <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
@@ -968,7 +1007,7 @@
       bench: "🪑",
       default: "🌱"
     };
-    const PANEL_NAMES = ["tasks", "habits", "goals", "plants"];
+    const PANEL_NAMES = ["habits", "goals", "plants", "task-lists"];
     const TASK_REWARDS = [5, 10, 20, 40];
     const GOAL_REWARDS = [25, 50, 100, 200];
     const SHOP_DISPLAY_NAMES = {
@@ -984,6 +1023,9 @@
     let currentUser = null;
     let currentTab = "login";
     let profile = null;
+    let taskLists = [];
+    let openTaskListIds = new Set();
+    let allTasksCache = [];
     let shopItems = [];
     let selectedShopItem = null;
     let mapTiles = [];
@@ -1190,6 +1232,7 @@
 
       try {
         await ensureProfileAndStarterHabits();
+        await loadTaskLists();
         calculateView();
         await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadShopItems()]);
         await loadVisibleMapTiles();
@@ -1261,7 +1304,225 @@
       spawnCoinAnimation(event, amount);
     }
 
-    /* Tasks */
+    /* Task lists and tasks */
+    function taskListName(listId) {
+      return taskLists.find((list) => list.id === listId)?.name || "Task List";
+    }
+
+    function normalTaskListId(task) {
+      return task.list_id || taskLists[0]?.id || null;
+    }
+
+    function taskPanelId(listId) {
+      return `panel-task-${listId}`;
+    }
+
+    function taskContainerId(listId) {
+      return `tasks-container-${listId}`;
+    }
+
+    function taskInputId(listId) {
+      return `new-task-input-${listId}`;
+    }
+
+    function taskRewardId(listId) {
+      return `task-reward-input-${listId}`;
+    }
+
+    function taskHintId(listId) {
+      return `duplicate-hint-${listId}`;
+    }
+
+    async function loadTaskLists() {
+      const { data, error } = await db
+        .from("task_lists")
+        .select("id, name, sort_order, created_at")
+        .eq("user_id", currentUser.id)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      if (!data?.length) {
+        const { data: created, error: createError } = await db
+          .from("task_lists")
+          .insert({ user_id: currentUser.id, name: "Task List", sort_order: 0 })
+          .select("id, name, sort_order, created_at")
+          .single();
+        if (createError) throw createError;
+        taskLists = [created];
+      } else {
+        taskLists = data;
+      }
+
+      const defaultList = taskLists[0];
+      if (defaultList) {
+        await db.from("tasks").update({ list_id: defaultList.id }).eq("user_id", currentUser.id).is("list_id", null);
+      }
+
+      const validIds = new Set(taskLists.map((list) => list.id));
+      openTaskListIds = new Set([...openTaskListIds].filter((id) => validIds.has(id)));
+      if (!openTaskListIds.size && defaultList) openTaskListIds.add(defaultList.id);
+
+      renderTaskMenu();
+      renderTaskListManager();
+      renderTaskListPanels();
+    }
+
+    function renderTaskMenu() {
+      const host = $("#task-menu-items");
+      host.innerHTML = "";
+
+      for (const list of taskLists.slice(0, 3)) {
+        const button = document.createElement("button");
+        button.className = "menu-action";
+        button.type = "button";
+        button.dataset.taskListId = list.id;
+        const icon = document.createElement("span");
+        icon.className = "menu-icon";
+        icon.textContent = "☑";
+        const label = document.createElement("span");
+        label.textContent = cleanText(list.name, 24) || "Task List";
+        button.append(icon, label);
+        button.addEventListener("click", () => toggleTaskListPanel(list.id));
+        host.append(button);
+      }
+
+      const manage = document.createElement("button");
+      manage.className = "menu-action";
+      manage.type = "button";
+      manage.dataset.togglePanel = "task-lists";
+      const icon = document.createElement("span");
+      icon.className = "menu-icon";
+      icon.textContent = taskLists.length > 3 ? "☷" : "+";
+      const label = document.createElement("span");
+      label.textContent = taskLists.length > 3 ? "Task Lists" : "New List";
+      manage.append(icon, label);
+      manage.addEventListener("click", () => togglePanel("task-lists"));
+      host.append(manage);
+
+      updateMenuPanelStates();
+    }
+
+    function renderTaskListManager() {
+      const container = $("#task-lists-container");
+      if (!taskLists.length) {
+        renderEmpty("#task-lists-container", "☑", "No task lists yet. Create one above.");
+        return;
+      }
+      const wrap = document.createElement("div");
+      wrap.className = "task-list-manager";
+      for (const list of taskLists) {
+        const row = document.createElement("div");
+        row.className = "task-list-row" + (openTaskListIds.has(list.id) ? " is-open" : "");
+
+        const nameInput = document.createElement("input");
+        nameInput.className = "inline-input";
+        nameInput.type = "text";
+        nameInput.maxLength = 80;
+        nameInput.value = list.name;
+        nameInput.setAttribute("aria-label", `Rename ${list.name}`);
+
+        const save = document.createElement("button");
+        save.className = "btn btn-paper btn-sm";
+        save.type = "button";
+        save.textContent = "Save";
+        save.addEventListener("click", () => renameTaskList(list.id, nameInput.value));
+
+        const open = document.createElement("button");
+        open.className = "btn btn-green btn-sm";
+        open.type = "button";
+        open.textContent = openTaskListIds.has(list.id) ? "Close" : "Open";
+        open.addEventListener("click", () => toggleTaskListPanel(list.id));
+
+        const remove = document.createElement("button");
+        remove.className = "delete-btn";
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.title = "Delete list";
+        remove.disabled = taskLists.length <= 1;
+        remove.addEventListener("click", () => askToDeleteTaskList(list));
+
+        row.append(nameInput, save, open, remove);
+        wrap.append(row);
+      }
+      container.innerHTML = "";
+      container.append(wrap);
+    }
+
+    function renderTaskListPanels() {
+      const host = $("#task-panels");
+      host.innerHTML = "";
+      for (const list of taskLists.filter((taskList) => openTaskListIds.has(taskList.id))) {
+        const section = document.createElement("section");
+        section.className = "panel-window task-panel task-list-panel open";
+        section.id = taskPanelId(list.id);
+        section.setAttribute("aria-label", list.name);
+        section.dataset.taskListPanel = list.id;
+
+        const header = document.createElement("header");
+        header.className = "panel-header";
+        const titleWrap = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "panel-title";
+        title.textContent = cleanText(list.name, 80).toUpperCase() || "TASK LIST";
+        titleWrap.append(title);
+        const close = document.createElement("button");
+        close.className = "icon-button";
+        close.type = "button";
+        close.textContent = "×";
+        close.setAttribute("aria-label", `Close ${list.name}`);
+        close.addEventListener("click", () => closeTaskListPanel(list.id));
+        header.append(titleWrap, close);
+
+        const body = document.createElement("div");
+        body.className = "panel-body";
+        const form = document.createElement("form");
+        form.className = "add-row";
+        form.addEventListener("submit", (event) => addTask(event, list.id));
+
+        const input = document.createElement("input");
+        input.className = "inline-input";
+        input.id = taskInputId(list.id);
+        input.type = "text";
+        input.maxLength = 160;
+        input.placeholder = `Add a task to ${list.name}…`;
+        input.setAttribute("aria-label", `New task title for ${list.name}`);
+        input.required = true;
+        input.addEventListener("input", () => updateTaskDuplicateHint(list.id));
+
+        const select = document.createElement("select");
+        select.className = "inline-select";
+        select.id = taskRewardId(list.id);
+        select.setAttribute("aria-label", "Task coin reward");
+        for (const reward of TASK_REWARDS) {
+          const option = document.createElement("option");
+          option.value = String(reward);
+          option.textContent = `${reward} coins`;
+          option.selected = reward === 5;
+          select.append(option);
+        }
+
+        const hint = document.createElement("div");
+        hint.className = "duplicate-hint hidden";
+        hint.id = taskHintId(list.id);
+
+        const submit = document.createElement("button");
+        submit.className = "btn btn-green btn-sm";
+        submit.type = "submit";
+        submit.textContent = "Add task";
+        form.append(input, select, hint, submit);
+
+        const container = document.createElement("div");
+        container.id = taskContainerId(list.id);
+        container.innerHTML = '<div class="loading">Loading tasks…</div>';
+        body.append(form, container);
+        section.append(header, body);
+        host.append(section);
+      }
+      updatePanelLayout();
+      updateMenuPanelStates();
+    }
+
     function isVisibleTask(task) {
       if (!task.is_done) return true;
       if (!task.completed_at) return false;
@@ -1269,20 +1530,31 @@
     }
 
     async function loadTasks() {
-      setLoading("#tasks-container", "Loading tasks…");
       const { data, error } = await db
         .from("tasks")
-        .select("id, title, is_done, coin_reward, created_at, completed_at")
+        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
         .eq("user_id", currentUser.id)
         .order("is_done", { ascending: true })
         .order("created_at", { ascending: false });
       if (error) throw error;
-      renderTasks((data || []).filter(isVisibleTask));
+      allTasksCache = (data || []).filter(isVisibleTask);
+      renderTasks();
     }
 
-    function renderTasks(tasks) {
+    function renderTasks() {
+      for (const list of taskLists.filter((taskList) => openTaskListIds.has(taskList.id))) {
+        renderTasksForList(list.id);
+        updateTaskDuplicateHint(list.id);
+      }
+    }
+
+    function renderTasksForList(listId) {
+      const tasks = allTasksCache.filter((task) => normalTaskListId(task) === listId);
+      const selector = `#${taskContainerId(listId)}`;
+      const container = $(selector);
+      if (!container) return;
       if (!tasks.length) {
-        renderEmpty("#tasks-container", "📝", "No active tasks. Add one above.");
+        renderEmpty(selector, "📝", "No active tasks. Add one above.");
         return;
       }
       const list = document.createElement("ul");
@@ -1337,46 +1609,68 @@
         item.append(remove);
         list.append(item);
       }
-      const container = $("#tasks-container");
       container.innerHTML = "";
       container.append(list);
     }
 
-    async function addTask(event) {
+    async function addTask(event, listId) {
       event.preventDefault();
-      const input = $("#new-task-input");
-      const title = cleanText(input.value, 160);
-      const coinReward = Number($("#task-reward-input").value);
+      const input = $(`#${taskInputId(listId)}`);
+      const rewardSelect = $(`#${taskRewardId(listId)}`);
+      const title = cleanText(input?.value, 160);
+      const coinReward = Number(rewardSelect?.value || 5);
       if (!title) return showToast("Give the task a title.", "error");
 
       const { error } = await db.from("tasks").insert({
         user_id: currentUser.id,
+        list_id: listId,
         title,
         coin_reward: coinReward,
         is_done: false
       });
       if (error) return reportError(error, "The task could not be added.");
       input.value = "";
+      if (rewardSelect) rewardSelect.value = "5";
       await loadTasks();
     }
 
+    function updateTaskDuplicateHint(listId) {
+      const input = $(`#${taskInputId(listId)}`);
+      const hint = $(`#${taskHintId(listId)}`);
+      if (!input || !hint) return;
+      const title = cleanText(input.value, 160);
+      if (!title) {
+        hint.classList.add("hidden");
+        hint.textContent = "";
+        return;
+      }
+      const matches = allTasksCache.filter((task) => !task.is_done && task.title === title && normalTaskListId(task) !== listId);
+      if (!matches.length) {
+        hint.classList.add("hidden");
+        hint.textContent = "";
+        return;
+      }
+      const listNames = [...new Set(matches.map((task) => taskListName(normalTaskListId(task))))].join(", ");
+      hint.textContent = `Same task exists in: ${listNames}. Completing one will complete matching tasks in every list.`;
+      hint.classList.remove("hidden");
+    }
+
     async function completeTask(task, event) {
-      const lock = `task-${task.id}`;
+      const lock = `task-title-${task.title}`;
       if (busyActions.has(lock)) return;
       busyActions.add(lock);
       try {
         const { data, error } = await db
           .from("tasks")
           .update({ is_done: true, completed_at: new Date().toISOString() })
-          .eq("id", task.id)
           .eq("user_id", currentUser.id)
+          .eq("title", task.title)
           .eq("is_done", false)
-          .select("id")
-          .maybeSingle();
+          .select("id");
         if (error) throw error;
-        if (!data) return showToast("This task was already completed.", "error");
+        if (!data?.length) return showToast("This task was already completed.", "error");
         await addCoins(task.coin_reward, event);
-        showToast(`Task completed! +${task.coin_reward} coins`, "success");
+        showToast(data.length > 1 ? `Matching tasks completed! +${task.coin_reward} coins` : `Task completed! +${task.coin_reward} coins`, "success");
         await loadTasks();
       } catch (error) {
         reportError(error, "The task could not be completed.");
@@ -1392,6 +1686,81 @@
         await loadTasks();
       } catch (error) {
         reportError(error, "The task could not be deleted.");
+      }
+    }
+
+    async function addTaskList(event) {
+      event.preventDefault();
+      const input = $("#new-task-list-input");
+      const name = cleanText(input.value, 80);
+      if (!name) return showToast("Give the list a name.", "error");
+      const sortOrder = taskLists.length ? Math.max(...taskLists.map((list) => Number(list.sort_order || 0))) + 1 : 0;
+      const { data, error } = await db
+        .from("task_lists")
+        .insert({ user_id: currentUser.id, name, sort_order: sortOrder })
+        .select("id")
+        .single();
+      if (error) return reportError(error, "The task list could not be created.");
+      input.value = "";
+      if (data?.id) openTaskListIds.add(data.id);
+      await loadTaskLists();
+      await loadTasks();
+      showToast("Task list created.", "success");
+    }
+
+    async function renameTaskList(listId, rawName) {
+      const name = cleanText(rawName, 80);
+      if (!name) return showToast("List name cannot be empty.", "error");
+      const { error } = await db.from("task_lists").update({ name }).eq("id", listId).eq("user_id", currentUser.id);
+      if (error) return reportError(error, "The task list could not be renamed.");
+      await loadTaskLists();
+      await loadTasks();
+      showToast("Task list renamed.", "success");
+    }
+
+    function toggleTaskListPanel(listId) {
+      if (openTaskListIds.has(listId)) {
+        closeTaskListPanel(listId);
+        return;
+      }
+      if (window.innerWidth <= 720) {
+        closeAllWorkPanels();
+      }
+      openTaskListIds.add(listId);
+      renderTaskListPanels();
+      renderTasks();
+      updateTaskDuplicateHint(listId);
+      if (window.innerWidth <= 720) setMenuCollapsed(true);
+    }
+
+    function closeTaskListPanel(listId) {
+      openTaskListIds.delete(listId);
+      renderTaskListPanels();
+      renderTaskListManager();
+      updateMenuPanelStates();
+    }
+
+    function askToDeleteTaskList(list) {
+      if (taskLists.length <= 1) return showToast("Keep at least one task list.", "error");
+      openConfirmDialog({
+        title: "DELETE LIST",
+        message: `Delete “${list.name}” and all tasks inside it? This cannot be undone.`,
+        onConfirm: () => deleteTaskList(list.id)
+      });
+    }
+
+    async function deleteTaskList(listId) {
+      try {
+        const { error: tasksError } = await db.from("tasks").delete().eq("user_id", currentUser.id).eq("list_id", listId);
+        if (tasksError) throw tasksError;
+        const { error } = await db.from("task_lists").delete().eq("id", listId).eq("user_id", currentUser.id);
+        if (error) throw error;
+        openTaskListIds.delete(listId);
+        await loadTaskLists();
+        await loadTasks();
+        showToast("Task list deleted.", "success");
+      } catch (error) {
+        reportError(error, "The task list could not be deleted.");
       }
     }
 
@@ -2055,14 +2424,44 @@
     }
 
     /* Panels, menu, settings */
+    function openWorkPanels() {
+      return Array.from(document.querySelectorAll(".panel-window.open:not(.plants-panel)"));
+    }
+
+    function clearPanelPlacement() {
+      document.querySelectorAll(".panel-window").forEach((panel) => {
+        panel.style.gridColumn = "";
+        panel.style.gridRow = "";
+      });
+    }
+
     function updatePanelLayout() {
       const layer = $(".panel-layer");
-      const openWorkPanels = ["tasks", "habits", "goals"].filter((name) => $(`#panel-${name}`)?.classList.contains("open"));
+      const panels = openWorkPanels();
       const shopOpen = $("#panel-plants")?.classList.contains("open");
-      const layout = openWorkPanels.length === 1 ? "single" : openWorkPanels.length === 2 ? "two" : openWorkPanels.length === 3 ? "three" : "none";
+      const layout = panels.length === 1 ? "single" : panels.length === 2 ? "two" : panels.length === 3 ? "three" : panels.length > 3 ? "many" : "none";
       layer.dataset.layout = layout;
-      layer.dataset.openPanels = openWorkPanels.join("-");
+      layer.dataset.openPanels = panels.map((panel) => panel.id || panel.dataset.taskListPanel || "panel").join("-");
       layer.dataset.shopOpen = String(Boolean(shopOpen));
+
+      clearPanelPlacement();
+      panels.forEach((panel, index) => {
+        if (layout === "two") {
+          panel.style.gridColumn = String(index + 1);
+          panel.style.gridRow = "1";
+        } else if (layout === "three") {
+          if (index === 0) {
+            panel.style.gridColumn = "1";
+            panel.style.gridRow = "1 / span 2";
+          } else {
+            panel.style.gridColumn = "2";
+            panel.style.gridRow = String(index);
+          }
+        } else if (layout === "many") {
+          panel.style.gridColumn = String((index % 3) + 1);
+          panel.style.gridRow = String(Math.floor(index / 3) + 1);
+        }
+      });
     }
 
     function updateMenuPanelStates() {
@@ -2071,6 +2470,9 @@
         const panel = $(`#panel-${panelName}`);
         const isPlacementMode = panelName === "plants" && Boolean(selectedShopItem);
         button.classList.toggle("active", Boolean(panel?.classList.contains("open")) || isPlacementMode);
+      });
+      document.querySelectorAll("[data-task-list-id]").forEach((button) => {
+        button.classList.toggle("active", openTaskListIds.has(button.dataset.taskListId));
       });
     }
 
@@ -2090,16 +2492,22 @@
       updateMenuPanelStates();
     }
 
+    function closeAllWorkPanels() {
+      document.querySelectorAll(".panel-window.open:not(.plants-panel)").forEach((panel) => panel.classList.remove("open"));
+      openTaskListIds.clear();
+    }
+
     function togglePanel(panelName) {
       const panel = $(`#panel-${panelName}`);
       if (!panel) return;
       const opening = !panel.classList.contains("open");
 
       if (opening && panelName === "plants") {
-        ["tasks", "habits", "goals"].forEach((name) => $(`#panel-${name}`)?.classList.remove("open"));
+        closeAllWorkPanels();
         if (selectedShopItem) closePlacement();
       } else if (opening && window.innerWidth <= 720) {
-        PANEL_NAMES.forEach((name) => $(`#panel-${name}`)?.classList.remove("open"));
+        closeAllWorkPanels();
+        if (panelName !== "plants") $("#panel-plants")?.classList.remove("open");
       }
 
       panel.classList.toggle("open", opening);
@@ -2213,6 +2621,7 @@
         const deletions = [
           db.from("map_tiles").delete().eq("user_id", userId),
           db.from("tasks").delete().eq("user_id", userId),
+          db.from("task_lists").delete().eq("user_id", userId),
           db.from("goals").delete().eq("user_id", userId),
           db.from("habit_logs").delete().eq("user_id", userId),
           db.from("habits").delete().eq("user_id", userId)
@@ -2228,6 +2637,8 @@
         if (profileError) throw profileError;
 
         await ensureProfileAndStarterHabits();
+        openTaskListIds.clear();
+        await loadTaskLists();
         selectedShopItem = null;
         mapTiles = [];
         updatePlacementBar();
@@ -2256,7 +2667,7 @@
     $("#tab-login").addEventListener("click", () => switchTab("login"));
     $("#tab-register").addEventListener("click", () => switchTab("register"));
     $("#auth-form").addEventListener("submit", handleAuth);
-    $("#task-form").addEventListener("submit", addTask);
+    $("#task-list-form").addEventListener("submit", addTaskList);
     $("#habit-form").addEventListener("submit", addHabit);
     $("#goal-form").addEventListener("submit", addGoal);
     $("#garden-grid").addEventListener("pointerdown", handlePointerDown);
