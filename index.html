@@ -265,6 +265,10 @@
       font-weight: 900;
       pointer-events: none;
     }
+    .garden-grid.grid-hidden .garden-tile { border-color: transparent; }
+    .garden-grid.grid-hidden .garden-tile:hover { box-shadow: inset 0 0 0 2px rgba(255,246,171,.44); }
+    .garden-grid.grid-hidden .garden-tile.origin { box-shadow: none; }
+    .garden-grid.grid-hidden .tile-coordinate { display: none; }
     .map-status {
       position: fixed;
       z-index: 4;
@@ -395,6 +399,7 @@
       padding: 9px 0;
       border-bottom: 1px solid rgba(110,77,46,.19);
     }
+    .list-item.task-row { grid-template-columns: auto auto minmax(0, 1fr) auto auto auto; }
     .habit-item { grid-template-columns: 44px minmax(0, 1fr) auto auto; min-height: 63px; }
     .list-item:last-child, .habit-item:last-child { border-bottom: 0; }
     .check-btn, .habit-check {
@@ -437,6 +442,45 @@
     .edit-btn { color: #786145; font-size: 16px; }
     .edit-btn:hover { background: #e9f2d7; color: var(--green-dark); }
     .delete-btn:hover { background: #ffe7e1; color: var(--red); }
+    .task-list-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 9px;
+      border: 1px solid rgba(110,77,46,.2);
+      border-radius: 10px;
+      background: rgba(255,253,246,.66);
+    }
+    .task-list-tools .inline-input { min-height: 38px; }
+    .task-list-shortcuts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .drag-handle {
+      display: grid;
+      width: 24px;
+      height: 29px;
+      place-items: center;
+      color: #a7825b;
+      cursor: grab;
+      font-size: 16px;
+      font-weight: 900;
+      user-select: none;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .list-item.dragging { opacity: .48; }
+    .list.is-drag-over {
+      outline: 2px dashed rgba(49,94,56,.55);
+      outline-offset: 3px;
+      border-radius: 9px;
+    }
+    .list.empty-drop { min-height: 86px; }
+    .list-item.drop-before { box-shadow: inset 0 3px 0 rgba(49,94,56,.65); }
+    .list-item.drop-after { box-shadow: inset 0 -3px 0 rgba(49,94,56,.65); }
     .empty { padding: 25px 10px; color: var(--muted); text-align: center; }
     .empty-icon { margin-bottom: 7px; font-size: 30px; }
     .loading { padding: 20px 10px; color: var(--muted); font-size: 13px; font-weight: 800; text-align: center; }
@@ -635,6 +679,10 @@
       cursor: pointer;
     }
     .feedback-option input { accent-color: var(--green); }
+    .help-content { display: grid; gap: 12px; }
+    .help-entry { padding: 11px; border: 1px solid #dec49a; border-radius: 9px; background: #fffdf4; }
+    .help-entry strong { display: block; margin-bottom: 4px; color: #365f38; font-size: 13px; }
+    .help-entry p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
     .updates-list { display: grid; gap: 11px; }
     .update-entry { padding: 11px; border: 1px solid #dec49a; border-radius: 9px; background: #fffdf4; }
     .update-entry strong { display: block; margin-bottom: 4px; color: #365f38; font-size: 13px; }
@@ -712,7 +760,9 @@
       .panel-header { padding-inline: 12px; }
       .panel-body { padding: 12px; }
       .list-item { grid-template-columns: auto minmax(0, 1fr) auto; }
+      .list-item.task-row { grid-template-columns: auto auto minmax(0, 1fr) auto; }
       .list-item .delete-btn { grid-column: 3; }
+      .list-item.task-row .delete-btn { grid-column: 4; }
       .habit-item { grid-template-columns: 43px minmax(0, 1fr) auto; }
       .habit-item .delete-btn { grid-column: 3; }
       .placement-bar { gap: 8px; padding-left: 10px; }
@@ -781,6 +831,10 @@
             <input class="inline-input" id="new-task-list-input" type="text" maxlength="80" placeholder="New list name…" aria-label="New task list name" required />
             <button class="btn btn-green btn-sm" type="submit">Add list</button>
           </form>
+          <div class="task-list-shortcuts" aria-label="Open utility panels">
+            <button class="btn btn-paper btn-sm" id="open-habits-from-lists" type="button">Open Habits</button>
+            <button class="btn btn-paper btn-sm" id="open-goals-from-lists" type="button">Open Goals</button>
+          </div>
           <div id="task-lists-container"><div class="loading">Loading lists…</div></div>
         </div>
       </section>
@@ -850,10 +904,10 @@
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
       <button class="menu-action" id="return-center-btn" type="button"><span class="menu-icon">⌖</span><span>Return to center</span></button>
+      <button class="menu-action" id="toggle-grid-btn" type="button"><span class="menu-icon">#</span><span id="toggle-grid-label">Hide grid</span></button>
       <div id="task-menu-items"></div>
-      <button class="menu-action" type="button" data-toggle-panel="habits"><span class="menu-icon">↻</span><span>Habits</span></button>
-      <button class="menu-action" type="button" data-toggle-panel="goals"><span class="menu-icon">◎</span><span>Goals</span></button>
       <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
+      <button class="menu-action" id="help-btn" type="button"><span class="menu-icon">?</span><span>Help</span></button>
       <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Settings</span></button>
       <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span><span>Log out</span></button>
     </aside>
@@ -936,6 +990,41 @@
               <p>Use Feedback / report error in Settings to save a private report for review in Supabase.</p>
             </article>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="settings-card feedback-card">
+        <header class="panel-header">
+          <div class="panel-title" id="help-title">HELP</div>
+          <button class="icon-button" type="button" id="close-help-btn" aria-label="Close help">×</button>
+        </header>
+        <div class="settings-body help-content">
+          <article class="help-entry">
+            <strong>Garden map</strong>
+            <p>Drag the map to explore. Use Return to center to move tile 0,0 back to the middle. Toggle grid hides or shows tile borders and coordinates.</p>
+          </article>
+          <article class="help-entry">
+            <strong>Task lists</strong>
+            <p>Create up to three quick-access task lists in the menu. Additional lists are available inside Task Lists. You can open multiple lists at once.</p>
+          </article>
+          <article class="help-entry">
+            <strong>Tasks</strong>
+            <p>Tasks earn coins when completed. A new task defaults to 5 coins. Completing a task with the same exact title completes matching tasks in every list.</p>
+          </article>
+          <article class="help-entry">
+            <strong>Drag and drop</strong>
+            <p>Drag the handle next to an unfinished task to move it inside a list or to another open list. If ordering does not save, run the task order SQL update.</p>
+          </article>
+          <article class="help-entry">
+            <strong>Shop</strong>
+            <p>Open Shop, choose an item, then select a tile. Clicking an existing item removes it and refunds 50% of its shop price.</p>
+          </article>
+          <article class="help-entry">
+            <strong>Habits and goals</strong>
+            <p>Open Habits or Goals from Task Lists. Habits build streak bonuses up to +7 coins. Goals are bigger milestones with larger rewards.</p>
+          </article>
         </div>
       </div>
     </section>
@@ -1029,6 +1118,9 @@
     let shopItems = [];
     let selectedShopItem = null;
     let mapTiles = [];
+    let showGrid = localStorage.getItem("task-garden-show-grid") !== "false";
+    let taskSortOrderAvailable = true;
+    let draggedTask = null;
     let camera = { x: 0, y: 0 };
     let view = { cols: 17, rows: 13, tile: 54, cellWidth: 54, cellHeight: 54 };
     let menuCollapsed = false;
@@ -1361,11 +1453,11 @@
 
       const validIds = new Set(taskLists.map((list) => list.id));
       openTaskListIds = new Set([...openTaskListIds].filter((id) => validIds.has(id)));
-      if (!openTaskListIds.size && defaultList) openTaskListIds.add(defaultList.id);
 
       renderTaskMenu();
       renderTaskListManager();
       renderTaskListPanels();
+      renderTasks();
     }
 
     function renderTaskMenu() {
@@ -1476,6 +1568,29 @@
 
         const body = document.createElement("div");
         body.className = "panel-body";
+
+        const tools = document.createElement("div");
+        tools.className = "task-list-tools";
+        const renameInput = document.createElement("input");
+        renameInput.className = "inline-input";
+        renameInput.type = "text";
+        renameInput.maxLength = 80;
+        renameInput.value = list.name;
+        renameInput.setAttribute("aria-label", `Rename ${list.name}`);
+        const saveName = document.createElement("button");
+        saveName.className = "btn btn-paper btn-sm";
+        saveName.type = "button";
+        saveName.textContent = "Save";
+        saveName.addEventListener("click", () => renameTaskList(list.id, renameInput.value));
+        const deleteList = document.createElement("button");
+        deleteList.className = "btn btn-danger btn-sm";
+        deleteList.type = "button";
+        deleteList.textContent = "Delete";
+        deleteList.disabled = taskLists.length <= 1;
+        deleteList.addEventListener("click", () => askToDeleteTaskList(list));
+        tools.append(renameInput, saveName, deleteList);
+        body.append(tools);
+
         const form = document.createElement("form");
         form.className = "add-row";
         form.addEventListener("submit", (event) => addTask(event, list.id));
@@ -1530,14 +1645,32 @@
     }
 
     async function loadTasks() {
-      const { data, error } = await db
+      let query = db
         .from("tasks")
-        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
+        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id, sort_order")
         .eq("user_id", currentUser.id)
         .order("is_done", { ascending: true })
-        .order("created_at", { ascending: false });
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true });
+      let { data, error } = await query;
+
+      if (error && String(error.message || "").toLowerCase().includes("sort_order")) {
+        taskSortOrderAvailable = false;
+        const fallback = await db
+          .from("tasks")
+          .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
+          .eq("user_id", currentUser.id)
+          .order("is_done", { ascending: true })
+          .order("created_at", { ascending: true });
+        data = fallback.data;
+        error = fallback.error;
+      } else {
+        taskSortOrderAvailable = true;
+      }
+
       if (error) throw error;
       allTasksCache = (data || []).filter(isVisibleTask);
+      normalizeTaskOrderInMemory();
       renderTasks();
     }
 
@@ -1548,21 +1681,165 @@
       }
     }
 
+    function normalizeTaskOrderInMemory() {
+      const grouped = new Map();
+      for (const task of allTasksCache) {
+        const listId = normalTaskListId(task);
+        if (!grouped.has(listId)) grouped.set(listId, []);
+        grouped.get(listId).push(task);
+      }
+      for (const tasks of grouped.values()) {
+        tasks.sort(compareTasksForDisplay).forEach((task, index) => {
+          if (task.sort_order === undefined || task.sort_order === null) task.sort_order = index;
+        });
+      }
+    }
+
+    function compareTasksForDisplay(a, b) {
+      if (Boolean(a.is_done) !== Boolean(b.is_done)) return a.is_done ? 1 : -1;
+      const orderA = Number.isFinite(Number(a.sort_order)) ? Number(a.sort_order) : Number.MAX_SAFE_INTEGER;
+      const orderB = Number.isFinite(Number(b.sort_order)) ? Number(b.sort_order) : Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+    }
+
+    function tasksForList(listId) {
+      return allTasksCache
+        .filter((task) => normalTaskListId(task) === listId)
+        .sort(compareTasksForDisplay);
+    }
+
+    function nextTaskSortOrder(listId) {
+      const tasks = tasksForList(listId);
+      if (!tasks.length) return 0;
+      return Math.max(...tasks.map((task) => Number(task.sort_order || 0))) + 1;
+    }
+
+    function handleTaskDragStart(event, task) {
+      if (task.is_done) return;
+      draggedTask = { id: task.id, fromListId: normalTaskListId(task) };
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", task.id);
+      event.currentTarget.classList.add("dragging");
+    }
+
+    function handleTaskDragEnd(event) {
+      event.currentTarget.classList.remove("dragging");
+      clearTaskDropMarkers();
+      draggedTask = null;
+    }
+
+    function clearTaskDropMarkers() {
+      document.querySelectorAll(".list.is-drag-over").forEach((list) => list.classList.remove("is-drag-over"));
+      document.querySelectorAll(".list-item.drop-before, .list-item.drop-after").forEach((item) => item.classList.remove("drop-before", "drop-after"));
+    }
+
+    function taskDropInfo(event, listId) {
+      const targetItem = event.target.closest?.(".list-item[data-task-id]");
+      if (!targetItem) return { listId, beforeTaskId: null };
+      const rect = targetItem.getBoundingClientRect();
+      const after = event.clientY > rect.top + rect.height / 2;
+      targetItem.classList.toggle("drop-before", !after);
+      targetItem.classList.toggle("drop-after", after);
+      return {
+        listId,
+        beforeTaskId: after ? targetItem.dataset.nextTaskId || null : targetItem.dataset.taskId
+      };
+    }
+
+    function handleTaskDragOver(event, listId) {
+      if (!draggedTask) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      clearTaskDropMarkers();
+      const list = event.currentTarget;
+      list.classList.add("is-drag-over");
+      taskDropInfo(event, listId);
+    }
+
+    async function handleTaskDrop(event, listId) {
+      if (!draggedTask) return;
+      event.preventDefault();
+      const info = taskDropInfo(event, listId);
+      const taskId = draggedTask.id;
+      clearTaskDropMarkers();
+      draggedTask = null;
+      await moveTaskToListPosition(taskId, info.listId, info.beforeTaskId);
+    }
+
+    async function moveTaskToListPosition(taskId, targetListId, beforeTaskId = null) {
+      if (!taskSortOrderAvailable) {
+        showToast("Run the task order SQL update first to save drag-and-drop order.", "error");
+        return;
+      }
+      const moved = allTasksCache.find((task) => task.id === taskId);
+      if (!moved || moved.is_done) return;
+      const sourceListId = normalTaskListId(moved);
+      const targetTasks = tasksForList(targetListId).filter((task) => task.id !== taskId && !task.is_done);
+      const insertIndex = beforeTaskId ? Math.max(0, targetTasks.findIndex((task) => task.id === beforeTaskId)) : targetTasks.length;
+      const nextTargetTasks = [...targetTasks];
+      nextTargetTasks.splice(insertIndex < 0 ? targetTasks.length : insertIndex, 0, { ...moved, list_id: targetListId });
+
+      const updates = [];
+      nextTargetTasks.forEach((task, index) => {
+        updates.push(db.from("tasks").update({ list_id: targetListId, sort_order: index }).eq("id", task.id).eq("user_id", currentUser.id));
+      });
+
+      if (sourceListId !== targetListId) {
+        tasksForList(sourceListId).filter((task) => task.id !== taskId && !task.is_done).forEach((task, index) => {
+          updates.push(db.from("tasks").update({ sort_order: index }).eq("id", task.id).eq("user_id", currentUser.id));
+        });
+      }
+
+      const results = await Promise.all(updates);
+      const failed = results.find((result) => result.error);
+      if (failed?.error) return reportError(failed.error, "The task could not be moved.");
+      await loadTasks();
+    }
+
     function renderTasksForList(listId) {
-      const tasks = allTasksCache.filter((task) => normalTaskListId(task) === listId);
+      const tasks = tasksForList(listId);
       const selector = `#${taskContainerId(listId)}`;
       const container = $(selector);
       if (!container) return;
+      const list = document.createElement("ul");
+      list.className = "list" + (!tasks.length ? " empty-drop" : "");
+      list.dataset.dropListId = listId;
+      list.addEventListener("dragover", (event) => handleTaskDragOver(event, listId));
+      list.addEventListener("dragleave", (event) => {
+        if (!list.contains(event.relatedTarget)) clearTaskDropMarkers();
+      });
+      list.addEventListener("drop", (event) => handleTaskDrop(event, listId));
       if (!tasks.length) {
-        renderEmpty(selector, "📝", "No active tasks. Add one above.");
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        const icon = document.createElement("div");
+        icon.className = "empty-icon";
+        icon.textContent = "📝";
+        const text = document.createElement("p");
+        text.textContent = "No active tasks. Add one above or drag a task here.";
+        empty.append(icon, text);
+        list.append(empty);
+        container.innerHTML = "";
+        container.append(list);
         return;
       }
-      const list = document.createElement("ul");
-      list.className = "list";
 
+      const activeTasks = tasks.filter((task) => !task.is_done);
       for (const task of tasks) {
         const item = document.createElement("li");
-        item.className = "list-item";
+        item.className = "list-item task-row";
+        item.dataset.taskId = task.id;
+        item.dataset.nextTaskId = activeTasks[activeTasks.findIndex((candidate) => candidate.id === task.id) + 1]?.id || "";
+        if (!task.is_done) {
+          item.draggable = true;
+          item.addEventListener("dragstart", (event) => handleTaskDragStart(event, task));
+          item.addEventListener("dragend", handleTaskDragEnd);
+        }
+        const handle = document.createElement("span");
+        handle.className = "drag-handle";
+        handle.textContent = task.is_done ? "" : "☷";
+        handle.title = task.is_done ? "" : "Drag to reorder or move to another open list";
         const check = document.createElement("button");
         check.className = "check-btn" + (task.is_done ? " done" : "");
         check.type = "button";
@@ -1595,9 +1872,9 @@
           edit.title = "Edit task and reward";
           edit.setAttribute("aria-label", `Edit task: ${task.title}`);
           edit.addEventListener("click", () => openEditItem("task", task));
-          item.append(check, main, reward, edit);
+          item.append(handle, check, main, reward, edit);
         } else {
-          item.append(check, main, reward);
+          item.append(handle, check, main, reward);
         }
         const remove = document.createElement("button");
         remove.className = "delete-btn";
@@ -1621,13 +1898,15 @@
       const coinReward = Number(rewardSelect?.value || 5);
       if (!title) return showToast("Give the task a title.", "error");
 
-      const { error } = await db.from("tasks").insert({
+      const payload = {
         user_id: currentUser.id,
         list_id: listId,
         title,
         coin_reward: coinReward,
         is_done: false
-      });
+      };
+      if (taskSortOrderAvailable) payload.sort_order = nextTaskSortOrder(listId);
+      const { error } = await db.from("tasks").insert(payload);
       if (error) return reportError(error, "The task could not be added.");
       input.value = "";
       if (rewardSelect) rewardSelect.value = "5";
@@ -1737,6 +2016,7 @@
       openTaskListIds.delete(listId);
       renderTaskListPanels();
       renderTaskListManager();
+      renderTasks();
       updateMenuPanelStates();
     }
 
@@ -2196,6 +2476,7 @@
           grid.append(cell);
         }
       }
+      updateGridVisibility();
       updateMapStatus();
     }
 
@@ -2519,6 +2800,22 @@
       }
     }
 
+    function updateGridVisibility() {
+      const grid = $("#garden-grid");
+      grid.classList.toggle("grid-hidden", !showGrid);
+      const label = $("#toggle-grid-label");
+      if (label) label.textContent = showGrid ? "Hide grid" : "Show grid";
+      const button = $("#toggle-grid-btn");
+      if (button) button.classList.toggle("active", !showGrid);
+    }
+
+    function toggleGrid() {
+      showGrid = !showGrid;
+      localStorage.setItem("task-garden-show-grid", String(showGrid));
+      updateGridVisibility();
+      if (window.innerWidth <= 720) setMenuCollapsed(true);
+    }
+
     function returnToCenter() {
       camera = { x: 0, y: 0 };
       renderGardenGrid();
@@ -2550,6 +2847,25 @@
 
     function closeUpdates() {
       $("#updates-modal").classList.add("hidden");
+    }
+
+    function openHelp() {
+      $("#help-modal").classList.remove("hidden");
+    }
+
+    function closeHelp() {
+      $("#help-modal").classList.add("hidden");
+    }
+
+    function openPanelFromTaskLists(panelName) {
+      closePanel("task-lists");
+      const panel = $(`#panel-${panelName}`);
+      if (!panel) return;
+      if (window.innerWidth <= 720) closeAllWorkPanels();
+      panel.classList.add("open");
+      updatePanelLayout();
+      updateMenuPanelStates();
+      if (window.innerWidth <= 720) setMenuCollapsed(true);
     }
 
     async function submitFeedback(event) {
@@ -2676,6 +2992,10 @@
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
     $("#return-center-btn").addEventListener("click", returnToCenter);
+    $("#toggle-grid-btn").addEventListener("click", toggleGrid);
+    $("#help-btn").addEventListener("click", openHelp);
+    $("#open-habits-from-lists").addEventListener("click", () => openPanelFromTaskLists("habits"));
+    $("#open-goals-from-lists").addEventListener("click", () => openPanelFromTaskLists("goals"));
     $("#placement-close-btn").addEventListener("click", closePlacement);
     document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
       button.addEventListener("click", () => togglePanel(button.dataset.togglePanel));
@@ -2689,6 +3009,7 @@
     $("#updates-btn").addEventListener("click", openUpdates);
     $("#close-feedback-btn").addEventListener("click", closeFeedback);
     $("#close-updates-btn").addEventListener("click", closeUpdates);
+    $("#close-help-btn").addEventListener("click", closeHelp);
     $("#feedback-form").addEventListener("submit", submitFeedback);
     $("#edit-item-form").addEventListener("submit", submitEditItem);
     $("#close-edit-item-btn").addEventListener("click", closeEditItem);
@@ -2701,6 +3022,9 @@
     });
     $("#updates-modal").addEventListener("click", (event) => {
       if (event.target === $("#updates-modal")) closeUpdates();
+    });
+    $("#help-modal").addEventListener("click", (event) => {
+      if (event.target === $("#help-modal")) closeHelp();
     });
     $("#edit-item-modal").addEventListener("click", (event) => {
       if (event.target === $("#edit-item-modal")) closeEditItem();
@@ -2734,6 +3058,7 @@
     setMenuCollapsed(false);
     updatePanelLayout();
     updateMenuPanelStates();
+    updateGridVisibility();
     updatePlacementBar();
     db.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => applySession(session), 0);
