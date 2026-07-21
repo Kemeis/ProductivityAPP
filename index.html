@@ -903,8 +903,6 @@
 
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
-      <button class="menu-action" id="return-center-btn" type="button"><span class="menu-icon">⌖</span><span>Return to center</span></button>
-      <button class="menu-action" id="toggle-grid-btn" type="button"><span class="menu-icon">#</span><span id="toggle-grid-label">Hide grid</span></button>
       <div id="task-menu-items"></div>
       <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
       <button class="menu-action" id="help-btn" type="button"><span class="menu-icon">?</span><span>Help</span></button>
@@ -925,6 +923,9 @@
         </header>
         <div class="settings-body">
           <p class="settings-caption">Manage your account and garden data.</p>
+          <button class="btn btn-paper" id="return-center-btn" type="button">Return to center</button>
+          <button class="btn btn-paper" id="toggle-grid-btn" type="button"><span id="toggle-grid-label">Hide grid</span></button>
+          <button class="btn btn-paper" id="toggle-coordinates-btn" type="button"><span id="toggle-coordinates-label">Hide current coordinates</span></button>
           <button class="btn btn-paper" id="feedback-btn" type="button">Feedback / report error</button>
           <button class="btn btn-paper" id="updates-btn" type="button">Updates</button>
           <button class="btn btn-paper" id="reset-progress-btn" type="button">Reset progress</button>
@@ -1003,7 +1004,7 @@
         <div class="settings-body help-content">
           <article class="help-entry">
             <strong>Garden map</strong>
-            <p>Drag the map to explore. Use Return to center to move tile 0,0 back to the middle. Toggle grid hides or shows tile borders and coordinates.</p>
+            <p>Drag the map to explore. Settings contains Return to center, Toggle grid, and the current coordinates display.</p>
           </article>
           <article class="help-entry">
             <strong>Task lists</strong>
@@ -1119,6 +1120,7 @@
     let selectedShopItem = null;
     let mapTiles = [];
     let showGrid = localStorage.getItem("task-garden-show-grid") !== "false";
+    let showCoordinates = localStorage.getItem("task-garden-show-coordinates") !== "false";
     let taskSortOrderAvailable = true;
     let draggedTask = null;
     let camera = { x: 0, y: 0 };
@@ -2813,14 +2815,28 @@
       showGrid = !showGrid;
       localStorage.setItem("task-garden-show-grid", String(showGrid));
       updateGridVisibility();
-      if (window.innerWidth <= 720) setMenuCollapsed(true);
+    }
+
+    function updateCoordinatesVisibility() {
+      const status = $("#map-status");
+      if (status) status.classList.toggle("hidden", !showCoordinates);
+      const label = $("#toggle-coordinates-label");
+      if (label) label.textContent = showCoordinates ? "Hide current coordinates" : "Show current coordinates";
+      const button = $("#toggle-coordinates-btn");
+      if (button) button.classList.toggle("active", showCoordinates);
+    }
+
+    function toggleCoordinates() {
+      showCoordinates = !showCoordinates;
+      localStorage.setItem("task-garden-show-coordinates", String(showCoordinates));
+      updateCoordinatesVisibility();
     }
 
     function returnToCenter() {
       camera = { x: 0, y: 0 };
       renderGardenGrid();
       loadVisibleMapTiles().catch((error) => reportError(error, "The garden could not return to the center."));
-      if (window.innerWidth <= 720) setMenuCollapsed(true);
+      closeSettings();
     }
 
     function openSettings() {
@@ -2993,6 +3009,7 @@
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
     $("#return-center-btn").addEventListener("click", returnToCenter);
     $("#toggle-grid-btn").addEventListener("click", toggleGrid);
+    $("#toggle-coordinates-btn").addEventListener("click", toggleCoordinates);
     $("#help-btn").addEventListener("click", openHelp);
     $("#open-habits-from-lists").addEventListener("click", () => openPanelFromTaskLists("habits"));
     $("#open-goals-from-lists").addEventListener("click", () => openPanelFromTaskLists("goals"));
@@ -3059,6 +3076,7 @@
     updatePanelLayout();
     updateMenuPanelStates();
     updateGridVisibility();
+    updateCoordinatesVisibility();
     updatePlacementBar();
     db.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => applySession(session), 0);
