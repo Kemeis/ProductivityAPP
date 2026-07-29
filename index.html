@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
+  <!-- Task Garden build: settings-submenus-no-updates-2026-07-29 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -959,7 +960,7 @@
         <div class="settings-body">
           <p class="settings-caption">Manage your account and garden data.</p>
           <button class="btn btn-paper" id="feedback-btn" type="button">Feedback / report error</button>
-          <button class="btn btn-paper" id="updates-btn" type="button">Updates</button>
+          <!-- Updates removed for early development. -->
 
           <details class="settings-submenu">
             <summary class="btn btn-paper settings-submenu-summary">Visual</summary>
@@ -1019,27 +1020,6 @@
           </label>
           <button class="btn btn-green" id="send-feedback-btn" type="submit">Send feedback</button>
         </form>
-      </div>
-    </section>
-
-    <section class="modal hidden" id="updates-modal" role="dialog" aria-modal="true" aria-labelledby="updates-title">
-      <div class="settings-card">
-        <header class="panel-header">
-          <div class="panel-title" id="updates-title">UPDATES</div>
-          <button class="icon-button" type="button" id="close-updates-btn" aria-label="Close updates">×</button>
-        </header>
-        <div class="settings-body">
-          <div class="updates-list">
-            <article class="update-entry">
-              <strong>Current build</strong>
-              <p>Full-screen garden, movable camera, floating panels, shop placement, reward editing and streak bonuses.</p>
-            </article>
-            <article class="update-entry">
-              <strong>Feedback</strong>
-              <p>Use Feedback / report error in Settings to save a private report for review in Supabase.</p>
-            </article>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -2904,14 +2884,6 @@
       $("#feedback-modal").classList.add("hidden");
     }
 
-    function openUpdates() {
-      closeSettings();
-      $("#updates-modal").classList.remove("hidden");
-    }
-
-    function closeUpdates() {
-      $("#updates-modal").classList.add("hidden");
-    }
 
     function openHelp() {
       $("#help-modal").classList.remove("hidden");
@@ -3071,9 +3043,7 @@
     $("#settings-btn").addEventListener("click", openSettings);
     $("#close-settings-btn").addEventListener("click", closeSettings);
     $("#feedback-btn").addEventListener("click", openFeedback);
-    $("#updates-btn").addEventListener("click", openUpdates);
     $("#close-feedback-btn").addEventListener("click", closeFeedback);
-    $("#close-updates-btn").addEventListener("click", closeUpdates);
     $("#close-help-btn").addEventListener("click", closeHelp);
     $("#feedback-form").addEventListener("submit", submitFeedback);
     $("#edit-item-form").addEventListener("submit", submitEditItem);
@@ -3084,9 +3054,6 @@
     });
     $("#feedback-modal").addEventListener("click", (event) => {
       if (event.target === $("#feedback-modal")) closeFeedback();
-    });
-    $("#updates-modal").addEventListener("click", (event) => {
-      if (event.target === $("#updates-modal")) closeUpdates();
     });
     $("#help-modal").addEventListener("click", (event) => {
       if (event.target === $("#help-modal")) closeHelp();
