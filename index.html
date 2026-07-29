@@ -633,6 +633,41 @@
     }
     .settings-body { display: grid; gap: 10px; padding: 17px; }
     .settings-caption { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+    .settings-submenu {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+    }
+    .settings-submenu summary {
+      list-style: none;
+    }
+    .settings-submenu summary::-webkit-details-marker {
+      display: none;
+    }
+    .settings-submenu-summary {
+      width: 100%;
+      position: relative;
+    }
+    .settings-submenu-summary::after {
+      content: "▾";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      font-size: 12px;
+      color: #76522e;
+      transition: transform .16s ease;
+    }
+    .settings-submenu[open] .settings-submenu-summary::after {
+      transform: translateY(-50%) rotate(0deg);
+    }
+    .settings-submenu-content {
+      display: grid;
+      gap: 9px;
+      padding: 0 0 2px 14px;
+      border-left: 3px solid rgba(133,87,53,.28);
+    }
     .confirm-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -923,13 +958,26 @@
         </header>
         <div class="settings-body">
           <p class="settings-caption">Manage your account and garden data.</p>
-          <button class="btn btn-paper" id="return-center-btn" type="button">Return to center</button>
-          <button class="btn btn-paper" id="toggle-grid-btn" type="button"><span id="toggle-grid-label">Hide grid</span></button>
-          <button class="btn btn-paper" id="toggle-coordinates-btn" type="button"><span id="toggle-coordinates-label">Hide current coordinates</span></button>
           <button class="btn btn-paper" id="feedback-btn" type="button">Feedback / report error</button>
           <button class="btn btn-paper" id="updates-btn" type="button">Updates</button>
-          <button class="btn btn-paper" id="reset-progress-btn" type="button">Reset progress</button>
-          <button class="btn btn-danger" id="delete-account-btn" type="button">Delete account</button>
+
+          <details class="settings-submenu">
+            <summary class="btn btn-paper settings-submenu-summary">Visual</summary>
+            <div class="settings-submenu-content">
+              <button class="btn btn-paper" id="return-center-btn" type="button">Return to center</button>
+              <button class="btn btn-paper" id="toggle-grid-btn" type="button"><span id="toggle-grid-label">Hide grid</span></button>
+              <button class="btn btn-paper" id="toggle-coordinates-btn" type="button"><span id="toggle-coordinates-label">Hide current coordinates</span></button>
+            </div>
+          </details>
+
+          <details class="settings-submenu">
+            <summary class="btn btn-paper settings-submenu-summary">Account</summary>
+            <div class="settings-submenu-content">
+              <button class="btn btn-paper" id="reset-progress-btn" type="button">Reset progress</button>
+              <button class="btn btn-danger" id="delete-account-btn" type="button">Delete account</button>
+            </div>
+          </details>
+
           <a class="btn btn-paper" href="./privacy.html">Privacy Policy</a>
           <a class="btn btn-paper" href="https://kemeis.github.io/Portfolio/" target="_blank" rel="noopener noreferrer">Credentials</a>
         </div>
