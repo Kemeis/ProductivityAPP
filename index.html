@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
-  <!-- Task Garden build: settings-submenus-no-updates-2026-07-29 -->
+  <!-- Task Garden build: options-feedback-under-lists-2026-07-29 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -940,9 +940,10 @@
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
       <div id="task-menu-items"></div>
+      <button class="menu-action" id="feedback-btn" type="button"><span class="menu-icon">!</span><span>Feedback / report error</span></button>
       <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
       <button class="menu-action" id="help-btn" type="button"><span class="menu-icon">?</span><span>Help</span></button>
-      <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Settings</span></button>
+      <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Options</span></button>
       <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span><span>Log out</span></button>
     </aside>
 
@@ -954,13 +955,12 @@
     <section class="modal hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="settings-card">
         <header class="panel-header">
-          <div class="panel-title" id="settings-title">SETTINGS</div>
-          <button class="icon-button" type="button" id="close-settings-btn" aria-label="Close Settings">×</button>
+          <div class="panel-title" id="settings-title">OPTIONS</div>
+          <button class="icon-button" type="button" id="close-settings-btn" aria-label="Close Options">×</button>
         </header>
         <div class="settings-body">
           <p class="settings-caption">Manage your account and garden data.</p>
-          <button class="btn btn-paper" id="feedback-btn" type="button">Feedback / report error</button>
-          <!-- Updates removed for early development. -->
+          <!-- Updates removed for early development. Feedback moved to the main menu. -->
 
           <details class="settings-submenu">
             <summary class="btn btn-paper settings-submenu-summary">Visual</summary>
@@ -1032,7 +1032,7 @@
         <div class="settings-body help-content">
           <article class="help-entry">
             <strong>Garden map</strong>
-            <p>Drag the map to explore. Settings contains Return to center, Toggle grid, and the current coordinates display.</p>
+            <p>Drag the map to explore. Options contains Return to center, Toggle grid, and the current coordinates display.</p>
           </article>
           <article class="help-entry">
             <strong>Task lists</strong>
