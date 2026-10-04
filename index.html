@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
-  <!-- Task Garden build: task-checkbox-colors-2026-10-04 -->
+  <!-- Task Garden build: task-checkbox-colors-uncheck-2026-10-04 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -424,6 +424,19 @@
       font-weight: 900;
     }
     .habit-check { width: 43px; height: 43px; border-radius: 9px; color: #754d2c; font-size: 18px; }
+    .color-palette { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+    .color-choice { width:30px; height:30px; min-width:30px; padding:0; border-radius:50%; border:2px solid rgba(73,48,27,.28); cursor:pointer; box-shadow:0 2px 0 rgba(73,48,27,.14); transition:transform .12s ease, box-shadow .12s ease; }
+    .color-choice:hover { transform:translateY(-1px); }
+    .color-choice.selected { border-color:#49301b; box-shadow:0 0 0 2px #fffdf4, 0 0 0 4px #49301b; }
+    .color-choice[data-color="green"] { background:var(--task-green); }
+    .color-choice[data-color="blue"] { background:var(--task-blue); }
+    .color-choice[data-color="yellow"] { background:var(--task-yellow); }
+    .color-choice[data-color="red"] { background:var(--task-red); }
+    .color-choice[data-color="purple"] { background:var(--task-purple); }
+    .color-choice[data-color="orange"] { background:var(--task-orange); }
+    .add-task-color-wrap { grid-column:1 / -1; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+    .add-task-color-label { font-size:12px; font-weight:900; color:#754d2c; }
+
     .check-btn.task-colored {
       border-color: var(--task-color, var(--paper-line));
       background: color-mix(in srgb, var(--task-color, var(--paper-line)) 14%, #fff);
@@ -776,6 +789,8 @@
     }
 
     @media (max-width: 720px) {
+      .add-task-color-wrap { justify-content:space-between; }
+      .add-task-palette { justify-content:flex-end; }
       .auth-card { padding: 27px 22px; }
       .panel-layer { display: block; padding: 0; }
       .panel-window,
@@ -1087,17 +1102,18 @@
             <span>Coin reward</span>
             <select class="inline-select" id="edit-item-reward"></select>
           </label>
-          <label class="field hidden" id="edit-item-color-group" for="edit-item-color">
+          <div class="field hidden" id="edit-item-color-group">
             <span>Checkbox color</span>
-            <select class="inline-select" id="edit-item-color">
-              <option value="green">Green</option>
-              <option value="blue">Blue</option>
-              <option value="yellow">Yellow</option>
-              <option value="red">Red</option>
-              <option value="purple">Purple</option>
-              <option value="orange">Orange</option>
-            </select>
-          </label>
+            <div class="color-palette" id="edit-item-color-palette" role="radiogroup" aria-label="Checkbox color">
+              <button type="button" class="color-choice" data-color="green" aria-label="Green" title="Green"></button>
+              <button type="button" class="color-choice" data-color="blue" aria-label="Blue" title="Blue"></button>
+              <button type="button" class="color-choice" data-color="yellow" aria-label="Yellow" title="Yellow"></button>
+              <button type="button" class="color-choice" data-color="red" aria-label="Red" title="Red"></button>
+              <button type="button" class="color-choice" data-color="purple" aria-label="Purple" title="Purple"></button>
+              <button type="button" class="color-choice" data-color="orange" aria-label="Orange" title="Orange"></button>
+            </div>
+            <input type="hidden" id="edit-item-color" value="green">
+          </div>
           <label class="field hidden" id="edit-item-deadline-group" for="edit-item-deadline">
             <span>Deadline <small>(optional)</small></span>
             <input id="edit-item-deadline" type="date" />
@@ -1676,11 +1692,31 @@
         hint.className = "duplicate-hint hidden";
         hint.id = taskHintId(list.id);
 
+        const colorWrap = document.createElement("div");
+        colorWrap.className = "add-task-color-wrap";
+        const colorLabel = document.createElement("span");
+        colorLabel.className = "add-task-color-label";
+        colorLabel.textContent = "Color";
+        const colorPalette = document.createElement("div");
+        colorPalette.className = "color-palette add-task-palette";
+        colorPalette.setAttribute("role", "radiogroup");
+        colorPalette.setAttribute("aria-label", "New task color");
+        colorPalette.dataset.value = "green";
+        ["green", "blue", "yellow", "red", "purple", "orange"].forEach((color, index) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "color-choice" + (index === 0 ? " selected" : "");
+          b.dataset.color = color;
+          b.setAttribute("aria-label", color);
+          b.title = color;
+          colorPalette.append(b);
+        });
+        colorWrap.append(colorLabel, colorPalette);
         const submit = document.createElement("button");
         submit.className = "btn btn-green btn-sm";
         submit.type = "submit";
         submit.textContent = "Add task";
-        form.append(input, select, hint, submit);
+        form.append(input, select, hint, colorWrap, submit);
 
         const container = document.createElement("div");
         container.id = taskContainerId(list.id);
@@ -1903,9 +1939,13 @@
         }
         check.type = "button";
         check.textContent = task.is_done ? "✓" : "";
-        check.title = task.is_done ? "Completed today" : "Mark task as complete";
-        check.disabled = task.is_done;
-        if (!task.is_done) check.addEventListener("click", (event) => completeTask(task, event));
+        check.title = task.is_done ? "Uncheck task — reward becomes 0 coins" : "Mark task as complete";
+        check.disabled = false;
+        if (task.is_done) {
+          check.addEventListener("click", () => uncompleteTask(task));
+        } else {
+          check.addEventListener("click", (event) => completeTask(task, event));
+        }
 
         const main = document.createElement("div");
         main.className = "item-main";
@@ -1953,8 +1993,11 @@
       event.preventDefault();
       const input = $(`#${taskInputId(listId)}`);
       const rewardSelect = $(`#${taskRewardId(listId)}`);
+      const form = input?.closest("form");
+      const colorPalette = form?.querySelector(".add-task-palette");
       const title = cleanText(input?.value, 160);
       const coinReward = Number(rewardSelect?.value || 5);
+      const color = colorPalette?.dataset.value || "green";
       if (!title) return showToast("Give the task a title.", "error");
 
       const payload = {
@@ -1962,7 +2005,7 @@
         list_id: listId,
         title,
         coin_reward: coinReward,
-        color: "green",
+        color,
         is_done: false
       };
       if (taskSortOrderAvailable) payload.sort_order = nextTaskSortOrder(listId);
@@ -2013,6 +2056,35 @@
         await loadTasks();
       } catch (error) {
         reportError(error, "The task could not be completed.");
+      } finally {
+        busyActions.delete(lock);
+      }
+    }
+
+    async function uncompleteTask(task) {
+      const lock = `uncomplete-task-${task.id}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
+      try {
+        const { data, error } = await db
+          .from("tasks")
+          .update({
+            is_done: false,
+            completed_at: null,
+            coin_reward: 0
+          })
+          .eq("id", task.id)
+          .eq("user_id", currentUser.id)
+          .eq("is_done", true)
+          .select("id");
+
+        if (error) throw error;
+        if (!data?.length) return showToast("This task was already unchecked.", "error");
+
+        showToast("Task unchecked. Its reward is now 0 coins.", "success");
+        await loadTasks();
+      } catch (error) {
+        reportError(error, "The task could not be unchecked.");
       } finally {
         busyActions.delete(lock);
       }
@@ -2415,6 +2487,22 @@
       }
     }
 
+    document.addEventListener("click", (event) => {
+      const addChoice = event.target.closest(".add-task-palette .color-choice");
+      if (addChoice) {
+        const palette = addChoice.closest(".add-task-palette");
+        palette.dataset.value = addChoice.dataset.color;
+        palette.querySelectorAll(".color-choice").forEach(b => b.classList.toggle("selected", b === addChoice));
+        return;
+      }
+      const editChoice = event.target.closest("#edit-item-color-palette .color-choice");
+      if (editChoice) {
+        const palette = editChoice.closest(".color-palette");
+        palette.querySelectorAll(".color-choice").forEach(b => b.classList.toggle("selected", b === editChoice));
+        $("#edit-item-color").value = editChoice.dataset.color;
+      }
+    });
+
     function openEditItem(kind, item) {
       if (item.is_done) return;
       editingItem = { kind, id: item.id };
@@ -2423,7 +2511,11 @@
       $("#edit-item-name").value = item.title || "";
       setRewardOptions($("#edit-item-reward"), isGoal ? GOAL_REWARDS : TASK_REWARDS, item.coin_reward);
       $("#edit-item-color-group").classList.toggle("hidden", isGoal);
-      $("#edit-item-color").value = item.color || "green";
+      const editColor = item.color || "green";
+      $("#edit-item-color").value = editColor;
+      $("#edit-item-color-palette")?.querySelectorAll(".color-choice").forEach(b => {
+        b.classList.toggle("selected", b.dataset.color === editColor);
+      });
       $("#edit-item-deadline-group").classList.toggle("hidden", !isGoal);
       $("#edit-item-deadline").value = isGoal ? (item.deadline || "") : "";
       $("#edit-item-modal").classList.remove("hidden");
