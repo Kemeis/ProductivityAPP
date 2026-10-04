@@ -234,7 +234,7 @@
       min-width: 0;
       min-height: 0;
       place-items: center;
-      overflow: hidden;
+      overflow: visible;
       padding: 0;
       border: 1px solid rgba(49, 104, 47, .54);
       background-color: #91c96d;
@@ -249,23 +249,32 @@
     .garden-tile:hover { box-shadow: inset 0 0 0 2px rgba(255,246,171,.82); }
     .garden-tile.origin { box-shadow: inset 0 0 0 2px rgba(255,239,132,.9); }
     .garden-tile.occupied { background-color: #9dcb73; }
-    .garden-tile.asset-anchor {
-      z-index: 8;
+    .garden-tile.placement-hover {
+      background: #8e8e8e !important;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.34);
     }
-    .garden-tile.asset-covered {
-      background: transparent;
+    .garden-tile.placement-hover-invalid {
+      background: #8b5d5d !important;
+      box-shadow: inset 0 0 0 2px rgba(255,230,230,.42);
     }
-    .garden-asset {
+    .garden-sprite {
       position: absolute;
-      left: 0;
-      top: 0;
-      z-index: 4;
+      z-index: 8;
+      left: 50%;
+      bottom: 0;
+      width: var(--sprite-width, calc(var(--tile-size) - 4px));
+      height: var(--sprite-height, calc(var(--tile-size) - 4px));
       object-fit: contain;
-      object-position: top left;
       image-rendering: pixelated;
+      transform: translateX(-50%);
       pointer-events: none;
-      user-select: none;
-      filter: drop-shadow(1px 2px 0 rgba(30,65,24,.25));
+      filter: drop-shadow(1px 2px 0 rgba(30,65,24,.22));
+    }
+    .garden-sprite.sprite-2x2 {
+      width: calc(var(--tile-size) * 2 - 4px);
+      height: calc(var(--tile-size) * 2 - 4px);
+      left: calc(50% + var(--tile-size) / 2);
+      bottom: -1px;
     }
     .garden-icon {
       position: relative;
@@ -435,68 +444,6 @@
       font-size: 16px;
       font-weight: 900;
     }
-    .check-btn.task-color {
-      border-color: var(--task-color, #5f9e50);
-      background: #fff;
-      color: #fff;
-    }
-    .check-btn.task-color.done {
-      border-color: var(--task-color, #5f9e50);
-      background: var(--task-color, #5f9e50);
-      color: #fff;
-    }
-    .check-btn.task-color.unchecked-done {
-      border-color: var(--task-color, #5f9e50);
-      background: #fff;
-      color: transparent;
-    }
-    .task-create-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 93px auto auto;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 13px;
-    }
-    .task-create-row .duplicate-hint {
-      grid-column: 1 / -1;
-    }
-    .task-color-picker {
-      display: inline-flex;
-      min-height: 43px;
-      align-items: center;
-      gap: 7px;
-      padding: 5px 8px;
-      border: 2px solid #d0ab77;
-      border-radius: 9px;
-      background: #fff;
-    }
-    .task-color-label {
-      color: #76522e;
-      font-size: 11px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-    .color-swatch {
-      width: 31px;
-      height: 31px;
-      padding: 0;
-      border: 2px solid transparent;
-      border-radius: 50%;
-      background: var(--swatch-color);
-      cursor: pointer;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.16);
-    }
-    .color-swatch:hover { transform: translateY(-1px); }
-    .color-swatch.selected {
-      border-color: #315e38;
-      box-shadow: 0 0 0 2px #fff, 0 0 0 4px #315e38;
-    }
-    .edit-color-picker {
-      justify-content: flex-start;
-      width: 100%;
-      min-height: 48px;
-    }
-
     .habit-check { width: 43px; height: 43px; border-radius: 9px; color: #754d2c; font-size: 18px; }
     .check-btn.done, .habit-check.done { border-color: var(--green-dark); background: var(--green); color: #fff; }
     .check-btn[disabled], .habit-check[disabled] { opacity: 1; cursor: default; }
@@ -584,7 +531,8 @@
       cursor: pointer;
     }
     .shop-item.selected { border-color: var(--green-dark); background: #e7f3d0; box-shadow: inset 0 0 0 2px rgba(95,158,80,.2); }
-    .shop-icon { font-size: 25px; text-align: center; }
+    .shop-icon { display: grid; min-height: 34px; place-items: center; font-size: 25px; text-align: center; }
+    .shop-icon img { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
     .shop-name { display: block; overflow: hidden; font-size: 12px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
     .shop-price { display: block; margin-top: 2px; color: #9b6518; font-size: 11px; font-weight: 900; }
     .plants-note { margin: 11px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -871,17 +819,6 @@
       }
       .task-list-row { grid-template-columns: minmax(0, 1fr) auto; }
       .task-list-row .btn { width: 100%; }
-      .task-create-row {
-        grid-template-columns: minmax(0, 1fr) 93px;
-      }
-      .task-create-row .task-color-picker {
-        grid-column: 1 / -1;
-        justify-content: flex-start;
-      }
-      .task-create-row > .btn {
-        grid-column: 1 / -1;
-      }
-      .task-color-picker { width: 100%; }
     }
     @media (max-width: 400px) {
       .panel-header { padding-inline: 12px; }
@@ -1131,7 +1068,7 @@
           </article>
           <article class="help-entry">
             <strong>Tasks</strong>
-            <p>Tasks earn coins when completed. You can choose a checkbox color. Unchecking a completed task does not remove coins, but changes its reward to 0.</p>
+            <p>Tasks earn coins when completed. A new task defaults to 5 coins. Completing a task with the same exact title completes matching tasks in every list.</p>
           </article>
           <article class="help-entry">
             <strong>Drag and drop</strong>
@@ -1164,10 +1101,6 @@
             <span>Coin reward</span>
             <select class="inline-select" id="edit-item-reward"></select>
           </label>
-          <div class="field" id="edit-item-color-group">
-            <span>Checkbox color</span>
-            <div id="edit-task-color-picker"></div>
-          </div>
           <label class="field hidden" id="edit-item-deadline-group" for="edit-item-deadline">
             <span>Deadline <small>(optional)</small></span>
             <input id="edit-item-deadline" type="date" />
@@ -1223,15 +1156,6 @@
     const PANEL_NAMES = ["habits", "goals", "plants", "task-lists"];
     const TASK_REWARDS = [5, 10, 20, 40];
     const GOAL_REWARDS = [25, 50, 100, 200];
-    const TASK_COLORS = {
-      green: "#5f9e50",
-      blue: "#4d83bd",
-      yellow: "#d89b20",
-      red: "#bd4d3a",
-      purple: "#7e58a5",
-      orange: "#c87524"
-    };
-    const DEFAULT_TASK_COLOR = "green";
     const SHOP_DISPLAY_NAMES = {
       path: "Path",
       flower: "Flower",
@@ -1240,6 +1164,19 @@
       house: "House",
       bush: "Bush",
       bench: "Bench"
+    };
+    const SPRITE_ASSETS = {
+      grass: "assets/grass.png",
+      path: "assets/path.png",
+      water: "assets/water.png",
+      pond: "assets/water.png",
+      tree: "assets/tree_2x2.png",
+      stone: "assets/stone.png",
+      bush: "assets/grass.png"
+    };
+    const SPRITE_FOOTPRINTS = {
+      tree: { width: 2, height: 2 },
+      default: { width: 1, height: 1 }
     };
 
     let currentUser = null;
@@ -1259,12 +1196,12 @@
     let view = { cols: 17, rows: 13, tile: 54, cellWidth: 54, cellHeight: 54 };
     let menuCollapsed = false;
     let panState = null;
+    let placementHover = null;
     let mapRequestVersion = 0;
     let mapLoadTimer = null;
     let toastTimer = null;
     let confirmAction = null;
     let editingItem = null;
-    const taskCreateColors = new Map();
     const busyActions = new Set();
 
     const $ = (selector) => document.querySelector(selector);
@@ -1296,6 +1233,53 @@
 
     function iconFor(itemType) {
       return TILE_ICONS[itemType] || TILE_ICONS.default;
+    }
+
+    function spriteSrcFor(itemType) {
+      return SPRITE_ASSETS[itemType] || null;
+    }
+
+    function footprintFor(itemOrType) {
+      const type = typeof itemOrType === "string" ? itemOrType : itemOrType?.item_type;
+      return SPRITE_FOOTPRINTS[type] || SPRITE_FOOTPRINTS.default;
+    }
+
+    function footprintCells(x, y, itemOrType) {
+      const footprint = footprintFor(itemOrType);
+      const cells = [];
+      for (let dy = 0; dy < footprint.height; dy += 1) {
+        for (let dx = 0; dx < footprint.width; dx += 1) {
+          cells.push({ x: x + dx, y: y + dy });
+        }
+      }
+      return cells;
+    }
+
+    function placedAtOrCovering(x, y) {
+      return mapTiles.find((tile) => footprintCells(tile.x, tile.y, tile.item_type).some((cell) => cell.x === x && cell.y === y)) || null;
+    }
+
+    function placementFits(x, y, item) {
+      return footprintCells(x, y, item).every((cell) => !placedAtOrCovering(cell.x, cell.y));
+    }
+
+    function clearPlacementHover() {
+      placementHover = null;
+      document.querySelectorAll(".garden-tile.placement-hover, .garden-tile.placement-hover-invalid").forEach((tile) => {
+        tile.classList.remove("placement-hover", "placement-hover-invalid");
+      });
+    }
+
+    function updatePlacementHover(x, y) {
+      clearPlacementHover();
+      if (!selectedShopItem) return;
+      const cells = footprintCells(x, y, selectedShopItem);
+      const fits = placementFits(x, y, selectedShopItem);
+      placementHover = { x, y };
+      cells.forEach((cell) => {
+        const tile = document.querySelector(`.garden-tile[data-x="${cell.x}"][data-y="${cell.y}"]`);
+        if (tile) tile.classList.add(fits ? "placement-hover" : "placement-hover-invalid");
+      });
     }
 
     function shopDisplayName(itemOrType) {
@@ -1560,56 +1544,6 @@
       return `duplicate-hint-${listId}`;
     }
 
-    function taskColorId(listId) {
-      return `task-color-picker-${listId}`;
-    }
-
-    function normalizeTaskColor(color) {
-      return Object.prototype.hasOwnProperty.call(TASK_COLORS, color) ? color : DEFAULT_TASK_COLOR;
-    }
-
-    function taskColorHex(color) {
-      return TASK_COLORS[normalizeTaskColor(color)];
-    }
-
-    function createColorPicker(listId, selectedColor = DEFAULT_TASK_COLOR, extraClass = "") {
-      const picker = document.createElement("div");
-      picker.className = `task-color-picker ${extraClass}`.trim();
-      picker.id = listId ? taskColorId(listId) : "edit-task-color-picker";
-      picker.setAttribute("role", "group");
-      picker.setAttribute("aria-label", "Checkbox color");
-
-      const label = document.createElement("span");
-      label.className = "task-color-label";
-      label.textContent = "Color";
-      picker.append(label);
-
-      for (const [name, hex] of Object.entries(TASK_COLORS)) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "color-swatch" + (name === normalizeTaskColor(selectedColor) ? " selected" : "");
-        button.style.setProperty("--swatch-color", hex);
-        button.dataset.color = name;
-        button.title = name.charAt(0).toUpperCase() + name.slice(1);
-        button.setAttribute("aria-label", `Checkbox color: ${button.title}`);
-        button.setAttribute("aria-pressed", String(name === normalizeTaskColor(selectedColor)));
-        button.addEventListener("click", () => {
-          picker.querySelectorAll(".color-swatch").forEach((swatch) => {
-            const active = swatch === button;
-            swatch.classList.toggle("selected", active);
-            swatch.setAttribute("aria-pressed", String(active));
-          });
-          if (listId) taskCreateColors.set(listId, name);
-        });
-        picker.append(button);
-      }
-      return picker;
-    }
-
-    function selectedTaskCreateColor(listId) {
-      return normalizeTaskColor(taskCreateColors.get(listId) || DEFAULT_TASK_COLOR);
-    }
-
     async function loadTaskLists() {
       const { data, error } = await db
         .from("task_lists")
@@ -1777,7 +1711,7 @@
         body.append(tools);
 
         const form = document.createElement("form");
-        form.className = "task-create-row";
+        form.className = "add-row";
         form.addEventListener("submit", (event) => addTask(event, list.id));
 
         const input = document.createElement("input");
@@ -1806,14 +1740,11 @@
         hint.className = "duplicate-hint hidden";
         hint.id = taskHintId(list.id);
 
-        if (!taskCreateColors.has(list.id)) taskCreateColors.set(list.id, DEFAULT_TASK_COLOR);
-        const colorPicker = createColorPicker(list.id, selectedTaskCreateColor(list.id));
-
         const submit = document.createElement("button");
         submit.className = "btn btn-green btn-sm";
         submit.type = "submit";
         submit.textContent = "Add task";
-        form.append(input, select, colorPicker, submit, hint);
+        form.append(input, select, hint, submit);
 
         const container = document.createElement("div");
         container.id = taskContainerId(list.id);
@@ -1835,7 +1766,7 @@
     async function loadTasks() {
       let query = db
         .from("tasks")
-        .select("id, title, is_done, coin_reward, checkbox_color, created_at, completed_at, list_id, sort_order")
+        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id, sort_order")
         .eq("user_id", currentUser.id)
         .order("is_done", { ascending: true })
         .order("sort_order", { ascending: true, nullsFirst: false })
@@ -1846,7 +1777,7 @@
         taskSortOrderAvailable = false;
         const fallback = await db
           .from("tasks")
-          .select("id, title, is_done, coin_reward, checkbox_color, created_at, completed_at, list_id")
+          .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
           .eq("user_id", currentUser.id)
           .order("is_done", { ascending: true })
           .order("created_at", { ascending: true });
@@ -2029,14 +1960,12 @@
         handle.textContent = task.is_done ? "" : "☷";
         handle.title = task.is_done ? "" : "Drag to reorder or move to another open list";
         const check = document.createElement("button");
-        check.className = "check-btn task-color" + (task.is_done ? " done" : "");
+        check.className = "check-btn" + (task.is_done ? " done" : "");
         check.type = "button";
-        check.style.setProperty("--task-color", taskColorHex(task.checkbox_color));
         check.textContent = task.is_done ? "✓" : "";
-        check.title = task.is_done ? "Completed today · click to uncheck (reward becomes 0)" : "Mark task as complete";
-        check.disabled = false;
+        check.title = task.is_done ? "Completed today" : "Mark task as complete";
+        check.disabled = task.is_done;
         if (!task.is_done) check.addEventListener("click", (event) => completeTask(task, event));
-        else check.addEventListener("click", () => uncompleteTask(task));
 
         const main = document.createElement("div");
         main.className = "item-main";
@@ -2086,7 +2015,6 @@
       const rewardSelect = $(`#${taskRewardId(listId)}`);
       const title = cleanText(input?.value, 160);
       const coinReward = Number(rewardSelect?.value || 5);
-      const checkboxColor = selectedTaskCreateColor(listId);
       if (!title) return showToast("Give the task a title.", "error");
 
       const payload = {
@@ -2094,7 +2022,6 @@
         list_id: listId,
         title,
         coin_reward: coinReward,
-        checkbox_color: checkboxColor,
         is_done: false
       };
       if (taskSortOrderAvailable) payload.sort_order = nextTaskSortOrder(listId);
@@ -2102,15 +2029,6 @@
       if (error) return reportError(error, "The task could not be added.");
       input.value = "";
       if (rewardSelect) rewardSelect.value = "5";
-      taskCreateColors.set(listId, DEFAULT_TASK_COLOR);
-      const picker = $(`#${taskColorId(listId)}`);
-      if (picker) {
-        picker.querySelectorAll(".color-swatch").forEach((swatch) => {
-          const active = swatch.dataset.color === DEFAULT_TASK_COLOR;
-          swatch.classList.toggle("selected", active);
-          swatch.setAttribute("aria-pressed", String(active));
-        });
-      }
       await loadTasks();
     }
 
@@ -2154,26 +2072,6 @@
         await loadTasks();
       } catch (error) {
         reportError(error, "The task could not be completed.");
-      } finally {
-        busyActions.delete(lock);
-      }
-    }
-
-    async function uncompleteTask(task) {
-      const lock = `uncomplete-task-${task.id}`;
-      if (busyActions.has(lock)) return;
-      busyActions.add(lock);
-      try {
-        const { error } = await db
-          .from("tasks")
-          .update({ is_done: false, completed_at: null, coin_reward: 0 })
-          .eq("id", task.id)
-          .eq("user_id", currentUser.id);
-        if (error) throw error;
-        showToast("Task unchecked. It is now worth 0 coins.", "success");
-        await loadTasks();
-      } catch (error) {
-        reportError(error, "The task could not be unchecked.");
       } finally {
         busyActions.delete(lock);
       }
@@ -2578,15 +2476,11 @@
 
     function openEditItem(kind, item) {
       if (item.is_done) return;
-      editingItem = { kind, id: item.id, checkbox_color: item.checkbox_color };
+      editingItem = { kind, id: item.id };
       const isGoal = kind === "goal";
       $("#edit-item-title-label").textContent = isGoal ? "EDIT GOAL" : "EDIT TASK";
       $("#edit-item-name").value = item.title || "";
       setRewardOptions($("#edit-item-reward"), isGoal ? GOAL_REWARDS : TASK_REWARDS, item.coin_reward);
-      $("#edit-item-color-group").classList.toggle("hidden", isGoal);
-      const colorHost = $("#edit-task-color-picker");
-      colorHost.innerHTML = "";
-      if (!isGoal) colorHost.append(createColorPicker(null, item.checkbox_color, "edit-color-picker"));
       $("#edit-item-deadline-group").classList.toggle("hidden", !isGoal);
       $("#edit-item-deadline").value = isGoal ? (item.deadline || "") : "";
       $("#edit-item-modal").classList.remove("hidden");
@@ -2595,7 +2489,6 @@
 
     function closeEditItem() {
       editingItem = null;
-      $("#edit-task-color-picker").innerHTML = "";
       $("#edit-item-modal").classList.add("hidden");
     }
 
@@ -2610,10 +2503,6 @@
         return;
       }
       const updates = { title, coin_reward: coinReward };
-      if (kind === "task") {
-        const selected = $("#edit-task-color-picker")?.querySelector(".color-swatch.selected");
-        updates.checkbox_color = normalizeTaskColor(selected?.dataset.color || editingItem.checkbox_color || DEFAULT_TASK_COLOR);
-      }
       if (kind === "goal") updates.deadline = $("#edit-item-deadline").value || null;
       const table = kind === "goal" ? "goals" : "tasks";
       try {
@@ -2664,47 +2553,13 @@
       $("#map-status").textContent = `Drag the garden to explore · Camera: ${camera.x}, ${camera.y}`;
     }
 
-    function mapFootprint(itemType) {
-      return itemType === "tree" ? { width: 2, height: 2 } : { width: 1, height: 1 };
-    }
-
-    function isInsideFootprint(placed, x, y) {
-      const footprint = mapFootprint(placed.item_type);
-      return x >= placed.x && x < placed.x + footprint.width && y >= placed.y && y < placed.y + footprint.height;
-    }
-
-    function renderPlacedAsset(placed, cell, footprint) {
-      if (placed.item_type === "tree") {
-        const image = document.createElement("img");
-        image.className = "garden-asset garden-tree-asset";
-        image.src = "assets/tree.png";
-        image.alt = "Tree";
-        image.draggable = false;
-        image.onerror = () => {
-          image.remove();
-          const fallback = document.createElement("span");
-          fallback.className = "garden-icon";
-          fallback.textContent = iconFor(placed.item_type);
-          cell.append(fallback);
-        };
-        image.style.width = `${footprint.width * 100}%`;
-        image.style.height = `${footprint.height * 100}%`;
-        cell.append(image);
-        return;
-      }
-      const icon = document.createElement("span");
-      icon.className = "garden-icon";
-      icon.textContent = iconFor(placed.item_type);
-      cell.append(icon);
-    }
-
     function renderGardenGrid() {
       const grid = $("#garden-grid");
       grid.style.setProperty("--cols", String(view.cols));
       grid.style.setProperty("--rows", String(view.rows));
       grid.style.setProperty("--tile-size", `${view.tile}px`);
       grid.innerHTML = "";
-      const placedByPosition = new Map(mapTiles.map((tile) => [`${tile.x},${tile.y}`, tile]));
+      const placedByAnchor = new Map(mapTiles.map((tile) => [`${tile.x},${tile.y}`, tile]));
       const halfX = Math.floor(view.cols / 2);
       const halfY = Math.floor(view.rows / 2);
 
@@ -2712,31 +2567,36 @@
         for (let column = 0; column < view.cols; column += 1) {
           const x = camera.x + column - halfX;
           const y = camera.y + row - halfY;
-          const anchor = placedByPosition.get(`${x},${y}`);
-          const covering = mapTiles.find((tile) => isInsideFootprint(tile, x, y));
-          const placed = anchor || covering || null;
+          const placed = placedAtOrCovering(x, y);
+          const anchor = placedByAnchor.get(`${x},${y}`);
           const cell = document.createElement("button");
           cell.type = "button";
           cell.className = "garden-tile" + (placed ? " occupied" : "") + (x === 0 && y === 0 ? " origin" : "");
           cell.dataset.x = String(x);
           cell.dataset.y = String(y);
           cell.setAttribute("aria-label", placed
-            ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}`
+            ? `${shopDisplayName(placed.item_type)} at ${placed.x}, ${placed.y}`
             : `Empty garden tile at ${x}, ${y}`);
           cell.title = placed
-            ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}. Click to remove.`
+            ? `${shopDisplayName(placed.item_type)} at ${placed.x}, ${placed.y}. Click to remove.`
             : selectedShopItem
               ? `Place ${shopDisplayName(selectedShopItem)} at ${x}, ${y}`
               : `Empty tile at ${x}, ${y}`;
 
-          if (placed) {
-            const footprint = mapFootprint(placed.item_type);
-            if (x === placed.x && y === placed.y) {
-              cell.classList.add("asset-anchor");
-              renderPlacedAsset(placed, cell, footprint);
+          if (anchor) {
+            const src = spriteSrcFor(anchor.item_type);
+            if (src) {
+              const img = document.createElement("img");
+              img.className = "garden-sprite" + (footprintFor(anchor).width > 1 || footprintFor(anchor).height > 1 ? " sprite-2x2" : "");
+              img.src = src;
+              img.alt = shopDisplayName(anchor.item_type);
+              img.draggable = false;
+              cell.append(img);
             } else {
-              cell.classList.add("asset-covered");
-              cell.setAttribute("aria-hidden", "true");
+              const icon = document.createElement("span");
+              icon.className = "garden-icon";
+              icon.textContent = iconFor(anchor.item_type);
+              cell.append(icon);
             }
           }
           const coordinate = document.createElement("span");
@@ -2746,6 +2606,7 @@
           grid.append(cell);
         }
       }
+      if (placementHover) updatePlacementHover(placementHover.x, placementHover.y);
       updateGridVisibility();
       updateMapStatus();
     }
@@ -2797,7 +2658,16 @@
         button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
         const icon = document.createElement("span");
         icon.className = "shop-icon";
-        icon.textContent = iconFor(item.item_type);
+        const spriteSrc = spriteSrcFor(item.item_type);
+        if (spriteSrc) {
+          const img = document.createElement("img");
+          img.src = spriteSrc;
+          img.alt = itemName;
+          img.draggable = false;
+          icon.append(img);
+        } else {
+          icon.textContent = iconFor(item.item_type);
+        }
         const info = document.createElement("span");
         const name = document.createElement("span");
         name.className = "shop-name";
@@ -2831,6 +2701,7 @@
 
     function closePlacement() {
       selectedShopItem = null;
+      clearPlacementHover();
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
       updateMenuPanelStates();
@@ -2839,7 +2710,7 @@
     }
 
     async function handleGardenTileClick(x, y) {
-      const existing = mapTiles.find((tile) => isInsideFootprint(tile, x, y));
+      const existing = placedAtOrCovering(x, y);
       if (existing) return askToRemoveMapTile(existing);
       return buyAndPlace(selectedShopItem, x, y);
     }
@@ -2857,31 +2728,23 @@
       if (busyActions.has(lock)) return;
       busyActions.add(lock);
       try {
-        const footprint = mapFootprint(item.item_type);
-        const occupiedTiles = mapTiles.filter((tile) => {
-          for (let dx = 0; dx < footprint.width; dx += 1) {
-            for (let dy = 0; dy < footprint.height; dy += 1) {
-              if (isInsideFootprint(tile, x + dx, y + dy)) return true;
-            }
-          }
-          return false;
-        });
-        if (occupiedTiles.length) {
-          showToast("That space is already occupied.", "error");
+        if (!placementFits(x, y, item)) {
+          showToast("That space is occupied or too small for this item.", "error");
           return;
         }
-
-        const { data: existing, error: existingError } = await db
+        const footprint = footprintFor(item);
+        const { data: nearby, error: nearbyError } = await db
           .from("map_tiles")
-          .select("id")
+          .select("id, x, y, item_type")
           .eq("user_id", currentUser.id)
-          .eq("x", x)
-          .eq("y", y)
-          .maybeSingle();
-        if (existingError) throw existingError;
-        if (existing) {
-          showToast("That map tile is already occupied.", "error");
-          await loadVisibleMapTiles();
+          .gte("x", x - footprint.width + 1)
+          .lte("x", x + footprint.width - 1)
+          .gte("y", y - footprint.height + 1)
+          .lte("y", y + footprint.height - 1);
+        if (nearbyError) throw nearbyError;
+        const conflict = (nearby || []).find((tile) => footprintCells(tile.x, tile.y, tile.item_type).some((cell) => footprintCells(x, y, item).some((target) => target.x === cell.x && target.y === cell.y)));
+        if (conflict) {
+          showToast("That space is occupied or too small for this item.", "error");
           return;
         }
 
@@ -2958,7 +2821,13 @@
     }
 
     function handlePointerMove(event) {
-      if (!panState || panState.pointerId !== event.pointerId) return;
+      if (!panState) {
+        if (!selectedShopItem) return;
+        const targetTile = tileFromTarget(event.target);
+        if (targetTile) updatePlacementHover(Number(targetTile.dataset.x), Number(targetTile.dataset.y));
+        return;
+      }
+      if (panState.pointerId !== event.pointerId) return;
       const deltaX = event.clientX - panState.startX;
       const deltaY = event.clientY - panState.startY;
       if (Math.abs(deltaX) > 7 || Math.abs(deltaY) > 7) panState.dragged = true;
@@ -3246,6 +3115,7 @@
         openTaskListIds.clear();
         await loadTaskLists();
         selectedShopItem = null;
+        clearPlacementHover();
         mapTiles = [];
         updatePlacementBar();
         await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadVisibleMapTiles()]);
@@ -3280,6 +3150,7 @@
     $("#garden-grid").addEventListener("pointermove", handlePointerMove);
     $("#garden-grid").addEventListener("pointerup", handlePointerUp);
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
+    $("#garden-grid").addEventListener("pointerleave", clearPlacementHover);
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
     $("#return-center-btn").addEventListener("click", returnToCenter);
     $("#toggle-grid-btn").addEventListener("click", toggleGrid);
