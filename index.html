@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
-  <!-- Task Garden build: options-feedback-only-2026-07-29 -->
+  <!-- Task Garden build: task-checkbox-colors-2026-10-04 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -24,6 +24,12 @@
       --gold-dark: #b57a1d;
       --red: #bd4d3a;
       --red-dark: #842f23;
+      --task-green: #5f9e50;
+      --task-blue: #3f78b5;
+      --task-yellow: #d99a18;
+      --task-red: #bd4d3a;
+      --task-purple: #8057a6;
+      --task-orange: #c87327;
       --shadow: 0 4px 0 rgba(73, 48, 27, .24);
     }
 
@@ -418,6 +424,14 @@
       font-weight: 900;
     }
     .habit-check { width: 43px; height: 43px; border-radius: 9px; color: #754d2c; font-size: 18px; }
+    .check-btn.task-colored {
+      border-color: var(--task-color, var(--paper-line));
+      background: color-mix(in srgb, var(--task-color, var(--paper-line)) 14%, #fff);
+      color: var(--task-color, var(--green-dark));
+    }
+    .check-btn.task-colored:hover {
+      background: color-mix(in srgb, var(--task-color, var(--paper-line)) 24%, #fff);
+    }
     .check-btn.done, .habit-check.done { border-color: var(--green-dark); background: var(--green); color: #fff; }
     .check-btn[disabled], .habit-check[disabled] { opacity: 1; cursor: default; }
     .item-main { min-width: 0; }
@@ -1073,6 +1087,17 @@
             <span>Coin reward</span>
             <select class="inline-select" id="edit-item-reward"></select>
           </label>
+          <label class="field hidden" id="edit-item-color-group" for="edit-item-color">
+            <span>Checkbox color</span>
+            <select class="inline-select" id="edit-item-color">
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+              <option value="yellow">Yellow</option>
+              <option value="red">Red</option>
+              <option value="purple">Purple</option>
+              <option value="orange">Orange</option>
+            </select>
+          </label>
           <label class="field hidden" id="edit-item-deadline-group" for="edit-item-deadline">
             <span>Deadline <small>(optional)</small></span>
             <input id="edit-item-deadline" type="date" />
@@ -1677,7 +1702,7 @@
     async function loadTasks() {
       let query = db
         .from("tasks")
-        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id, sort_order")
+        .select("id, title, is_done, coin_reward, color, created_at, completed_at, list_id, sort_order")
         .eq("user_id", currentUser.id)
         .order("is_done", { ascending: true })
         .order("sort_order", { ascending: true, nullsFirst: false })
@@ -1688,7 +1713,7 @@
         taskSortOrderAvailable = false;
         const fallback = await db
           .from("tasks")
-          .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
+          .select("id, title, is_done, coin_reward, color, created_at, completed_at, list_id")
           .eq("user_id", currentUser.id)
           .order("is_done", { ascending: true })
           .order("created_at", { ascending: true });
@@ -1871,7 +1896,11 @@
         handle.textContent = task.is_done ? "" : "☷";
         handle.title = task.is_done ? "" : "Drag to reorder or move to another open list";
         const check = document.createElement("button");
-        check.className = "check-btn" + (task.is_done ? " done" : "");
+        const taskColor = task.color || "green";
+        check.className = "check-btn" + (task.is_done ? " done" : " task-colored");
+        if (!task.is_done) {
+          check.style.setProperty("--task-color", `var(--task-${taskColor}, var(--green))`);
+        }
         check.type = "button";
         check.textContent = task.is_done ? "✓" : "";
         check.title = task.is_done ? "Completed today" : "Mark task as complete";
@@ -1933,6 +1962,7 @@
         list_id: listId,
         title,
         coin_reward: coinReward,
+        color: "green",
         is_done: false
       };
       if (taskSortOrderAvailable) payload.sort_order = nextTaskSortOrder(listId);
@@ -2392,6 +2422,8 @@
       $("#edit-item-title-label").textContent = isGoal ? "EDIT GOAL" : "EDIT TASK";
       $("#edit-item-name").value = item.title || "";
       setRewardOptions($("#edit-item-reward"), isGoal ? GOAL_REWARDS : TASK_REWARDS, item.coin_reward);
+      $("#edit-item-color-group").classList.toggle("hidden", isGoal);
+      $("#edit-item-color").value = item.color || "green";
       $("#edit-item-deadline-group").classList.toggle("hidden", !isGoal);
       $("#edit-item-deadline").value = isGoal ? (item.deadline || "") : "";
       $("#edit-item-modal").classList.remove("hidden");
@@ -2414,6 +2446,7 @@
         return;
       }
       const updates = { title, coin_reward: coinReward };
+      if (kind === "task") updates.color = $("#edit-item-color").value || "green";
       if (kind === "goal") updates.deadline = $("#edit-item-deadline").value || null;
       const table = kind === "goal" ? "goals" : "tasks";
       try {
