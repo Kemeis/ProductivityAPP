@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
-  <!-- Task Garden build: options-feedback-only-2026-07-29 -->
+  <!-- Task Garden build: task-checkbox-colors-uncheck-2026-10-04 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -24,6 +24,12 @@
       --gold-dark: #b57a1d;
       --red: #bd4d3a;
       --red-dark: #842f23;
+      --task-green: #5f9e50;
+      --task-blue: #3f78b5;
+      --task-yellow: #d99a18;
+      --task-red: #bd4d3a;
+      --task-purple: #8057a6;
+      --task-orange: #c87327;
       --shadow: 0 4px 0 rgba(73, 48, 27, .24);
     }
 
@@ -257,81 +263,6 @@
       line-height: 1;
       pointer-events: none;
     }
-    /* Local Task Garden sprite prototype */
-    .garden-tile.has-local-sprite {
-      overflow: visible;
-      z-index: 3;
-    }
-    .garden-sprite {
-      position: absolute;
-      left: 50%;
-      bottom: 2px;
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center bottom;
-      image-rendering: pixelated;
-      pointer-events: none;
-      user-select: none;
-      filter: drop-shadow(1px 2px 0 rgba(30,65,24,.18));
-      transform: translateX(-50%);
-    }
-    .garden-sprite.grass { width: 78%; height: 78%; }
-    .garden-sprite.stone { width: 76%; height: 76%; }
-    .garden-sprite.tree {
-      width: 86%;
-      height: 178%;
-      max-width: none;
-      max-height: none;
-      bottom: 0;
-    }
-    .garden-sprite.path,
-    .garden-sprite.water { width: 100%; height: 100%; }
-
-    .asset-help {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1.45;
-    }
-    .asset-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-    }
-    .asset-button {
-      display: grid;
-      min-height: 92px;
-      place-items: center;
-      gap: 5px;
-      padding: 7px;
-      border: 2px solid #cda870;
-      border-radius: 9px;
-      background: #fffaf0;
-      color: var(--ink);
-      cursor: pointer;
-    }
-    .asset-button.selected {
-      border-color: var(--green-dark);
-      background: #e7f3d0;
-      box-shadow: inset 0 0 0 2px rgba(95,158,80,.2);
-    }
-    .asset-button img {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      pointer-events: none;
-    }
-    .asset-button[data-asset="tree"] img { width: 38px; height: 62px; }
-    .asset-name { font-size: 11px; font-weight: 900; }
-    .asset-note { margin: 11px 0 0; color: var(--muted); font-size: 11px; font-weight: 800; }
-
-    @media (max-width: 720px) {
-      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
     .tile-coordinate {
       position: absolute;
       right: 2px;
@@ -462,7 +393,14 @@
       gap: 8px;
       margin-bottom: 13px;
     }
-    .add-row .btn { grid-column: 1 / -1; }
+    .add-row .add-task-color-wrap {
+      grid-column: 1;
+      justify-content: flex-start;
+    }
+    .add-row .btn {
+      grid-column: 2;
+      align-self: center;
+    }
     .goal-row { grid-template-columns: minmax(0, 1fr) 93px; }
     .goal-row input[type="date"] { grid-column: 1 / -1; }
     .list { margin: 0; padding: 0; list-style: none; }
@@ -493,6 +431,27 @@
       font-weight: 900;
     }
     .habit-check { width: 43px; height: 43px; border-radius: 9px; color: #754d2c; font-size: 18px; }
+    .color-palette { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+    .color-choice { width:30px; height:30px; min-width:30px; padding:0; border-radius:50%; border:2px solid rgba(73,48,27,.28); cursor:pointer; box-shadow:0 2px 0 rgba(73,48,27,.14); transition:transform .12s ease, box-shadow .12s ease; }
+    .color-choice:hover { transform:translateY(-1px); }
+    .color-choice.selected { border-color:#49301b; box-shadow:0 0 0 2px #fffdf4, 0 0 0 4px #49301b; }
+    .color-choice[data-color="green"] { background:var(--task-green); }
+    .color-choice[data-color="blue"] { background:var(--task-blue); }
+    .color-choice[data-color="yellow"] { background:var(--task-yellow); }
+    .color-choice[data-color="red"] { background:var(--task-red); }
+    .color-choice[data-color="purple"] { background:var(--task-purple); }
+    .color-choice[data-color="orange"] { background:var(--task-orange); }
+    .add-task-color-wrap { grid-column:1 / -1; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+    .add-task-color-label { font-size:12px; font-weight:900; color:#754d2c; }
+
+    .check-btn.task-colored {
+      border-color: var(--task-color, var(--paper-line));
+      background: color-mix(in srgb, var(--task-color, var(--paper-line)) 14%, #fff);
+      color: var(--task-color, var(--green-dark));
+    }
+    .check-btn.task-colored:hover {
+      background: color-mix(in srgb, var(--task-color, var(--paper-line)) 24%, #fff);
+    }
     .check-btn.done, .habit-check.done { border-color: var(--green-dark); background: var(--green); color: #fff; }
     .check-btn[disabled], .habit-check[disabled] { opacity: 1; cursor: default; }
     .item-main { min-width: 0; }
@@ -837,6 +796,19 @@
     }
 
     @media (max-width: 720px) {
+      .add-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .add-row .add-task-color-wrap,
+      .add-row .btn {
+        grid-column: 1;
+      }
+      .add-task-color-wrap {
+        justify-content:space-between;
+      }
+      .add-task-palette {
+        justify-content:flex-end;
+      }
       .auth-card { padding: 27px 22px; }
       .panel-layer { display: block; padding: 0; }
       .panel-window,
@@ -996,21 +968,6 @@
         </div>
       </section>
 
-      <section class="panel-window assets-panel" id="panel-assets" aria-label="Garden assets">
-        <header class="panel-header">
-          <div>
-            <div class="panel-title">ASSETS</div>
-            <div class="panel-subtitle">Prototype local sprites for the garden grid.</div>
-          </div>
-          <button class="icon-button" type="button" data-close-panel="assets" aria-label="Close Assets">×</button>
-        </header>
-        <div class="panel-body">
-          <p class="asset-help">Pick a sprite, then click an empty grid tile. These five test assets are stored locally in this browser for now — no Supabase changes are needed.</p>
-          <div id="asset-container" class="asset-grid"></div>
-          <p class="asset-note">Trees intentionally overflow their 32×32 base tile so the trunk sits on the selected tile.</p>
-        </div>
-      </section>
-
       <section class="panel-window plants-panel" id="panel-plants" aria-label="Shop">
         <header class="panel-header">
           <div>
@@ -1030,7 +987,6 @@
     <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
       <div id="task-menu-items"></div>
-      <button class="menu-action" type="button" data-toggle-panel="assets"><span class="menu-icon">🌱</span><span>Assets</span></button>
       <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
       <button class="menu-action" id="help-btn" type="button"><span class="menu-icon">?</span><span>Help</span></button>
       <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Options</span></button>
@@ -1164,6 +1120,18 @@
             <span>Coin reward</span>
             <select class="inline-select" id="edit-item-reward"></select>
           </label>
+          <div class="field hidden" id="edit-item-color-group">
+            <span>Checkbox color</span>
+            <div class="color-palette" id="edit-item-color-palette" role="radiogroup" aria-label="Checkbox color">
+              <button type="button" class="color-choice" data-color="green" aria-label="Green" title="Green"></button>
+              <button type="button" class="color-choice" data-color="blue" aria-label="Blue" title="Blue"></button>
+              <button type="button" class="color-choice" data-color="yellow" aria-label="Yellow" title="Yellow"></button>
+              <button type="button" class="color-choice" data-color="red" aria-label="Red" title="Red"></button>
+              <button type="button" class="color-choice" data-color="purple" aria-label="Purple" title="Purple"></button>
+              <button type="button" class="color-choice" data-color="orange" aria-label="Orange" title="Orange"></button>
+            </div>
+            <input type="hidden" id="edit-item-color" value="green">
+          </div>
           <label class="field hidden" id="edit-item-deadline-group" for="edit-item-deadline">
             <span>Deadline <small>(optional)</small></span>
             <input id="edit-item-deadline" type="date" />
@@ -1228,13 +1196,6 @@
       bush: "Bush",
       bench: "Bench"
     };
-    const LOCAL_SPRITES = {
-      grass: { name: "Grass", src: "assets/grass.png" },
-      path: { name: "Path", src: "assets/path.png" },
-      water: { name: "Water", src: "assets/water.png" },
-      tree: { name: "Tree", src: "assets/tree.png" },
-      stone: { name: "Stone", src: "assets/stone.png" }
-    };
 
     let currentUser = null;
     let currentTab = "login";
@@ -1244,9 +1205,7 @@
     let allTasksCache = [];
     let shopItems = [];
     let selectedShopItem = null;
-    let selectedLocalSprite = null;
     let mapTiles = [];
-    let localSprites = loadLocalSprites();
     let showGrid = localStorage.getItem("task-garden-show-grid") !== "false";
     let showCoordinates = localStorage.getItem("task-garden-show-coordinates") !== "false";
     let taskSortOrderAvailable = true;
@@ -1442,7 +1401,6 @@
         profile = null;
         mapTiles = [];
         selectedShopItem = null;
-        selectedLocalSprite = null;
         updatePlacementBar();
         $("#auth-screen").style.display = "grid";
         $("#app-screen").style.display = "none";
@@ -1752,11 +1710,31 @@
         hint.className = "duplicate-hint hidden";
         hint.id = taskHintId(list.id);
 
+        const colorWrap = document.createElement("div");
+        colorWrap.className = "add-task-color-wrap";
+        const colorLabel = document.createElement("span");
+        colorLabel.className = "add-task-color-label";
+        colorLabel.textContent = "Color";
+        const colorPalette = document.createElement("div");
+        colorPalette.className = "color-palette add-task-palette";
+        colorPalette.setAttribute("role", "radiogroup");
+        colorPalette.setAttribute("aria-label", "New task color");
+        colorPalette.dataset.value = "green";
+        ["green", "blue", "yellow", "red", "purple", "orange"].forEach((color, index) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "color-choice" + (index === 0 ? " selected" : "");
+          b.dataset.color = color;
+          b.setAttribute("aria-label", color);
+          b.title = color;
+          colorPalette.append(b);
+        });
+        colorWrap.append(colorLabel, colorPalette);
         const submit = document.createElement("button");
         submit.className = "btn btn-green btn-sm";
         submit.type = "submit";
         submit.textContent = "Add task";
-        form.append(input, select, hint, submit);
+        form.append(input, select, hint, colorWrap, submit);
 
         const container = document.createElement("div");
         container.id = taskContainerId(list.id);
@@ -1778,7 +1756,7 @@
     async function loadTasks() {
       let query = db
         .from("tasks")
-        .select("id, title, is_done, coin_reward, created_at, completed_at, list_id, sort_order")
+        .select("id, title, is_done, coin_reward, color, created_at, completed_at, list_id, sort_order")
         .eq("user_id", currentUser.id)
         .order("is_done", { ascending: true })
         .order("sort_order", { ascending: true, nullsFirst: false })
@@ -1789,7 +1767,7 @@
         taskSortOrderAvailable = false;
         const fallback = await db
           .from("tasks")
-          .select("id, title, is_done, coin_reward, created_at, completed_at, list_id")
+          .select("id, title, is_done, coin_reward, color, created_at, completed_at, list_id")
           .eq("user_id", currentUser.id)
           .order("is_done", { ascending: true })
           .order("created_at", { ascending: true });
@@ -1972,12 +1950,20 @@
         handle.textContent = task.is_done ? "" : "☷";
         handle.title = task.is_done ? "" : "Drag to reorder or move to another open list";
         const check = document.createElement("button");
-        check.className = "check-btn" + (task.is_done ? " done" : "");
+        const taskColor = task.color || "green";
+        check.className = "check-btn" + (task.is_done ? " done" : " task-colored");
+        if (!task.is_done) {
+          check.style.setProperty("--task-color", `var(--task-${taskColor}, var(--green))`);
+        }
         check.type = "button";
         check.textContent = task.is_done ? "✓" : "";
-        check.title = task.is_done ? "Completed today" : "Mark task as complete";
-        check.disabled = task.is_done;
-        if (!task.is_done) check.addEventListener("click", (event) => completeTask(task, event));
+        check.title = task.is_done ? "Uncheck task — reward becomes 0 coins" : "Mark task as complete";
+        check.disabled = false;
+        if (task.is_done) {
+          check.addEventListener("click", () => uncompleteTask(task));
+        } else {
+          check.addEventListener("click", (event) => completeTask(task, event));
+        }
 
         const main = document.createElement("div");
         main.className = "item-main";
@@ -2025,8 +2011,11 @@
       event.preventDefault();
       const input = $(`#${taskInputId(listId)}`);
       const rewardSelect = $(`#${taskRewardId(listId)}`);
+      const form = input?.closest("form");
+      const colorPalette = form?.querySelector(".add-task-palette");
       const title = cleanText(input?.value, 160);
       const coinReward = Number(rewardSelect?.value || 5);
+      const color = colorPalette?.dataset.value || "green";
       if (!title) return showToast("Give the task a title.", "error");
 
       const payload = {
@@ -2034,6 +2023,7 @@
         list_id: listId,
         title,
         coin_reward: coinReward,
+        color,
         is_done: false
       };
       if (taskSortOrderAvailable) payload.sort_order = nextTaskSortOrder(listId);
@@ -2084,6 +2074,35 @@
         await loadTasks();
       } catch (error) {
         reportError(error, "The task could not be completed.");
+      } finally {
+        busyActions.delete(lock);
+      }
+    }
+
+    async function uncompleteTask(task) {
+      const lock = `uncomplete-task-${task.id}`;
+      if (busyActions.has(lock)) return;
+      busyActions.add(lock);
+      try {
+        const { data, error } = await db
+          .from("tasks")
+          .update({
+            is_done: false,
+            completed_at: null,
+            coin_reward: 0
+          })
+          .eq("id", task.id)
+          .eq("user_id", currentUser.id)
+          .eq("is_done", true)
+          .select("id");
+
+        if (error) throw error;
+        if (!data?.length) return showToast("This task was already unchecked.", "error");
+
+        showToast("Task unchecked. Its reward is now 0 coins.", "success");
+        await loadTasks();
+      } catch (error) {
+        reportError(error, "The task could not be unchecked.");
       } finally {
         busyActions.delete(lock);
       }
@@ -2486,6 +2505,22 @@
       }
     }
 
+    document.addEventListener("click", (event) => {
+      const addChoice = event.target.closest(".add-task-palette .color-choice");
+      if (addChoice) {
+        const palette = addChoice.closest(".add-task-palette");
+        palette.dataset.value = addChoice.dataset.color;
+        palette.querySelectorAll(".color-choice").forEach(b => b.classList.toggle("selected", b === addChoice));
+        return;
+      }
+      const editChoice = event.target.closest("#edit-item-color-palette .color-choice");
+      if (editChoice) {
+        const palette = editChoice.closest(".color-palette");
+        palette.querySelectorAll(".color-choice").forEach(b => b.classList.toggle("selected", b === editChoice));
+        $("#edit-item-color").value = editChoice.dataset.color;
+      }
+    });
+
     function openEditItem(kind, item) {
       if (item.is_done) return;
       editingItem = { kind, id: item.id };
@@ -2493,6 +2528,12 @@
       $("#edit-item-title-label").textContent = isGoal ? "EDIT GOAL" : "EDIT TASK";
       $("#edit-item-name").value = item.title || "";
       setRewardOptions($("#edit-item-reward"), isGoal ? GOAL_REWARDS : TASK_REWARDS, item.coin_reward);
+      $("#edit-item-color-group").classList.toggle("hidden", isGoal);
+      const editColor = item.color || "green";
+      $("#edit-item-color").value = editColor;
+      $("#edit-item-color-palette")?.querySelectorAll(".color-choice").forEach(b => {
+        b.classList.toggle("selected", b.dataset.color === editColor);
+      });
       $("#edit-item-deadline-group").classList.toggle("hidden", !isGoal);
       $("#edit-item-deadline").value = isGoal ? (item.deadline || "") : "";
       $("#edit-item-modal").classList.remove("hidden");
@@ -2515,6 +2556,7 @@
         return;
       }
       const updates = { title, coin_reward: coinReward };
+      if (kind === "task") updates.color = $("#edit-item-color").value || "green";
       if (kind === "goal") updates.deadline = $("#edit-item-deadline").value || null;
       const table = kind === "goal" ? "goals" : "tasks";
       try {
@@ -2565,84 +2607,6 @@
       $("#map-status").textContent = `Drag the garden to explore · Camera: ${camera.x}, ${camera.y}`;
     }
 
-    function loadLocalSprites() {
-      try {
-        const raw = localStorage.getItem("task-garden-local-sprites-v1");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed.filter((item) => item && Number.isFinite(Number(item.x)) && Number.isFinite(Number(item.y)) && LOCAL_SPRITES[item.type]) : [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveLocalSprites() {
-      localStorage.setItem("task-garden-local-sprites-v1", JSON.stringify(localSprites));
-    }
-
-    function localSpriteAt(x, y) {
-      return localSprites.find((sprite) => Number(sprite.x) === x && Number(sprite.y) === y) || null;
-    }
-
-    function localSpriteLabel(type) {
-      return LOCAL_SPRITES[type]?.name || type;
-    }
-
-    function renderAssetPanel() {
-      const container = $("#asset-container");
-      if (!container) return;
-      container.innerHTML = "";
-      Object.entries(LOCAL_SPRITES).forEach(([type, asset]) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "asset-button" + (selectedLocalSprite === type ? " selected" : "");
-        button.dataset.asset = type;
-        const img = document.createElement("img");
-        img.src = asset.src;
-        img.alt = asset.name;
-        const name = document.createElement("span");
-        name.className = "asset-name";
-        name.textContent = asset.name;
-        button.append(img, name);
-        button.addEventListener("click", () => {
-          selectedLocalSprite = type;
-          selectedShopItem = null;
-          closePanel("assets");
-          updatePlacementBar();
-          renderAssetPanel();
-          renderShop();
-          renderGardenGrid();
-        });
-        container.append(button);
-      });
-    }
-
-    function placeLocalSprite(type, x, y) {
-      if (!LOCAL_SPRITES[type]) return;
-      if (mapTiles.some((tile) => tile.x === x && tile.y === y) || localSpriteAt(x, y)) {
-        showToast("That map tile is already occupied.", "error");
-        return;
-      }
-      localSprites.push({ id: `${type}-${x}-${y}-${Date.now()}`, type, x, y });
-      saveLocalSprites();
-      renderGardenGrid();
-      showToast(`${localSpriteLabel(type)} placed.`, "success");
-    }
-
-    function removeLocalSprite(sprite) {
-      localSprites = localSprites.filter((item) => item.id !== sprite.id);
-      saveLocalSprites();
-      renderGardenGrid();
-      showToast(`${localSpriteLabel(sprite.type)} removed.`, "success");
-    }
-
-    function askToRemoveLocalSprite(sprite) {
-      openConfirmDialog({
-        title: "REMOVE SPRITE",
-        message: `Remove ${localSpriteLabel(sprite.type)} from your garden?`,
-        onConfirm: () => removeLocalSprite(sprite)
-      });
-    }
-
     function renderGardenGrid() {
       const grid = $("#garden-grid");
       grid.style.setProperty("--cols", String(view.cols));
@@ -2658,38 +2622,25 @@
           const x = camera.x + column - halfX;
           const y = camera.y + row - halfY;
           const placed = placedByPosition.get(`${x},${y}`);
-          const localSprite = localSpriteAt(x, y);
           const cell = document.createElement("button");
           cell.type = "button";
-          cell.className = "garden-tile" + ((placed || localSprite) ? " occupied" : "") + (localSprite ? " has-local-sprite" : "") + (x === 0 && y === 0 ? " origin" : "");
+          cell.className = "garden-tile" + (placed ? " occupied" : "") + (x === 0 && y === 0 ? " origin" : "");
           cell.dataset.x = String(x);
           cell.dataset.y = String(y);
           cell.setAttribute("aria-label", placed
             ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}`
-            : localSprite
-              ? `${localSpriteLabel(localSprite.type)} at ${x}, ${y}`
-              : `Empty garden tile at ${x}, ${y}`);
+            : `Empty garden tile at ${x}, ${y}`);
           cell.title = placed
             ? `${shopDisplayName(placed.item_type)} at ${x}, ${y}. Click to remove.`
-            : localSprite
-              ? `${localSpriteLabel(localSprite.type)} at ${x}, ${y}. Click to remove.`
-              : selectedLocalSprite
-                ? `Place ${localSpriteLabel(selectedLocalSprite)} at ${x}, ${y}`
-                : selectedShopItem
-                  ? `Place ${shopDisplayName(selectedShopItem)} at ${x}, ${y}`
-                  : `Empty tile at ${x}, ${y}`;
+            : selectedShopItem
+              ? `Place ${shopDisplayName(selectedShopItem)} at ${x}, ${y}`
+              : `Empty tile at ${x}, ${y}`;
 
           if (placed) {
             const icon = document.createElement("span");
             icon.className = "garden-icon";
             icon.textContent = iconFor(placed.item_type);
             cell.append(icon);
-          } else if (localSprite) {
-            const image = document.createElement("img");
-            image.className = `garden-sprite ${localSprite.type}`;
-            image.src = LOCAL_SPRITES[localSprite.type].src;
-            image.alt = localSpriteLabel(localSprite.type);
-            cell.append(image);
           }
           const coordinate = document.createElement("span");
           coordinate.className = "tile-coordinate";
@@ -2773,18 +2724,16 @@
 
     function updatePlacementBar() {
       const bar = $("#placement-bar");
-      if (!selectedShopItem && !selectedLocalSprite) {
+      if (!selectedShopItem) {
         bar.classList.add("hidden");
         return;
       }
-      const label = selectedLocalSprite ? localSpriteLabel(selectedLocalSprite) : shopDisplayName(selectedShopItem);
-      $("#placement-message").textContent = `Select a tile to place ${label}.`;
+      $("#placement-message").textContent = `Select a tile to place ${shopDisplayName(selectedShopItem)}.`;
       bar.classList.remove("hidden");
     }
 
     function closePlacement() {
       selectedShopItem = null;
-      selectedLocalSprite = null;
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
       updateMenuPanelStates();
@@ -2793,14 +2742,8 @@
     }
 
     async function handleGardenTileClick(x, y) {
-      const existingLocal = localSpriteAt(x, y);
-      if (existingLocal) return askToRemoveLocalSprite(existingLocal);
       const existing = mapTiles.find((tile) => tile.x === x && tile.y === y);
       if (existing) return askToRemoveMapTile(existing);
-      if (selectedLocalSprite) {
-        placeLocalSprite(selectedLocalSprite, x, y);
-        return;
-      }
       return buyAndPlace(selectedShopItem, x, y);
     }
 
@@ -3192,10 +3135,7 @@
         openTaskListIds.clear();
         await loadTaskLists();
         selectedShopItem = null;
-        selectedLocalSprite = null;
         mapTiles = [];
-        localSprites = [];
-        saveLocalSprites();
         updatePlacementBar();
         await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadVisibleMapTiles()]);
         renderShop();
@@ -3295,7 +3235,6 @@
     updateMenuPanelStates();
     updateGridVisibility();
     updateCoordinatesVisibility();
-    renderAssetPanel();
     updatePlacementBar();
     db.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => applySession(session), 0);
