@@ -308,6 +308,7 @@
       z-index: 20;
     }
     .garden-sprite-tree { width: 64px; height: 64px; }
+    .garden-sprite-bush { width: 32px; height: 32px; }
     .tile-coordinate {
       position: absolute;
       right: 2px;
@@ -2819,10 +2820,13 @@
               : `Empty tile at ${x}, ${y}`;
 
           if (placed && placed.item_type !== "tree") {
-            const icon = document.createElement("span");
-            icon.className = "garden-icon";
-            icon.textContent = iconFor(placed.item_type);
-            cell.append(icon);
+            const geometry = geometryFor(placed.item_type);
+            if (!geometry.sprite) {
+              const icon = document.createElement("span");
+              icon.className = "garden-icon";
+              icon.textContent = iconFor(placed.item_type);
+              cell.append(icon);
+            }
           }
 
           const coordinate = document.createElement("span");
@@ -2843,12 +2847,12 @@
       const visibleMinY = camera.y - halfY;
       const visibleMaxY = camera.y + halfY;
 
-      const trees = mapTiles
-        .filter((tile) => tile.item_type === "tree")
-        .filter((tile) => {
-          const geometry = geometryFor(tile.item_type);
-          const topLeftX = tile.x;
-          const topLeftY = tile.y - (geometry.rows - 1);
+      const spriteItems = mapTiles
+        .filter((item) => geometryFor(item.item_type).sprite)
+        .filter((item) => {
+          const geometry = geometryFor(item.item_type);
+          const topLeftX = item.x;
+          const topLeftY = item.y - (geometry.rows - 1);
           return (
             topLeftX <= visibleMaxX &&
             topLeftX + geometry.cols - 1 >= visibleMinX &&
@@ -2858,24 +2862,21 @@
         })
         .sort((a, b) => a.y - b.y || a.x - b.x || String(a.id).localeCompare(String(b.id)));
 
-      for (const tree of trees) {
-        const geometry = geometryFor(tree.item_type);
-        const topLeftX = tree.x;
-        const topLeftY = tree.y - (geometry.rows - 1);
+      for (const item of spriteItems) {
+        const geometry = geometryFor(item.item_type);
+        const topLeftX = item.x;
+        const topLeftY = item.y - (geometry.rows - 1);
         const left = (topLeftX - visibleMinX) * view.tile;
         const top = (topLeftY - visibleMinY) * view.tile;
 
         const sprite = document.createElement("img");
-        sprite.className = "garden-sprite garden-sprite-tree";
+        sprite.className = `garden-sprite garden-sprite-${item.item_type}`;
         sprite.src = geometry.sprite;
         sprite.alt = "";
         sprite.draggable = false;
         sprite.style.left = `${left}px`;
         sprite.style.top = `${top}px`;
-
-        // Larger screen Y = closer to the viewer. The later/lower tree
-        // therefore sits above the tree behind it.
-        sprite.style.zIndex = String(100 + (tree.y + 10000));
+        sprite.style.zIndex = String(100 + (item.y + 10000));
         spriteLayer.append(sprite);
       }
 
