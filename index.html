@@ -719,6 +719,22 @@
       background: rgba(14,45,25,.46);
       backdrop-filter: blur(3px);
     }
+    .modal.remove-confirm {
+      place-items: end center;
+      padding: 0 20px 24px;
+      background: rgba(14,45,25,.10);
+      backdrop-filter: none;
+    }
+    .modal.remove-confirm .settings-card {
+      width: min(100%, 520px);
+      border-radius: 15px;
+      box-shadow: 0 8px 0 #855735, 0 10px 28px rgba(0,0,0,.18);
+      animation: removeConfirmSlideUp .16s ease-out;
+    }
+    @keyframes removeConfirmSlideUp {
+      from { transform: translateY(18px); opacity: .7; }
+      to { transform: translateY(0); opacity: 1; }
+    }
     .settings-card {
       width: min(100%, 420px);
       overflow: hidden;
@@ -769,6 +785,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 4px;
+    }
+    .modal.remove-confirm .settings-body {
+      padding: 14px 17px 16px;
+    }
+    .modal.remove-confirm .settings-caption {
+      margin-bottom: 2px;
     }
     .feedback-card, .edit-card { width: min(100%, 510px); }
     .form-stack { display: grid; gap: 13px; }
@@ -3094,6 +3116,7 @@
       const itemName = shopDisplayName(tile.item_type);
 
       updateRemovalPreview(tile);
+      $("#confirm-modal").classList.add("remove-confirm");
 
       openConfirmDialog({
         title: "REMOVE ITEM",
@@ -3444,6 +3467,7 @@
     function closeConfirmDialog() {
       confirmAction = null;
       if (typeof clearRemovalPreview === "function") clearRemovalPreview();
+      $("#confirm-modal").classList.remove("remove-confirm");
       $("#confirm-modal").classList.add("hidden");
     }
 
