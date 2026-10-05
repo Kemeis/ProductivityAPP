@@ -279,6 +279,10 @@
       background-color: #e86d6d !important;
       box-shadow: inset 0 0 0 2px rgba(142,25,25,.82);
     }
+    .garden-tile.removal-preview {
+      background-color: #e86d6d !important;
+      box-shadow: inset 0 0 0 2px rgba(142,25,25,.88);
+    }
     .garden-tile.sprite-anchor {
       z-index: 12;
       overflow: visible;
@@ -1360,7 +1364,15 @@
       const cells = placementCells(item, anchorX, anchorY);
       for (const cell of cells) {
         const existing = placedAt(tiles, cell.x, cell.y);
-        if (existing && !canStackItems(item.item_type, existing.item_type)) {
+        if (!existing) continue;
+
+        // Never allow two assets to use exactly the same anchor.
+        if (Number(existing.x) === Number(anchorX) && Number(existing.y) === Number(anchorY)) {
+          return existing;
+        }
+
+        // Trees may overlap each other at different anchors.
+        if (!canStackItems(item.item_type, existing.item_type)) {
           return existing;
         }
       }
@@ -2848,6 +2860,12 @@
       updateGridVisibility();
       updateMapStatus();
       updatePlacementPreview();
+
+      if (removalPreviewTileId !== null) {
+        const removalTile = mapTiles.find((item) => item.id === removalPreviewTileId);
+        if (removalTile) updateRemovalPreview(removalTile);
+        else clearRemovalPreview();
+      }
     }
 
     function queueVisibleMapLoad() {
@@ -2941,6 +2959,7 @@
     function closePlacement() {
       selectedShopItem = null;
       clearPlacementPreview();
+      clearRemovalPreview();
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
       updateMenuPanelStates();
@@ -2948,10 +2967,30 @@
       renderGardenGrid();
     }
 
+    function topmostAssetAt(x, y) {
+      const candidates = mapTiles.filter((tile) =>
+        footprintFor(tile.item_type, tile.x, tile.y).some(
+          (cell) => cell.x === x && cell.y === y
+        )
+      );
+
+      // Lower on the map = visually closer/frontmost.
+      candidates.sort((a, b) =>
+        Number(b.y) - Number(a.y) ||
+        Number(b.x) - Number(a.x) ||
+        String(b.id).localeCompare(String(a.id))
+      );
+
+      return candidates[0] || null;
+    }
+
     async function handleGardenTileClick(x, y) {
-      const existing = placedAt(mapTiles, x, y);
+      if (selectedShopItem) {
+        return buyAndPlace(selectedShopItem, x, y);
+      }
+
+      const existing = topmostAssetAt(x, y);
       if (existing) return askToRemoveMapTile(existing);
-      return buyAndPlace(selectedShopItem, x, y);
     }
 
     async function buyAndPlace(item, x, y) {
@@ -3021,9 +3060,41 @@
       }
     }
 
+    let removalPreviewTileId = null;
+
+    function clearRemovalPreview() {
+      document.querySelectorAll(".garden-tile.removal-preview").forEach((tile) => {
+        tile.classList.remove("removal-preview");
+      });
+      removalPreviewTileId = null;
+    }
+
+    function updateRemovalPreview(tile) {
+      clearRemovalPreview();
+      if (!tile) return;
+
+      const footprint = footprintFor(tile.item_type, tile.x, tile.y);
+      const cellMap = new Map(
+        Array.from(document.querySelectorAll(".garden-tile")).map((cell) => [
+          footprintKey(Number(cell.dataset.x), Number(cell.dataset.y)),
+          cell
+        ])
+      );
+
+      footprint.forEach((cell) => {
+        const gridTile = cellMap.get(footprintKey(cell.x, cell.y));
+        if (gridTile) gridTile.classList.add("removal-preview");
+      });
+
+      removalPreviewTileId = tile.id;
+    }
+
     function askToRemoveMapTile(tile) {
       const refund = refundForTile(tile);
       const itemName = shopDisplayName(tile.item_type);
+
+      updateRemovalPreview(tile);
+
       openConfirmDialog({
         title: "REMOVE ITEM",
         message: `Remove ${itemName} from your garden? You will receive ${refund} coins back.`,
@@ -3041,6 +3112,7 @@
         if (error) throw error;
         if (refund > 0) await addCoins(refund);
         mapTiles = mapTiles.filter((item) => item.id !== tile.id);
+        clearRemovalPreview();
         renderGardenGrid();
         showToast(`${shopDisplayName(tile.item_type)} removed. +${refund} coins refunded.`, "success");
       } catch (error) {
@@ -3371,6 +3443,7 @@
 
     function closeConfirmDialog() {
       confirmAction = null;
+      if (typeof clearRemovalPreview === "function") clearRemovalPreview();
       $("#confirm-modal").classList.add("hidden");
     }
 
