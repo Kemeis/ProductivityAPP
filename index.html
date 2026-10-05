@@ -1273,6 +1273,7 @@
     // LOWER-LEFT tile, exactly where the user clicks.
     const ITEM_GEOMETRY = {
       tree: { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_2x2.png" },
+      bush: { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/bush.png" },
       default: { cols: 1, rows: 1, anchor: "bottom-left", sprite: null }
     };
     const PANEL_NAMES = ["habits", "goals", "plants", "task-lists"];
@@ -2920,6 +2921,23 @@
         .order("price", { ascending: true });
       if (error) throw error;
       shopItems = data || [];
+
+      const existingBush = shopItems.find((item) => item.item_type === "bush");
+      if (existingBush) {
+        existingBush.price = 5;
+        existingBush.name = "Bush";
+      } else {
+        shopItems.push({
+          id: "local-bush-5",
+          name: "Bush",
+          price: 5,
+          item_type: "bush",
+          icon_url: null,
+          localOnly: true
+        });
+      }
+
+      shopItems.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
       renderShop();
     }
 
@@ -2937,9 +2955,10 @@
         button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
         const icon = document.createElement("span");
         icon.className = "shop-icon";
-        if (item.item_type === "tree") {
+        const shopGeometry = geometryFor(item.item_type);
+        if (shopGeometry.sprite) {
           const image = document.createElement("img");
-          image.src = geometryFor("tree").sprite;
+          image.src = shopGeometry.sprite;
           image.alt = "";
           image.className = "shop-sprite";
           image.draggable = false;
