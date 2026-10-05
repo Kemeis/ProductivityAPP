@@ -268,6 +268,10 @@
       box-shadow: inset 0 0 0 2px rgba(142,25,25,.82);
     }
     .garden-tile.placement-stack {
+      background-color: #f2d46f !important;
+      box-shadow: inset 0 0 0 2px rgba(170,125,20,.85);
+    }
+    .garden-tile.placement-stack {
       background-color: #f2d35e !important;
       box-shadow: inset 0 0 0 2px rgba(154,113,15,.82);
     }
@@ -3016,8 +3020,8 @@
     let placementPreviewAnchor = null;
 
     function clearPlacementPreview() {
-      document.querySelectorAll(".garden-tile.placement-preview, .garden-tile.placement-invalid").forEach((tile) => {
-        tile.classList.remove("placement-preview", "placement-invalid");
+      document.querySelectorAll(".garden-tile.placement-preview, .garden-tile.placement-invalid, .garden-tile.placement-stack").forEach((tile) => {
+        tile.classList.remove("placement-preview", "placement-invalid", "placement-stack");
       });
       placementPreviewAnchor = null;
     }
