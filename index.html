@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#234a2d" />
   <title>Task Garden</title>
   <!-- Task Garden build: task-checkbox-colors-uncheck-2026-10-04 -->
@@ -279,6 +279,10 @@
       background-color: #e86d6d !important;
       box-shadow: inset 0 0 0 2px rgba(142,25,25,.82);
     }
+    .garden-tile.removal-preview {
+      background-color: #e86d6d !important;
+      box-shadow: inset 0 0 0 2px rgba(142,25,25,.88);
+    }
     .garden-tile.sprite-anchor {
       z-index: 12;
       overflow: visible;
@@ -303,7 +307,12 @@
       user-select: none;
       z-index: 20;
     }
-    .garden-sprite-tree { width: 64px; height: 64px; }
+    .garden-sprite {
+      object-fit: contain;
+      image-rendering: pixelated;
+      pointer-events: none;
+      user-select: none;
+    }
     .tile-coordinate {
       position: absolute;
       right: 2px;
@@ -715,6 +724,22 @@
       background: rgba(14,45,25,.46);
       backdrop-filter: blur(3px);
     }
+    .modal.remove-confirm {
+      place-items: end center;
+      padding: 0 20px 24px;
+      background: rgba(14,45,25,.10);
+      backdrop-filter: none;
+    }
+    .modal.remove-confirm .settings-card {
+      width: min(100%, 520px);
+      border-radius: 15px;
+      box-shadow: 0 8px 0 #855735, 0 10px 28px rgba(0,0,0,.18);
+      animation: removeConfirmSlideUp .16s ease-out;
+    }
+    @keyframes removeConfirmSlideUp {
+      from { transform: translateY(18px); opacity: .7; }
+      to { transform: translateY(0); opacity: 1; }
+    }
     .settings-card {
       width: min(100%, 420px);
       overflow: hidden;
@@ -765,6 +790,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 4px;
+    }
+    .modal.remove-confirm .settings-body {
+      padding: 14px 17px 16px;
+    }
+    .modal.remove-confirm .settings-caption {
+      margin-bottom: 2px;
     }
     .feedback-card, .edit-card { width: min(100%, 510px); }
     .form-stack { display: grid; gap: 13px; }
@@ -1246,7 +1277,28 @@
     // represent the placement anchor. For the 2x2 tree the anchor is the
     // LOWER-LEFT tile, exactly where the user clicks.
     const ITEM_GEOMETRY = {
-      tree: { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_2x2.png" },
+      // 2x2 trees
+      tree:             { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_green.png" },
+      tree_green:       { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_green.png" },
+      tree_flowering:   { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_flowering.png" },
+      tree_autumn:      { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_autumn.png" },
+
+      // 3x3 large tree
+      tree_large:       { cols: 3, rows: 3, anchor: "bottom-left", sprite: "assets/tree_large.png" },
+
+      // 2x2 bushes / canopies
+      bush_green:       { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_green.png" },
+      bush_green_2:     { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_green_2.png" },
+      bush_flowering:   { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_flowering.png" },
+      bush_autumn:      { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_autumn.png" },
+
+      // 1x1 small elements
+      small_tree:       { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/small_tree.png" },
+      small_bush:       { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/small_bush.png" },
+      stump:            { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/stump.png" },
+      grass_patch:      { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/grass_patch.png" },
+      plant:            { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/plant.png" },
+
       default: { cols: 1, rows: 1, anchor: "bottom-left", sprite: null }
     };
     const PANEL_NAMES = ["habits", "goals", "plants", "task-lists"];
@@ -1259,6 +1311,19 @@
       pond: "Pond",
       house: "House",
       bush: "Bush",
+      bush_green: "Green Bush",
+      bush_green_2: "Green Bush II",
+      bush_flowering: "Flowering Bush",
+      bush_autumn: "Autumn Bush",
+      tree_green: "Green Tree",
+      tree_flowering: "Flowering Tree",
+      tree_autumn: "Autumn Tree",
+      tree_large: "Large Tree",
+      small_tree: "Small Tree",
+      small_bush: "Small Bush",
+      stump: "Tree Stump",
+      grass_patch: "Grass Patch",
+      plant: "Plant",
       bench: "Bench"
     };
 
@@ -1360,7 +1425,15 @@
       const cells = placementCells(item, anchorX, anchorY);
       for (const cell of cells) {
         const existing = placedAt(tiles, cell.x, cell.y);
-        if (existing && !canStackItems(item.item_type, existing.item_type)) {
+        if (!existing) continue;
+
+        // Never allow two assets to use exactly the same anchor.
+        if (Number(existing.x) === Number(anchorX) && Number(existing.y) === Number(anchorY)) {
+          return existing;
+        }
+
+        // Trees may overlap each other at different anchors.
+        if (!canStackItems(item.item_type, existing.item_type)) {
           return existing;
         }
       }
@@ -2784,10 +2857,13 @@
               : `Empty tile at ${x}, ${y}`;
 
           if (placed && placed.item_type !== "tree") {
-            const icon = document.createElement("span");
-            icon.className = "garden-icon";
-            icon.textContent = iconFor(placed.item_type);
-            cell.append(icon);
+            const geometry = geometryFor(placed.item_type);
+            if (!geometry.sprite) {
+              const icon = document.createElement("span");
+              icon.className = "garden-icon";
+              icon.textContent = iconFor(placed.item_type);
+              cell.append(icon);
+            }
           }
 
           const coordinate = document.createElement("span");
@@ -2808,12 +2884,12 @@
       const visibleMinY = camera.y - halfY;
       const visibleMaxY = camera.y + halfY;
 
-      const trees = mapTiles
-        .filter((tile) => tile.item_type === "tree")
-        .filter((tile) => {
-          const geometry = geometryFor(tile.item_type);
-          const topLeftX = tile.x;
-          const topLeftY = tile.y - (geometry.rows - 1);
+      const spriteItems = mapTiles
+        .filter((item) => geometryFor(item.item_type).sprite)
+        .filter((item) => {
+          const geometry = geometryFor(item.item_type);
+          const topLeftX = item.x;
+          const topLeftY = item.y - (geometry.rows - 1);
           return (
             topLeftX <= visibleMaxX &&
             topLeftX + geometry.cols - 1 >= visibleMinX &&
@@ -2823,24 +2899,23 @@
         })
         .sort((a, b) => a.y - b.y || a.x - b.x || String(a.id).localeCompare(String(b.id)));
 
-      for (const tree of trees) {
-        const geometry = geometryFor(tree.item_type);
-        const topLeftX = tree.x;
-        const topLeftY = tree.y - (geometry.rows - 1);
+      for (const item of spriteItems) {
+        const geometry = geometryFor(item.item_type);
+        const topLeftX = item.x;
+        const topLeftY = item.y - (geometry.rows - 1);
         const left = (topLeftX - visibleMinX) * view.tile;
         const top = (topLeftY - visibleMinY) * view.tile;
 
         const sprite = document.createElement("img");
-        sprite.className = "garden-sprite garden-sprite-tree";
+        sprite.className = `garden-sprite garden-sprite-${item.item_type}`;
         sprite.src = geometry.sprite;
         sprite.alt = "";
         sprite.draggable = false;
         sprite.style.left = `${left}px`;
         sprite.style.top = `${top}px`;
-
-        // Larger screen Y = closer to the viewer. The later/lower tree
-        // therefore sits above the tree behind it.
-        sprite.style.zIndex = String(100 + (tree.y + 10000));
+        sprite.style.width = `${geometry.cols * view.tile}px`;
+        sprite.style.height = `${geometry.rows * view.tile}px`;
+        sprite.style.zIndex = String(100 + (item.y + 10000));
         spriteLayer.append(sprite);
       }
 
@@ -2848,6 +2923,12 @@
       updateGridVisibility();
       updateMapStatus();
       updatePlacementPreview();
+
+      if (removalPreviewTileId !== null) {
+        const removalTile = mapTiles.find((item) => item.id === removalPreviewTileId);
+        if (removalTile) updateRemovalPreview(removalTile);
+        else clearRemovalPreview();
+      }
     }
 
     function queueVisibleMapLoad() {
@@ -2880,6 +2961,47 @@
         .order("price", { ascending: true });
       if (error) throw error;
       shopItems = data || [];
+
+      const spriteShopCatalog = [
+        // 1x1 = 10 coins
+        { item_type: "small_tree",     name: "Small Tree",      price: 10 },
+        { item_type: "small_bush",     name: "Small Bush",      price: 10 },
+        { item_type: "stump",          name: "Tree Stump",      price: 10 },
+        { item_type: "grass_patch",    name: "Grass Patch",     price: 10 },
+        { item_type: "plant",          name: "Plant",           price: 10 },
+
+        // 2x2 = 20 coins
+        { item_type: "tree",            name: "Green Tree",      price: 20 },
+        { item_type: "tree_green",      name: "Green Tree",      price: 20 },
+        { item_type: "tree_flowering",  name: "Flowering Tree",  price: 20 },
+        { item_type: "tree_autumn",     name: "Autumn Tree",     price: 20 },
+        { item_type: "bush_green",      name: "Green Bush",      price: 20 },
+        { item_type: "bush_green_2",    name: "Green Bush II",   price: 20 },
+        { item_type: "bush_flowering",  name: "Flowering Bush",  price: 20 },
+        { item_type: "bush_autumn",     name: "Autumn Bush",     price: 20 },
+
+        // 3x3 = 40 coins
+        { item_type: "tree_large",      name: "Large Tree",      price: 40 }
+      ];
+
+      for (const catalogItem of spriteShopCatalog) {
+        const existing = shopItems.find((item) => item.item_type === catalogItem.item_type);
+        if (existing) {
+          existing.name = catalogItem.name;
+          existing.price = catalogItem.price;
+        } else {
+          shopItems.push({
+            id: `local-${catalogItem.item_type}`,
+            name: catalogItem.name,
+            price: catalogItem.price,
+            item_type: catalogItem.item_type,
+            icon_url: null,
+            localOnly: true
+          });
+        }
+      }
+
+      shopItems.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
       renderShop();
     }
 
@@ -2897,12 +3019,17 @@
         button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
         const icon = document.createElement("span");
         icon.className = "shop-icon";
-        if (item.item_type === "tree") {
+        const shopGeometry = geometryFor(item.item_type);
+        if (shopGeometry.sprite) {
           const image = document.createElement("img");
-          image.src = geometryFor("tree").sprite;
+          image.src = shopGeometry.sprite;
           image.alt = "";
           image.className = "shop-sprite";
           image.draggable = false;
+          image.style.width = "32px";
+          image.style.height = "32px";
+          image.style.objectFit = "contain";
+          image.style.imageRendering = "pixelated";
           icon.append(image);
         } else {
           icon.textContent = iconFor(item.item_type);
@@ -2941,6 +3068,7 @@
     function closePlacement() {
       selectedShopItem = null;
       clearPlacementPreview();
+      clearRemovalPreview();
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
       updateMenuPanelStates();
@@ -2948,10 +3076,30 @@
       renderGardenGrid();
     }
 
+    function topmostAssetAt(x, y) {
+      const candidates = mapTiles.filter((tile) =>
+        footprintFor(tile.item_type, tile.x, tile.y).some(
+          (cell) => cell.x === x && cell.y === y
+        )
+      );
+
+      // Lower on the map = visually closer/frontmost.
+      candidates.sort((a, b) =>
+        Number(b.y) - Number(a.y) ||
+        Number(b.x) - Number(a.x) ||
+        String(b.id).localeCompare(String(a.id))
+      );
+
+      return candidates[0] || null;
+    }
+
     async function handleGardenTileClick(x, y) {
-      const existing = placedAt(mapTiles, x, y);
+      if (selectedShopItem) {
+        return buyAndPlace(selectedShopItem, x, y);
+      }
+
+      const existing = topmostAssetAt(x, y);
       if (existing) return askToRemoveMapTile(existing);
-      return buyAndPlace(selectedShopItem, x, y);
     }
 
     async function buyAndPlace(item, x, y) {
@@ -3021,9 +3169,42 @@
       }
     }
 
+    let removalPreviewTileId = null;
+
+    function clearRemovalPreview() {
+      document.querySelectorAll(".garden-tile.removal-preview").forEach((tile) => {
+        tile.classList.remove("removal-preview");
+      });
+      removalPreviewTileId = null;
+    }
+
+    function updateRemovalPreview(tile) {
+      clearRemovalPreview();
+      if (!tile) return;
+
+      const footprint = footprintFor(tile.item_type, tile.x, tile.y);
+      const cellMap = new Map(
+        Array.from(document.querySelectorAll(".garden-tile")).map((cell) => [
+          footprintKey(Number(cell.dataset.x), Number(cell.dataset.y)),
+          cell
+        ])
+      );
+
+      footprint.forEach((cell) => {
+        const gridTile = cellMap.get(footprintKey(cell.x, cell.y));
+        if (gridTile) gridTile.classList.add("removal-preview");
+      });
+
+      removalPreviewTileId = tile.id;
+    }
+
     function askToRemoveMapTile(tile) {
       const refund = refundForTile(tile);
       const itemName = shopDisplayName(tile.item_type);
+
+      updateRemovalPreview(tile);
+      $("#confirm-modal").classList.add("remove-confirm");
+
       openConfirmDialog({
         title: "REMOVE ITEM",
         message: `Remove ${itemName} from your garden? You will receive ${refund} coins back.`,
@@ -3041,6 +3222,7 @@
         if (error) throw error;
         if (refund > 0) await addCoins(refund);
         mapTiles = mapTiles.filter((item) => item.id !== tile.id);
+        clearRemovalPreview();
         renderGardenGrid();
         showToast(`${shopDisplayName(tile.item_type)} removed. +${refund} coins refunded.`, "success");
       } catch (error) {
@@ -3371,6 +3553,8 @@
 
     function closeConfirmDialog() {
       confirmAction = null;
+      if (typeof clearRemovalPreview === "function") clearRemovalPreview();
+      $("#confirm-modal").classList.remove("remove-confirm");
       $("#confirm-modal").classList.add("hidden");
     }
 
