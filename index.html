@@ -1462,17 +1462,22 @@
           return existing;
         }
 
-        // 2x2 trees are intentionally allowed to overlap everything else.
+        // 2x2 trees may overlap any element except the reserved bottom-middle
+        // tile of a large tree (handled just above).
         if (isTree2x2(item.item_type)) {
           continue;
         }
 
-        // All 1x1 elements block one another. Other large-tree cells and
-        // legacy 2x2 bushes remain purely visual, so they do not block here.
-        if (geometryFor(item.item_type).cols === 1 &&
-            geometryFor(item.item_type).rows === 1 &&
-            geometryFor(existing.item_type).cols === 1 &&
-            geometryFor(existing.item_type).rows === 1) {
+        const itemGeometry = geometryFor(item.item_type);
+        const isSmallItem = itemGeometry.cols === 1 && itemGeometry.rows === 1;
+
+        // Small 1x1 elements cannot be placed on another element. The one
+        // exception is the large tree: its other eight cells are visual only
+        // and remain available for placement.
+        if (isSmallItem) {
+          if (existing.item_type === "tree_large" && !isLargeTreeBottomMiddle(existing, cellX, cellY)) {
+            continue;
+          }
           return existing;
         }
       }
@@ -3014,7 +3019,9 @@
         "bush_green",
         "bush_green_2",
         "bush_flowering",
-        "bush_autumn"
+        "bush_autumn",
+        "tree",
+        "tree_green"
       ].includes(item.item_type));
 
       const spriteShopCatalog = [
@@ -3026,8 +3033,6 @@
         { item_type: "plant",          name: "Plant",           price: 10 },
 
         // 2x2 = 20 coins
-        { item_type: "tree",            name: "Green Tree",      price: 20 },
-        { item_type: "tree_green",      name: "Green Tree",      price: 20 },
         { item_type: "tree_flowering",  name: "Flowering Tree",  price: 20 },
         { item_type: "tree_autumn",     name: "Autumn Tree",     price: 20 },
 
@@ -3060,7 +3065,7 @@
       const container = $("#shop-container");
       container.innerHTML = "";
       if (!shopItems.length) {
-        renderEmpty("#shop-container", "🛒", "The shop is empty. Add items in Supabase first.");
+        renderEmpty("#shop-container", "", "The shop is empty. Add items in Supabase first.");
         return;
       }
       for (const item of shopItems) {
@@ -3083,7 +3088,8 @@
           image.style.imageRendering = "pixelated";
           icon.append(image);
         } else {
-          icon.textContent = iconFor(item.item_type);
+          // Keep legacy shop entries emoji-free when they do not have a sprite.
+          icon.textContent = "";
         }
         const info = document.createElement("span");
         const name = document.createElement("span");
@@ -3091,7 +3097,7 @@
         name.textContent = itemName;
         const price = document.createElement("span");
         price.className = "shop-price";
-        price.textContent = `${item.price} 🪙`;
+        price.textContent = `${item.price}`;
         info.append(name, price);
         button.append(icon, info);
         button.addEventListener("click", () => {
@@ -3186,11 +3192,7 @@
           .gte("y", y - geometry.rows)
           .lte("y", y + geometry.rows);
         if (existingError) throw existingError;
-        const collisionAfterRefresh = (existingTiles || []).find((tile) =>
-          footprintFor(tile.item_type, tile.x, tile.y).some((occupiedCell) =>
-            cells.some((cell) => cell.x === occupiedCell.x && cell.y === occupiedCell.y)
-          ) && !canStackItems(item.item_type, tile.item_type)
-        );
+        const collisionAfterRefresh = blockingPlacementCollision(item, x, y, existingTiles || []);
         if (collisionAfterRefresh) {
           showToast("That space is already occupied.", "error");
           await loadVisibleMapTiles();
