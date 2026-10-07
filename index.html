@@ -1414,28 +1414,78 @@
       return footprintFor(item?.item_type, anchorX, anchorY);
     }
 
+    const TREE_2X2_TYPES = new Set([
+      "tree",
+      "tree_green",
+      "tree_flowering",
+      "tree_autumn"
+    ]);
+
+    function isTree2x2(itemType) {
+      return TREE_2X2_TYPES.has(itemType);
+    }
+
+    function isLargeTreeBottomMiddle(tile, x, y) {
+      return tile?.item_type === "tree_large" &&
+        Number(x) === Number(tile.x) + 1 &&
+        Number(y) === Number(tile.y);
+    }
+
     function canStackItems(itemType, existingType) {
-      // Trees may overlap each other. Their sprites are layered so only the
-      // pixels that are actually in front cover the tree behind them.
-      return itemType === "tree" && existingType === "tree";
+      // All 2x2 trees may overlap other assets. The only exception is the
+      // reserved bottom-middle tile of a large tree.
+      return isTree2x2(itemType) && existingType !== "tree_large";
+    }
+
+    function blockingPlacementCell(item, anchorX, anchorY, cellX, cellY, tiles = mapTiles) {
+      if (!item) return null;
+
+      // A large tree reserves only its bottom-middle tile. Its other eight
+      // tiles are purely visual and may contain other assets.
+      if (item.item_type === "tree_large" &&
+          Number(cellX) === Number(anchorX) + 1 &&
+          Number(cellY) === Number(anchorY)) {
+        return tiles.find((tile) =>
+          footprintFor(tile.item_type, tile.x, tile.y).some((cell) =>
+            cell.x === cellX && cell.y === cellY
+          )
+        ) || null;
+      }
+
+      for (const existing of tiles) {
+        const overlaps = footprintFor(existing.item_type, existing.x, existing.y)
+          .some((cell) => cell.x === cellX && cell.y === cellY);
+        if (!overlaps) continue;
+
+        // The bottom-middle tile of an existing large tree is always blocked.
+        if (isLargeTreeBottomMiddle(existing, cellX, cellY)) {
+          return existing;
+        }
+
+        // 2x2 trees are intentionally allowed to overlap everything else.
+        if (isTree2x2(item.item_type)) {
+          continue;
+        }
+
+        // All 1x1 elements block one another. Other large-tree cells and
+        // legacy 2x2 bushes remain purely visual, so they do not block here.
+        if (geometryFor(item.item_type).cols === 1 &&
+            geometryFor(item.item_type).rows === 1 &&
+            geometryFor(existing.item_type).cols === 1 &&
+            geometryFor(existing.item_type).rows === 1) {
+          return existing;
+        }
+      }
+
+      return null;
     }
 
     function blockingPlacementCollision(item, anchorX, anchorY, tiles = mapTiles) {
       if (!item) return null;
       const cells = placementCells(item, anchorX, anchorY);
       for (const cell of cells) {
-        const existing = placedAt(tiles, cell.x, cell.y);
-        if (!existing) continue;
-
-        // Never allow two assets to use exactly the same anchor.
-        if (Number(existing.x) === Number(anchorX) && Number(existing.y) === Number(anchorY)) {
-          return existing;
-        }
-
-        // Trees may overlap each other at different anchors.
-        if (!canStackItems(item.item_type, existing.item_type)) {
-          return existing;
-        }
+        const collision = blockingPlacementCell(item, anchorX, anchorY, cell.x, cell.y, tiles);
+        if (collision) return collision;
       }
       return null;
     }
@@ -2960,7 +3010,12 @@
         .select("id, name, price, item_type, icon_url")
         .order("price", { ascending: true });
       if (error) throw error;
-      shopItems = data || [];
+      shopItems = (data || []).filter((item) => ![
+        "bush_green",
+        "bush_green_2",
+        "bush_flowering",
+        "bush_autumn"
+      ].includes(item.item_type));
 
       const spriteShopCatalog = [
         // 1x1 = 10 coins
@@ -2975,10 +3030,6 @@
         { item_type: "tree_green",      name: "Green Tree",      price: 20 },
         { item_type: "tree_flowering",  name: "Flowering Tree",  price: 20 },
         { item_type: "tree_autumn",     name: "Autumn Tree",     price: 20 },
-        { item_type: "bush_green",      name: "Green Bush",      price: 20 },
-        { item_type: "bush_green_2",    name: "Green Bush II",   price: 20 },
-        { item_type: "bush_flowering",  name: "Flowering Bush",  price: 20 },
-        { item_type: "bush_autumn",     name: "Autumn Bush",     price: 20 },
 
         // 3x3 = 40 coins
         { item_type: "tree_large",      name: "Large Tree",      price: 40 }
@@ -3259,10 +3310,17 @@
         if (!tile) return;
 
         const existing = placedAt(mapTiles, cell.x, cell.y);
-        if (existing && canStackItems(selectedShopItem.item_type, existing.item_type)) {
-          tile.classList.add("placement-overlap");
-        } else if (blockingCollision) {
+        const cellBlocked = blockingPlacementCell(
+          selectedShopItem,
+          anchorX,
+          anchorY,
+          cell.x,
+          cell.y
+        );
+        if (cellBlocked) {
           tile.classList.add("placement-invalid");
+        } else if (existing && canStackItems(selectedShopItem.item_type, existing.item_type)) {
+          tile.classList.add("placement-overlap");
         } else {
           tile.classList.add("placement-preview");
         }
