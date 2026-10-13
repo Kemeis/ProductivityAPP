@@ -35,7 +35,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 <div id="modalBack" class="modal-back hidden"><div class="modal"><h2 id="modalTitle"></h2><input id="modalInput" placeholder="Name"><div class="modal-actions"><button class="ghost" id="modalCancel">Cancel</button><button class="primary" id="modalOk">Create</button></div></div></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
-const db=createClient("https://nndonweuhrlinoakunyn.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXAiLCJyZWYiOiJubmRvbnN1ZXVobGlub2FrdW55biIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgyODgyNDU2LCJleHAiOjIwOTg0NTg0NTZ9.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng");
+const db=createClient("https://nndonweuhrlinoakunyn.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 let user=null,folders=[],lists=[],notes=[],tasks=[],profile={coins:0},currentFolder=null,currentDoc=null,authMode="login",modalAction=null;
 function msg(t,ok=false){$("#authMsg").textContent=t;$("#authMsg").className="form-message"+(ok?" success":"")}
