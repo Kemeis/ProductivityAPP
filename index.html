@@ -32,9 +32,37 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .draggable-item.dragging{opacity:.45}
 .draggable-item.drag-over{outline:2px solid #9b86e8;outline-offset:2px;border-radius:10px}
 .mobile-move{display:none!important}
+
+.sidebar .tree-row{position:relative;padding-right:34px}
+.sidebar .tree-more{margin-left:auto;opacity:0;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:6px;padding:1px 5px;line-height:1}
+.sidebar .tree-row:hover .tree-more,.sidebar .tree-more:focus{opacity:1}
+.sidebar .tree-menu{position:absolute;right:6px;top:31px;z-index:50;display:none;min-width:145px;background:#20242a;border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:0 12px 30px #0009}
+.sidebar .tree-menu.open{display:grid}
+.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:var(--text);border-radius:5px;padding:8px}
+.sidebar .tree-menu button:hover{background:#2b3037}
+.sidebar .tree-drop-target{outline:2px solid #9b86e8;outline-offset:2px;border-radius:7px}
+.settings-list{display:grid;gap:6px;margin-top:5px}
+.settings-list button{width:100%;text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:8px;padding:11px 12px}
+.settings-list button:hover{background:#292e35}
+.settings-list .danger-setting{color:var(--danger)}
+.settings-note{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:760px){
   .mobile-move{display:block!important}
 }
+
+.sidebar .tree-row{position:relative;padding-right:34px}
+.sidebar .tree-more{margin-left:auto;opacity:0;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:6px;padding:1px 5px;line-height:1}
+.sidebar .tree-row:hover .tree-more,.sidebar .tree-more:focus{opacity:1}
+.sidebar .tree-menu{position:absolute;right:6px;top:31px;z-index:50;display:none;min-width:145px;background:#20242a;border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:0 12px 30px #0009}
+.sidebar .tree-menu.open{display:grid}
+.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:var(--text);border-radius:5px;padding:8px}
+.sidebar .tree-menu button:hover{background:#2b3037}
+.sidebar .tree-drop-target{outline:2px solid #9b86e8;outline-offset:2px;border-radius:7px}
+.settings-list{display:grid;gap:6px;margin-top:5px}
+.settings-list button{width:100%;text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:8px;padding:11px 12px}
+.settings-list button:hover{background:#292e35}
+.settings-list .danger-setting{color:var(--danger)}
+.settings-note{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 15px}.topbar{padding:0 15px}}
 </style></head>
 <body>
@@ -48,9 +76,14 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 <div id="app" class="app hidden"><aside class="sidebar">
 <div class="sidebar-head"><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><button id="newFolderBtn">＋ New folder</button><button id="newNoteBtn">＋ Add note</button><button id="newListBtn">＋ Add tasklist</button></div>
-<div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="logoutBtn">Log out</button></div>
+<div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
 </aside><main class="main"><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
-<div id="modalBack" class="modal-back hidden"><div class="modal"><h2 id="modalTitle"></h2><input id="modalInput" placeholder="Name"><div class="modal-actions"><button class="ghost" id="modalCancel">Cancel</button><button class="primary" id="modalOk">Create</button></div></div></div>
+<div id="modalBack" class="modal-back hidden"><div class="modal">
+<h2 id="modalTitle"></h2>
+<div id="modalBody"></div>
+<input id="modalInput" placeholder="Name">
+<div class="modal-actions"><button class="ghost" id="modalCancel">Cancel</button><button class="primary" id="modalOk">Create</button></div>
+</div></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
 const db=createClient("https://nndonweuhrlinoakunyn.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng");
@@ -65,7 +98,110 @@ async function load(){let uid=user.id;let [f,l,n,t,p]=await Promise.all([db.from
 function childrenOf(p){return folders.filter(f=>(f.parent_id||null)===(p||null))}
 function depth(id){let d=0,f=folders.find(x=>x.id===id);while(f?.parent_id&&d<10){d++;f=folders.find(x=>x.id===f.parent_id)}return d}
 function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=folders.find(x=>x.id===f.parent_id)}return a}
-function renderTree(){let el=$("#tree");el.innerHTML="";function draw(parent,wrap){for(let f of childrenOf(parent)){let row=document.createElement("div");row.className="tree-row"+(currentFolder===f.id?" selected":"");row.innerHTML=`<button class="tree-toggle">${childrenOf(f.id).length?"▾":""}</button><span class="tree-icon">▱</span><span class="tree-name">${esc(f.name)}</span>`;row.onclick=()=>openFolder(f.id);wrap.append(row);if(childrenOf(f.id).length){let sub=document.createElement("div");sub.className="tree-children";wrap.append(sub);draw(f.id,sub)}}}draw(null,el);for(let l of lists.filter(x=>!x.folder_id)){let row=document.createElement("div");row.className="tree-row";row.innerHTML=`<span class="tree-icon">☷</span><span class="tree-name">${esc(l.name)}</span>`;row.onclick=()=>openList(l.id);el.append(row)}}
+function renderTree(){
+  let el=$("#tree"); el.innerHTML="";
+  function rowFor(item,type){
+    let row=document.createElement("div");
+    row.className="tree-row draggable-sidebar";
+    row.draggable=true;
+    row.dataset.dragType=type;
+    row.dataset.dragId=item.id;
+    if(type==="folder"){
+      row.innerHTML=`<button class="tree-toggle">${childrenOf(item.id).length?"▾":""}</button>
+      <span class="tree-icon">▱</span><span class="tree-name">${esc(item.name)}</span>
+      <button class="tree-more" data-tree-menu="${type}:${item.id}" title="Options">⋯</button>
+      <div class="tree-menu" data-tree-menu-box="${type}:${item.id}">
+        <button data-tree-action="open">Open</button>
+        <button data-tree-action="rename">Rename</button>
+        <button data-tree-action="color">Change color</button>
+        <button data-tree-action="delete">Delete</button>
+        <button class="mobile-move" data-tree-action="move">Move to…</button>
+      </div>`;
+      row.style.borderLeft=`3px solid ${item.color||"#7c6ad9"}`;
+      row.onclick=e=>{if(!e.target.closest(".tree-more,.tree-menu,.tree-toggle"))openFolder(item.id)};
+    }else{
+      row.innerHTML=`<span class="tree-icon">☷</span><span class="tree-name">${esc(item.name)}</span>
+      <button class="tree-more" data-tree-menu="${type}:${item.id}" title="Options">⋯</button>
+      <div class="tree-menu" data-tree-menu-box="${type}:${item.id}">
+        <button data-tree-action="open">Open</button>
+        <button data-tree-action="rename">Rename</button>
+        <button data-tree-action="color">Change color</button>
+        <button data-tree-action="delete">Delete</button>
+        <button class="mobile-move" data-tree-action="move">Move to…</button>
+      </div>`;
+      row.style.borderLeft=`3px solid ${item.color||"#7c6ad9"}`;
+      row.onclick=e=>{if(!e.target.closest(".tree-more,.tree-menu"))openList(item.id)};
+    }
+    return row;
+  }
+  function draw(parent,wrap){
+    for(let f of childrenOf(parent)){
+      let row=rowFor(f,"folder"); wrap.append(row);
+      if(childrenOf(f.id).length){
+        let sub=document.createElement("div"); sub.className="tree-children"; wrap.append(sub); draw(f.id,sub);
+      }
+    }
+  }
+  draw(null,el);
+  for(let l of lists.filter(x=>!x.folder_id)) el.append(rowFor(l,"list"));
+
+  el.querySelectorAll(".tree-more").forEach(btn=>{
+    btn.onclick=e=>{
+      e.stopPropagation();
+      el.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
+      btn.nextElementSibling.classList.add("open");
+    };
+  });
+  el.querySelectorAll(".tree-menu button").forEach(btn=>{
+    btn.onclick=e=>{
+      e.stopPropagation();
+      let box=btn.closest(".tree-menu"), [type,id]=box.dataset.treeMenuBox.split(":");
+      box.classList.remove("open");
+      handleItemAction(type,id,btn.dataset.treeAction);
+    };
+  });
+
+  // Drag & drop is intentionally attached to the LEFT navigation tree.
+  el.querySelectorAll(".draggable-sidebar").forEach(row=>{
+    row.addEventListener("dragstart",e=>{
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed="move";
+      e.dataTransfer.setData("text/plain",JSON.stringify({type:row.dataset.dragType,id:row.dataset.dragId}));
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend",()=>row.classList.remove("dragging"));
+    row.addEventListener("dragover",e=>{
+      e.preventDefault(); e.stopPropagation();
+      if(row.dataset.dragType==="folder") row.classList.add("tree-drop-target");
+    });
+    row.addEventListener("dragleave",()=>row.classList.remove("tree-drop-target"));
+    row.addEventListener("drop",async e=>{
+      e.preventDefault();e.stopPropagation();row.classList.remove("tree-drop-target");
+      let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
+      let targetType=row.dataset.dragType,targetId=row.dataset.dragId;
+      if(targetType!=="folder") return;
+
+      if(d.type==="folder"){
+        if(d.id===targetId || path(targetId).some(x=>x.id===d.id)) return alert("You cannot move a folder into itself.");
+        if(depth(targetId)+1>5) return alert("That would exceed the 5-level limit.");
+      }
+      let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+      let patch=d.type==="folder"?{parent_id:targetId}:{folder_id:targetId};
+      let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+      if(r.error)alert(r.error.message);else await load();
+    });
+  });
+  el.addEventListener("dragover",e=>{if(e.target===el){e.preventDefault();el.classList.add("tree-drop-target")}});
+  el.addEventListener("dragleave",e=>{if(e.target===el)el.classList.remove("tree-drop-target")});
+  el.addEventListener("drop",async e=>{
+    if(e.target!==el)return;e.preventDefault();el.classList.remove("tree-drop-target");
+    let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
+    let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+    let patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
+    let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else await load();
+  });
+}
 function folderItems(id){return{folders:childrenOf(id),lists:lists.filter(l=>(l.folder_id||null)===id),notes:notes.filter(n=>(n.folder_id||null)===id)}}
 function renderHome(){
   currentFolder=null;currentDoc=null;
@@ -73,7 +209,7 @@ function renderHome(){
   $("#content").innerHTML=`<div class="welcome"><h1>My workspace</h1><p>Your folders, notes and task lists.</p></div>
   <div class="folder-grid">${childrenOf(null).map(folderCard).join("")}</div>
   ${childrenOf(null).length?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
-  bind();setupDnD();
+  bind();
 }
 function taskHTML(t){return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward">+${Number(t.coin_reward||5)}</span><button class="task-delete" data-del="${t.id}">×</button></div>`}
 function colorOf(x){return x?.color||""}
@@ -130,7 +266,7 @@ function renderFolder(id){
   $("#content").innerHTML=`<div class="welcome"><h1>${esc(f.name)}</h1><p>${it.folders.length} folders · ${it.lists.length} task lists · ${it.notes.length} notes</p></div>
   <div class="folder-grid">${it.folders.map(folderCard).join("")}</div>
   <div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;
-  bind();setupDnD();
+  bind();
 }
 function bind(){document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteTask(b.dataset.del));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")addTask(i.dataset.add)})}
 async function addTask(id){let i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;let r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:5,is_done:false,sort_order:Date.now()});if(r.error)return alert(r.error.message);await load()}
@@ -214,45 +350,51 @@ function moveItemMobile(type,id){
   };
   $("#modalOk").onclick=()=>modalAction($("#modalInput").value);
 }
-function setupDnD(){
-  document.querySelectorAll(".draggable-item").forEach(el=>{
-    el.addEventListener("dragstart",e=>{
-      e.dataTransfer.setData("text/plain",JSON.stringify({type:el.dataset.dragType,id:el.dataset.dragId}));
-      el.classList.add("dragging");
-    });
-    el.addEventListener("dragend",()=>el.classList.remove("dragging"));
-    el.addEventListener("dragover",e=>{
-      let targetType=el.dataset.dragType;
-      if(targetType==="folder"){e.preventDefault();el.classList.add("drag-over")}
-    });
-    el.addEventListener("dragleave",()=>el.classList.remove("drag-over"));
-    el.addEventListener("drop",async e=>{
-      e.preventDefault();el.classList.remove("drag-over");
-      let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
-      if(d.type==="folder" && el.dataset.dragType==="folder"){
-        if(d.id===el.dataset.dragId || path(el.dataset.dragId).some(x=>x.id===d.id))return alert("You cannot move a folder into itself.");
-        let targetDepth=depth(el.dataset.dragId)+1;
-        if(targetDepth>5)return alert("That would exceed the 5-level limit.");
-      }
-      let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
-      let patch=d.type==="folder"?{parent_id:el.dataset.dragId}:{folder_id:el.dataset.dragId};
-      let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
-      if(r.error)alert(r.error.message);else await load();
-    });
-  });
-  // Empty workspace is also a valid drop target.
-  $("#content").addEventListener("dragover",e=>{if(e.target===e.currentTarget)e.preventDefault()});
-  $("#content").addEventListener("drop",async e=>{
-    if(e.target!==e.currentTarget)return;
-    let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
-    let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
-    let patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
-    let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else await load();
-  });
-}
 
 $("#modalCancel").onclick=()=>$("#modalBack").classList.add("hidden");$("#modalOk").onclick=()=>modalAction?.($("#modalInput").value.trim());$("#modalInput").onkeydown=e=>{if(e.key==="Enter")$("#modalOk").click()}
+
+$("#optionsBtn").onclick=()=>{
+  $("#modalTitle").textContent="Options";
+  $("#modalInput").classList.add("hidden");
+  $("#modalOk").classList.add("hidden");
+  $("#modalBody").innerHTML=`<div class="settings-list">
+    <button id="feedbackBtn">Feedback</button>
+    <button id="credentialsBtn">Credentials</button>
+    <button id="gardenFromOptions">Go to Garden</button>
+    <button id="clearAccountBtn">Clear account data</button>
+    <button id="deleteAccountBtn" class="danger-setting">Delete account</button>
+  </div><div class="settings-note">Account and content actions affect the data stored for your account.</div>`;
+  $("#modalBack").classList.remove("hidden");
+  $("#feedbackBtn").onclick=()=>{location.href="mailto:?subject=Task%20Garden%20feedback"};
+  $("#credentialsBtn").onclick=()=>showCredentials();
+  $("#gardenFromOptions").onclick=()=>location.href="garden.html";
+  $("#clearAccountBtn").onclick=clearAccount;
+  $("#deleteAccountBtn").onclick=deleteAccount;
+};
+$("#modalCancel").onclick=()=>{
+  $("#modalBack").classList.add("hidden");
+  $("#modalInput").classList.remove("hidden");
+  $("#modalOk").classList.remove("hidden");
+};
+async function showCredentials(){
+  $("#modalTitle").textContent="Credentials";
+  $("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
+  $("#modalBody").innerHTML=`<div style="color:var(--muted)">Signed in as</div><div style="margin-top:5px;font-weight:650">${esc(user?.email||"")}</div>
+  <div style="margin-top:18px;color:var(--muted)">Password</div><div style="margin-top:5px">Your password is managed securely by Supabase and is not displayed here.</div>`;
+}
+async function clearAccount(){
+  if(!confirm("Clear your Task Garden content? This removes folders, notes, task lists and tasks, but keeps your account."))return;
+  // Delete child content first, then folders. Existing FK cascades handle nested folders.
+  for(const table of ["tasks","notes","task_lists","folders"]){
+    let r=await db.from(table).delete().eq("user_id",user.id);
+    if(r.error){alert(r.error.message);return}
+  }
+  await load();$("#modalBack").classList.add("hidden");
+}
+async function deleteAccount(){
+  if(!confirm("Delete your account? This is permanent."))return;
+  alert("For security, account deletion needs to be enabled through your Supabase account-deletion flow. The app cannot safely delete auth.users using the public browser key.");
+}
 async function newFolder(){let parent=currentFolder||null;if(depth(parent)>=5)return alert("Maximum folder depth is 5.");modal("New folder",async name=>{if(!name)return;let r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent)openFolder(parent)}})}
 async function newList(){let folder=currentFolder||null;modal("New task list",async name=>{if(!name)return;let r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder)openFolder(folder)}})}
 async function newNote(){let folder=currentFolder||null;modal("New note",async name=>{if(!name)return;let r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color:"#7c6ad9"}).select().single();if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}})}
