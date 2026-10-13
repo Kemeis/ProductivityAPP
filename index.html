@@ -68,6 +68,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .settings-list .danger-setting{color:var(--danger)}
 .settings-note{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 15px}.topbar{padding:0 15px}}
+
 </style></head>
 <body>
 <div id="auth" class="auth"><div class="auth-card">
@@ -104,114 +105,133 @@ function childrenOf(p){return folders.filter(f=>(f.parent_id||null)===(p||null))
 function depth(id){let d=0,f=folders.find(x=>x.id===id);while(f?.parent_id&&d<10){d++;f=folders.find(x=>x.id===f.parent_id)}return d}
 function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=folders.find(x=>x.id===f.parent_id)}return a}
 function renderTree(){
-  let el=$("#tree"); el.innerHTML="";
-  function rowFor(item,type){
-    let row=document.createElement("div");
-    row.className="tree-row draggable-sidebar";
+  const el=$("#tree");
+  el.innerHTML="";
+  if(!window.expandedFolders) window.expandedFolders=new Set();
+
+  const makeMenu=(type,id)=>`<div class="tree-menu" data-tree-menu-box="${type}:${id}">
+    <button data-tree-action="open">Open</button>
+    <button data-tree-action="rename">Rename</button>
+    <button data-tree-action="color">Change color</button>
+    <button data-tree-action="delete">Delete</button>
+    <button class="mobile-move" data-tree-action="move">Move to…</button>
+  </div>`;
+
+  function makeRow(item,type,depthLevel=0){
+    const row=document.createElement("div");
+    row.className="tree-row"+((type==="folder"&&currentFolder===item.id)?" selected":"");
     row.draggable=true;
     row.dataset.dragType=type;
     row.dataset.dragId=item.id;
+    row.style.borderLeftColor=item.color||"transparent";
+
     if(type==="folder"){
-      row.innerHTML=`<button class="tree-toggle">${childrenOf(item.id).length?"▾":""}</button>
-      <span class="tree-icon">▱</span><span class="tree-name">${esc(item.name)}</span>
-      <button class="tree-more" data-tree-menu="${type}:${item.id}" title="Options">⋯</button>
-      <div class="tree-menu" data-tree-menu-box="${type}:${item.id}">
-        <button data-tree-action="open">Open</button>
-        <button data-tree-action="rename">Rename</button>
-        <button data-tree-action="color">Change color</button>
-        <button data-tree-action="delete">Delete</button>
-        <button class="mobile-move" data-tree-action="move">Move to…</button>
-      </div>`;
-      row.style.borderLeft=`3px solid ${item.color||"#7c6ad9"}`;
-      row.onclick=e=>{if(!e.target.closest(".tree-more,.tree-menu,.tree-toggle"))openFolder(item.id)};
+      const hasChildren=childrenOf(item.id).length || lists.some(x=>(x.folder_id||null)===item.id) || notes.some(x=>(x.folder_id||null)===item.id);
+      row.innerHTML=`<button class="tree-toggle" title="${hasChildren?"Expand/collapse":"No contents"}">${hasChildren?(expandedFolders.has(item.id)?"▾":"▸"):""}</button>
+        <span class="tree-icon">▱</span><span class="tree-name">${esc(item.name)}</span>
+        <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
+
+      row.querySelector(".tree-toggle").onclick=e=>{
+        e.stopPropagation();
+        if(!hasChildren)return;
+        expandedFolders.has(item.id)?expandedFolders.delete(item.id):expandedFolders.add(item.id);
+        renderTree();
+      };
+      row.onclick=e=>{
+        if(e.target.closest(".tree-more,.tree-menu,.tree-toggle"))return;
+        openFolder(item.id);
+      };
     }else{
-      row.innerHTML=`<span class="tree-icon">☷</span><span class="tree-name">${esc(item.name)}</span>
-      <button class="tree-more" data-tree-menu="${type}:${item.id}" title="Options">⋯</button>
-      <div class="tree-menu" data-tree-menu-box="${type}:${item.id}">
-        <button data-tree-action="open">Open</button>
-        <button data-tree-action="rename">Rename</button>
-        <button data-tree-action="color">Change color</button>
-        <button data-tree-action="delete">Delete</button>
-        <button class="mobile-move" data-tree-action="move">Move to…</button>
-      </div>`;
-      row.style.borderLeft=`3px solid ${item.color||"#7c6ad9"}`;
-      row.onclick=e=>{if(!e.target.closest(".tree-more,.tree-menu"))openList(item.id)};
+      row.innerHTML=`<span class="tree-icon">${type==="note"?"□":"☷"}</span><span class="tree-name">${esc(type==="note"?item.title:item.name)}</span>
+        <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
+      row.onclick=e=>{
+        if(e.target.closest(".tree-more,.tree-menu"))return;
+        type==="note"?openNote(item.id):openList(item.id);
+      };
     }
-    return row;
-  }
-  function draw(parent,wrap){
-    for(let f of childrenOf(parent)){
-      let row=rowFor(f,"folder"); wrap.append(row);
-      if(childrenOf(f.id).length){
-        let sub=document.createElement("div"); sub.className="tree-children"; wrap.append(sub); draw(f.id,sub);
-      }
-    }
-  }
-  draw(null,el);
-  for(let l of lists.filter(x=>!x.folder_id)) el.append(rowFor(l,"list"));
 
-  el.querySelectorAll(".tree-more").forEach(btn=>{
-    btn.onclick=e=>{
-      e.stopPropagation();
-      const menu=btn.nextElementSibling;
-      el.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
-      menu.classList.add("open");
-      const r=btn.getBoundingClientRect();
-      const mw=menu.offsetWidth, mh=menu.offsetHeight;
-      let left=r.right+8, top=r.top-4;
-      if(left+mw>window.innerWidth-8) left=Math.max(8,r.left-mw-8);
-      if(top+mh>window.innerHeight-8) top=Math.max(8,window.innerHeight-mh-8);
-      menu.style.left=left+"px";
-      menu.style.top=top+"px";
-    };
-  });
-  el.querySelectorAll(".tree-menu button").forEach(btn=>{
-    btn.onclick=e=>{
-      e.stopPropagation();
-      let box=btn.closest(".tree-menu"), [type,id]=box.dataset.treeMenuBox.split(":");
-      box.classList.remove("open");
-      handleItemAction(type,id,btn.dataset.treeAction);
-    };
-  });
-
-  // Drag & drop is intentionally attached to the LEFT navigation tree.
-  el.querySelectorAll(".draggable-sidebar").forEach(row=>{
     row.addEventListener("dragstart",e=>{
       e.stopPropagation();
       e.dataTransfer.effectAllowed="move";
-      e.dataTransfer.setData("text/plain",JSON.stringify({type:row.dataset.dragType,id:row.dataset.dragId}));
+      e.dataTransfer.setData("text/plain",JSON.stringify({type,id:item.id}));
       row.classList.add("dragging");
     });
     row.addEventListener("dragend",()=>row.classList.remove("dragging"));
-    row.addEventListener("dragover",e=>{
-      e.preventDefault(); e.stopPropagation();
-      if(row.dataset.dragType==="folder") row.classList.add("tree-drop-target");
-    });
-    row.addEventListener("dragleave",()=>row.classList.remove("tree-drop-target"));
-    row.addEventListener("drop",async e=>{
-      e.preventDefault();e.stopPropagation();row.classList.remove("tree-drop-target");
-      let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
-      let targetType=row.dataset.dragType,targetId=row.dataset.dragId;
-      if(targetType!=="folder") return;
 
-      if(d.type==="folder"){
-        if(d.id===targetId || path(targetId).some(x=>x.id===d.id)) return alert("You cannot move a folder into itself.");
-        if(depth(targetId)+1>5) return alert("That would exceed the 5-level limit.");
-      }
-      let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
-      let patch=d.type==="folder"?{parent_id:targetId}:{folder_id:targetId};
-      let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
-      if(r.error)alert(r.error.message);else await load();
+    row.addEventListener("dragover",e=>{
+      if(type!=="folder")return;
+      e.preventDefault();e.stopPropagation();
+      row.classList.add("drop-target");
     });
+    row.addEventListener("dragleave",()=>row.classList.remove("drop-target"));
+    row.addEventListener("drop",async e=>{
+      if(type!=="folder")return;
+      e.preventDefault();e.stopPropagation();row.classList.remove("drop-target");
+      let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
+      if(d.type==="folder"){
+        if(d.id===item.id || path(item.id).some(x=>x.id===d.id))return alert("You cannot move a folder into itself or one of its subfolders.");
+        if(depth(item.id)+1>5)return alert("That would exceed the 5-level folder limit.");
+      }
+      const table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+      const patch=d.type==="folder"?{parent_id:item.id}:{folder_id:item.id};
+      const r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+      if(r.error)alert(r.error.message);else{expandedFolders.add(item.id);await load()}
+    });
+
+    const more=row.querySelector(".tree-more");
+    more.onclick=e=>{
+      e.stopPropagation();
+      document.querySelectorAll(".sidebar .tree-menu.open").forEach(x=>x.classList.remove("open"));
+      const menu=more.nextElementSibling;
+      menu.classList.add("open");
+      const r=more.getBoundingClientRect(),mw=menu.offsetWidth,mh=menu.offsetHeight;
+      let left=r.right+8,top=r.top-4;
+      if(left+mw>innerWidth-8)left=Math.max(8,r.left-mw-8);
+      if(top+mh>innerHeight-8)top=Math.max(8,innerHeight-mh-8);
+      menu.style.left=left+"px";menu.style.top=top+"px";
+    };
+    row.querySelectorAll(".tree-menu button").forEach(btn=>{
+      btn.onclick=e=>{
+        e.stopPropagation();
+        const [t,id]=btn.closest(".tree-menu").dataset.treeMenuBox.split(":");
+        btn.closest(".tree-menu").classList.remove("open");
+        handleItemAction(t,id,btn.dataset.treeAction);
+      };
+    });
+    return row;
+  }
+
+  function drawFolder(parent,wrap){
+    folders.filter(f=>(f.parent_id||null)===parent).forEach(f=>{
+      wrap.append(makeRow(f,"folder"));
+      if(expandedFolders.has(f.id)){
+        const sub=document.createElement("div");
+        sub.className="tree-children";
+        wrap.append(sub);
+        drawFolder(f.id,sub);
+        lists.filter(x=>(x.folder_id||null)===f.id).forEach(x=>sub.append(makeRow(x,"list")));
+        notes.filter(x=>(x.folder_id||null)===f.id).forEach(x=>sub.append(makeRow(x,"note")));
+      }
+    });
+  }
+
+  drawFolder(null,el);
+  lists.filter(x=>!x.folder_id).forEach(x=>el.append(makeRow(x,"list")));
+  notes.filter(x=>!x.folder_id).forEach(x=>el.append(makeRow(x,"note")));
+
+  el.addEventListener("dragover",e=>{
+    if(e.target===el){e.preventDefault();el.classList.add("drop-target")}
   });
-  el.addEventListener("dragover",e=>{if(e.target===el){e.preventDefault();el.classList.add("tree-drop-target")}});
-  el.addEventListener("dragleave",e=>{if(e.target===el)el.classList.remove("tree-drop-target")});
+  el.addEventListener("dragleave",e=>{
+    if(e.target===el)el.classList.remove("drop-target")
+  });
   el.addEventListener("drop",async e=>{
-    if(e.target!==el)return;e.preventDefault();el.classList.remove("tree-drop-target");
+    if(e.target!==el)return;
+    e.preventDefault();el.classList.remove("drop-target");
     let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
-    let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
-    let patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
-    let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+    const table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+    const patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
+    const r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
     if(r.error)alert(r.error.message);else await load();
   });
 }
@@ -331,92 +351,97 @@ async function handleItemAction(type,id,action){
   }
   if(action==="move"){moveItemMobile(type,id);return}
 }
-function modal(title,action,initial=""){
-  modalAction=action;$("#modalTitle").textContent=title;$("#modalInput").value=initial||"";
-  $("#modalBack").classList.remove("hidden");setTimeout(()=>$("#modalInput").focus(),20)
-}
-function chooseColor(type,id){
-  let item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
-  modal("Color code",async color=>{
-    if(!color)return;
-    let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
-    let r=await db.from(table).update({color}).eq("id",id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(type==="folder")openFolder(id);else if(type==="note")openNote(id);else openList(id)}
-  },item?.color||"#7c6ad9");
-}
-function moveItemMobile(type,id){
-  if(type==="folder" && depth(id)>=5)return alert("Maximum folder depth is 5.");
-  let choices=[{id:"",name:"My workspace"}].concat(folders.filter(f=>f.id!==id && !(type==="folder" && path(f.id).some(x=>x.id===id))));
-  let html=choices.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
-  $("#modalTitle").textContent="Move to";
-  $("#modalInput").outerHTML=`<select id="modalInput">${html}</select>`;
-  $("#modalBack").classList.remove("hidden");
-  modalAction=async dest=>{
-    let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
-    let patch=type==="folder"?{parent_id:dest||null}:{folder_id:dest||null};
-    if(type==="folder"){
-      let d=dest?depth(dest)+1:1;
-      if(d>5){alert("That would exceed the 5-level limit.");return}
-    }
-    let r=await db.from(table).update(patch).eq("id",id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");$("#modalInput").outerHTML=`<input id="modalInput" placeholder="Name">`;await load()}
-  };
-  $("#modalOk").onclick=()=>modalAction($("#modalInput").value);
-}
+const PALETTE=[
+  ["#5f9e50","Green"],["#3f78b5","Blue"],["#d99a18","Yellow"],
+  ["#bd4d3a","Red"],["#8057a6","Purple"],["#c87327","Orange"]
+];
 
-$("#modalCancel").onclick=()=>$("#modalBack").classList.add("hidden");$("#modalOk").onclick=()=>modalAction?.($("#modalInput").value.trim());$("#modalInput").onkeydown=e=>{if(e.key==="Enter")$("#modalOk").click()}
-
-$("#optionsBtn").onclick=()=>{
-  $("#modalTitle").textContent="Options";
-  $("#modalInput").classList.add("hidden");
-  $("#modalOk").classList.add("hidden");
-  $("#modalBody").innerHTML=`<div class="settings-list">
-    <button id="feedbackBtn">Feedback</button>
-    <button id="credentialsBtn">Credentials</button>
-    <button id="clearAccountBtn">Clear account data</button>
-    <button id="deleteAccountBtn" class="danger-setting">Delete account</button>
-  </div><div class="settings-note">Account and content actions affect the data stored for your account.</div>`;
-  $("#modalBack").classList.remove("hidden");
-  $("#feedbackBtn").onclick=()=>{location.href="mailto:?subject=Task%20Garden%20feedback"};
-  $("#credentialsBtn").onclick=()=>showCredentials();
-    $("#clearAccountBtn").onclick=clearAccount;
-  $("#deleteAccountBtn").onclick=deleteAccount;
-};
-$("#modalCancel").onclick=()=>{
-  $("#modalBack").classList.add("hidden");
+function resetModal(){
+  $("#modalBody").innerHTML="";
+  $("#modalInput").outerHTML=`<input id="modalInput" placeholder="Name">`;
   $("#modalInput").classList.remove("hidden");
   $("#modalOk").classList.remove("hidden");
-};
-async function showCredentials(){
-  $("#modalTitle").textContent="Credentials";
-  $("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
-  $("#modalBody").innerHTML=`<div style="color:var(--muted)">Signed in as</div><div style="margin-top:5px;font-weight:650">${esc(user?.email||"")}</div>
-  <div style="margin-top:18px;color:var(--muted)">Password</div><div style="margin-top:5px">Your password is managed securely by Supabase and is not displayed here.</div>`;
+  $("#modalOk").textContent="Create";
 }
-async function clearAccount(){
-  if(!confirm("Clear your Task Garden content? This removes folders, notes, task lists and tasks, but keeps your account."))return;
-  // Delete child content first, then folders. Existing FK cascades handle nested folders.
-  for(const table of ["tasks","notes","task_lists","folders"]){
-    let r=await db.from(table).delete().eq("user_id",user.id);
-    if(r.error){alert(r.error.message);return}
-  }
-  await load();$("#modalBack").classList.add("hidden");
+function modal(title,action,initial=""){
+  resetModal();
+  modalAction=action;
+  $("#modalTitle").textContent=title;
+  $("#modalInput").value=initial||"";
+  $("#modalBack").classList.remove("hidden");
+  setTimeout(()=>$("#modalInput").focus(),20);
 }
-async function deleteAccount(){
-  if(!confirm("Delete your account? This is permanent."))return;
-  alert("For security, account deletion needs to be enabled through your Supabase account-deletion flow. The app cannot safely delete auth.users using the public browser key.");
+function creationModal(title,action,initial="#5f9e50"){
+  resetModal();
+  modalAction=action;
+  $("#modalTitle").textContent=title;
+  $("#modalInput").value="";
+  $("#modalBody").innerHTML=`<div class="create-color-label">Color</div>
+    <div class="color-palette" id="createPalette">${PALETTE.map(([c,n],i)=>`<button type="button" class="color-choice${c===initial?" selected":""}" data-color="${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div>`;
+  $("#modalInput").placeholder="Name";
+  $("#modalBack").classList.remove("hidden");
+  $("#createPalette").querySelectorAll(".color-choice").forEach(b=>b.onclick=()=>{
+    $("#createPalette").querySelectorAll(".color-choice").forEach(x=>x.classList.remove("selected"));
+    b.classList.add("selected");
+  });
+  setTimeout(()=>$("#modalInput").focus(),20);
 }
-document.addEventListener("click",e=>{
-  if(!e.target.closest(".tree-more,.tree-menu")){
-    document.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
-  }
-});
-window.addEventListener("scroll",()=>{
-  document.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
-},true);
-async function newFolder(){let parent=currentFolder||null;if(depth(parent)>=5)return alert("Maximum folder depth is 5.");modal("New folder",async name=>{if(!name)return;let r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent)openFolder(parent)}})}
-async function newList(){let folder=currentFolder||null;modal("New task list",async name=>{if(!name)return;let r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder)openFolder(folder)}})}
-async function newNote(){let folder=currentFolder||null;modal("New note",async name=>{if(!name)return;let r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color:"#7c6ad9"}).select().single();if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}})}
+function selectedCreateColor(){
+  return $("#createPalette")?.querySelector(".color-choice.selected")?.dataset.color||"#5f9e50";
+}
+
+async function chooseColor(type,id){
+  const item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
+  resetModal();
+  $("#modalTitle").textContent="Change color";
+  $("#modalInput").value=item?.color||"#5f9e50";
+  $("#modalInput").placeholder="#5f9e50";
+  $("#modalBody").innerHTML=`<div class="create-color-label">Hex color</div>
+    <div class="hex-row"><div id="hexPreview" class="hex-preview"></div></div>`;
+  $("#modalInput").setAttribute("pattern","^#[0-9a-fA-F]{6}$");
+  $("#modalInput").title="Enter a color such as #5f9e50";
+  $("#modalOk").textContent="Save";
+  $("#modalBack").classList.remove("hidden");
+  const preview=()=>{let v=$("#modalInput").value.trim();$("#hexPreview").style.background=/^#[0-9a-fA-F]{6}$/.test(v)?v:"transparent"};
+  $("#modalInput").oninput=preview;preview();
+  modalAction=async value=>{
+    value=value.trim();
+    if(!/^#[0-9a-fA-F]{6}$/.test(value))return alert("Enter a valid hex color, e.g. #5f9e50.");
+    const table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+    const r=await db.from(table).update({color:value}).eq("id",id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load()}
+  };
+  setTimeout(()=>$("#modalInput").focus(),20);
+}
+
+async function newFolder(){
+  const parent=currentFolder||null;
+  if(parent&&depth(parent)>=5)return alert("Maximum folder depth is 5.");
+  creationModal("New folder",async name=>{
+    name=name.trim();if(!name)return;
+    const color=selectedCreateColor();
+    const r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color});
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent){expandedFolders.add(parent);openFolder(parent)}}
+  });
+}
+async function newList(){
+  const folder=currentFolder||null;
+  creationModal("New task list",async name=>{
+    name=name.trim();if(!name)return;
+    const color=selectedCreateColor();
+    const r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color});
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder){expandedFolders.add(folder);openFolder(folder)}}
+  });
+}
+async function newNote(){
+  const folder=currentFolder||null;
+  creationModal("New note",async name=>{
+    name=name.trim();if(!name)return;
+    const color=selectedCreateColor();
+    const r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color}).select().single();
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}
+  });
+}
 $("#newFolderBtn").onclick=newFolder;$("#newListBtn").onclick=newList;$("#newNoteBtn").onclick=newNote;$("#upBtn").onclick=()=>{if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
 db.auth.onAuthStateChange(async(_,s)=>{user=s?.user||null;if(user){$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");try{await load()}catch(e){alert(e.message)}}else{$("#app").classList.add("hidden");$("#auth").classList.remove("hidden")}});
 let s=await db.auth.getSession();if(s.data.session){user=s.data.session.user;$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");await load()}else renderHome();
