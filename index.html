@@ -9,7 +9,7 @@
 button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}.hidden{display:none!important}
 .auth{min-height:100vh;display:grid;place-items:center;padding:24px}.auth-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:30px;box-shadow:0 20px 60px #0007}
 .brand{font-size:22px;font-weight:700}.subtitle{color:var(--muted);margin:4px 0 24px}.tabs{display:grid;grid-template-columns:1fr 1fr;background:#121417;border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:18px}.tabs button{border:0;background:transparent;padding:8px;border-radius:7px;color:var(--muted)}.tabs button.active{background:var(--panel2);color:var(--text)}
-label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,textarea{width:100%;border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:8px;padding:10px 11px;outline:none}input:focus,textarea:focus{border-color:#62578a}
+label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,textarea,select{width:100%;border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:8px;padding:10px 11px;outline:none}input:focus,textarea:focus{border-color:#62578a}
 .primary,.ghost,.danger{border:1px solid var(--border);border-radius:8px;padding:9px 12px;background:var(--panel2)}.primary{background:var(--accent);border-color:var(--accent);font-weight:650}.danger{color:var(--danger)}.form-message{min-height:20px;margin-top:12px;color:var(--danger)}.form-message.success{color:#82d39a}
 .app{height:100vh;display:grid;grid-template-columns:270px minmax(0,1fr);overflow:hidden}.sidebar{background:#15171a;border-right:1px solid var(--border);display:flex;flex-direction:column}.sidebar-head{padding:18px;border-bottom:1px solid var(--border)}.brand-small{font-size:17px;font-weight:700}.user-line{color:var(--muted);font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.side-actions{padding:12px;display:grid;gap:7px}.side-actions button{width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 10px}.side-actions button:hover{background:var(--panel2);border-color:var(--border)}
 .tree{overflow:auto;padding:6px 10px 20px}.tree-row{display:flex;align-items:center;gap:6px;min-height:34px;border-radius:7px;padding:4px 7px}.tree-row:hover{background:var(--panel2)}.tree-row.selected{background:#2a2638}.tree-toggle{width:20px;border:0;background:transparent;color:var(--muted);padding:0}.tree-icon{color:#aeb5bf;width:17px}.tree-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.tree-children{margin-left:17px}.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);display:grid;gap:7px}.coins{color:#c5b5ff}
@@ -17,6 +17,24 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .list-view{display:grid;gap:18px}.section{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}.section-head{padding:15px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}.section-title{font-weight:650}.section-body{padding:12px}.task{display:grid;grid-template-columns:22px 1fr auto auto;gap:9px;align-items:center;padding:9px 7px;border-radius:7px}.task:hover{background:var(--panel2)}.task.done .task-title{text-decoration:line-through;color:var(--muted)}.task input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}.reward{color:#bca8ff;font-size:12px}.task-delete{border:0;background:transparent;color:var(--muted);font-size:18px}.task-delete:hover{color:var(--danger)}.add-row{display:flex;gap:8px;margin-top:10px}.add-row input{flex:1}
 .note-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}.note-head{padding:12px;border-bottom:1px solid var(--border);display:flex;gap:8px}.note-head input{font-weight:650;background:transparent}.editor{min-height:430px;padding:18px;outline:none}.editor:empty:before{content:attr(data-placeholder);color:#6e757f}.toolbar{display:flex;flex-wrap:wrap;gap:5px;padding:9px 12px;border-bottom:1px solid var(--border);background:#17191d}.tool{border:1px solid var(--border);background:#20242a;border-radius:6px;min-width:32px;height:30px}.tool:hover{background:#292e35}.save-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;color:var(--muted)}
 .modal-back{position:fixed;inset:0;background:#0008;display:grid;place-items:center;padding:20px;z-index:10}.modal{width:min(460px,100%);background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}.modal h2{font-size:18px;margin:0 0 14px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+
+.item-color{display:inline-block;width:4px;height:26px;border-radius:3px;flex:0 0 4px;background:#7c6ad9}
+.folder-wrap{position:relative}
+.folder-color{position:absolute;left:0;top:12px;height:34px;z-index:2}
+.folder-wrap .folder-card{padding-left:20px}
+.more-btn{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:3px 6px;border-radius:6px;margin-left:auto;z-index:3}
+.more-btn:hover{background:#2a2e34;color:var(--text)}
+.item-menu{position:absolute;right:8px;top:42px;z-index:20;display:none;min-width:150px;background:#20242a;border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:0 12px 30px #0009}
+.item-menu.open{display:grid}
+.item-menu button{border:0;background:transparent;text-align:left;border-radius:5px;padding:8px 9px;color:var(--text)}
+.item-menu button:hover{background:#2b3037}
+.draggable-item{position:relative}
+.draggable-item.dragging{opacity:.45}
+.draggable-item.drag-over{outline:2px solid #9b86e8;outline-offset:2px;border-radius:10px}
+.mobile-move{display:none!important}
+@media(max-width:760px){
+  .mobile-move{display:block!important}
+}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 15px}.topbar{padding:0 15px}}
 </style></head>
 <body>
@@ -49,11 +67,71 @@ function depth(id){let d=0,f=folders.find(x=>x.id===id);while(f?.parent_id&&d<10
 function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=folders.find(x=>x.id===f.parent_id)}return a}
 function renderTree(){let el=$("#tree");el.innerHTML="";function draw(parent,wrap){for(let f of childrenOf(parent)){let row=document.createElement("div");row.className="tree-row"+(currentFolder===f.id?" selected":"");row.innerHTML=`<button class="tree-toggle">${childrenOf(f.id).length?"▾":""}</button><span class="tree-icon">▱</span><span class="tree-name">${esc(f.name)}</span>`;row.onclick=()=>openFolder(f.id);wrap.append(row);if(childrenOf(f.id).length){let sub=document.createElement("div");sub.className="tree-children";wrap.append(sub);draw(f.id,sub)}}}draw(null,el);for(let l of lists.filter(x=>!x.folder_id)){let row=document.createElement("div");row.className="tree-row";row.innerHTML=`<span class="tree-icon">☷</span><span class="tree-name">${esc(l.name)}</span>`;row.onclick=()=>openList(l.id);el.append(row)}}
 function folderItems(id){return{folders:childrenOf(id),lists:lists.filter(l=>(l.folder_id||null)===id),notes:notes.filter(n=>(n.folder_id||null)===id)}}
-function renderHome(){currentFolder=null;currentDoc=null;$("#crumbs").innerHTML="<strong>My workspace</strong>";$("#content").innerHTML=`<div class="welcome"><h1>My workspace</h1><p>Your folders, notes and task lists.</p></div><div class="folder-grid">${childrenOf(null).map(f=>`<button class="folder-card" data-f="${f.id}"><strong>▱ ${esc(f.name)}</strong><div class="count">${folderItems(f.id).lists.length} task lists · ${folderItems(f.id).notes.length} notes</div></button>`).join("")}</div>${childrenOf(null).length?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f))}
+function renderHome(){
+  currentFolder=null;currentDoc=null;
+  $("#crumbs").innerHTML="<strong>My workspace</strong>";
+  $("#content").innerHTML=`<div class="welcome"><h1>My workspace</h1><p>Your folders, notes and task lists.</p></div>
+  <div class="folder-grid">${childrenOf(null).map(folderCard).join("")}</div>
+  ${childrenOf(null).length?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
+  bind();setupDnD();
+}
 function taskHTML(t){return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward">+${Number(t.coin_reward||5)}</span><button class="task-delete" data-del="${t.id}">×</button></div>`}
-function listHTML(l){let ts=tasks.filter(t=>t.list_id===l.id);return`<div class="section"><div class="section-head"><span class="section-title">☷ ${esc(l.name)}</span><button class="ghost" data-open-list="${l.id}">Open</button></div><div class="section-body">${ts.slice(0,8).map(taskHTML).join("")||"<div style='color:var(--muted)'>No tasks yet.</div>"}<div class="add-row"><input data-add="${l.id}" placeholder="Add task…"><button class="primary" data-addbtn="${l.id}">Add</button></div></div>`}
-function noteHTML(n){return`<div class="section"><div class="section-head"><span class="section-title">□ ${esc(n.title)}</span><button class="ghost" data-open-note="${n.id}">Open</button></div><div class="section-body" style="color:var(--muted);max-height:90px;overflow:hidden">${n.content_html||"<em>Empty note</em>"}</div></div>`}
-function renderFolder(id){currentFolder=id;currentDoc=null;let f=folders.find(x=>x.id===id),it=folderItems(id);$("#crumbs").textContent=path(id).map(x=>x.name).join(" / ");$("#content").innerHTML=`<div class="welcome"><h1>${esc(f.name)}</h1><p>${it.folders.length} folders · ${it.lists.length} task lists · ${it.notes.length} notes</p></div><div class="folder-grid">${it.folders.map(x=>`<button class="folder-card" data-f="${x.id}"><strong>▱ ${esc(x.name)}</strong></button>`).join("")}</div><div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));bind()}
+function colorOf(x){return x?.color||""}
+function itemMenu(type,id){
+  return `<div class="item-menu" data-menu="${type}:${id}">
+    <button data-action="open">Open</button>
+    <button data-action="rename">Rename</button>
+    <button data-action="color">Change color</button>
+    <button data-action="delete">Delete</button>
+    <button class="mobile-move" data-action="move">Move to…</button>
+  </div>`;
+}
+function listHTML(l){
+  let ts=tasks.filter(t=>t.list_id===l.id);
+  return `<div class="section draggable-item" draggable="true" data-drag-type="list" data-drag-id="${l.id}">
+    <div class="section-head">
+      <span class="item-color" style="background:${esc(colorOf(l))}"></span>
+      <span class="section-title">☷ ${esc(l.name)}</span>
+      <button class="more-btn" data-menu-btn="list:${l.id}">⋯</button>
+      ${itemMenu("list",l.id)}
+    </div>
+    <div class="section-body">${ts.slice(0,8).map(taskHTML).join("")||"<div style='color:var(--muted)'>No tasks yet.</div>"}
+      <div class="add-row"><input data-add="${l.id}" placeholder="Add task…"><button class="primary" data-addbtn="${l.id}">Add</button></div>
+    </div>
+  </div>`;
+}
+function noteHTML(n){
+  return `<div class="section draggable-item" draggable="true" data-drag-type="note" data-drag-id="${n.id}">
+    <div class="section-head">
+      <span class="item-color" style="background:${esc(colorOf(n))}"></span>
+      <span class="section-title">□ ${esc(n.title)}</span>
+      <button class="more-btn" data-menu-btn="note:${n.id}">⋯</button>
+      ${itemMenu("note",n.id)}
+    </div>
+    <div class="section-body" style="color:var(--muted);max-height:90px;overflow:hidden">${n.content_html||"<em>Empty note</em>"}</div>
+  </div>`;
+}
+function folderCard(f){
+  let it=folderItems(f.id);
+  return `<div class="folder-wrap draggable-item" draggable="true" data-drag-type="folder" data-drag-id="${f.id}">
+    <button class="folder-card" data-f="${f.id}">
+      <span class="item-color folder-color" style="background:${esc(colorOf(f))}"></span>
+      <strong>▱ ${esc(f.name)}</strong>
+      <div class="count">${it.lists.length} task lists · ${it.notes.length} notes</div>
+    </button>
+    <button class="more-btn folder-more" data-menu-btn="folder:${f.id}">⋯</button>
+    ${itemMenu("folder",f.id)}
+  </div>`;
+}
+function renderFolder(id){
+  currentFolder=id;currentDoc=null;
+  let f=folders.find(x=>x.id===id),it=folderItems(id);
+  $("#crumbs").textContent=path(id).map(x=>x.name).join(" / ");
+  $("#content").innerHTML=`<div class="welcome"><h1>${esc(f.name)}</h1><p>${it.folders.length} folders · ${it.lists.length} task lists · ${it.notes.length} notes</p></div>
+  <div class="folder-grid">${it.folders.map(folderCard).join("")}</div>
+  <div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;
+  bind();setupDnD();
+}
 function bind(){document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteTask(b.dataset.del));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")addTask(i.dataset.add)})}
 async function addTask(id){let i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;let r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:5,is_done:false,sort_order:Date.now()});if(r.error)return alert(r.error.message);await load()}
 async function toggleTask(id,done){let t=tasks.find(x=>x.id===id);let r=await db.from("tasks").update({is_done:done}).eq("id",id).eq("user_id",user.id);if(r.error)return alert(r.error.message);if(done){let next=Number(profile.coins||0)+Number(t?.coin_reward||5);await db.from("profiles").update({coins:next}).eq("id",user.id)}await load()}
@@ -63,11 +141,121 @@ function openList(id){currentDoc={type:"list",id};let l=lists.find(x=>x.id===id)
 function openNote(id){currentDoc={type:"note",id};let n=notes.find(x=>x.id===id);currentFolder=n?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),n.title].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="note-card"><div class="note-head"><input id="noteTitle" value="${esc(n.title)}"><button class="primary" id="saveNote">Save</button></div><div class="toolbar"><button class="tool" data-cmd="bold"><b>B</b></button><button class="tool" data-cmd="italic"><i>I</i></button><button class="tool" data-cmd="formatBlock" data-val="h2">H</button><button class="tool" data-cmd="insertUnorderedList">• List</button><button class="tool" data-cmd="insertOrderedList">1. List</button><button class="tool" data-cmd="insertHorizontalRule">―</button><button class="tool" data-cmd="undo">↶</button><button class="tool" data-cmd="redo">↷</button></div><div id="editor" class="editor" contenteditable="true" data-placeholder="Start writing…">${n.content_html||""}</div><div class="save-row"><span>Notes are saved to your account.</span><button class="danger" id="deleteNote">Delete note</button></div></div>`;document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,b.dataset.val||null);$("#editor").focus()});$("#saveNote").onclick=saveNote;$("#deleteNote").onclick=deleteNote}
 async function saveNote(){let n=notes.find(x=>x.id===currentDoc.id),r=await db.from("notes").update({title:$("#noteTitle").value.trim()||"Untitled note",content_html:$("#editor").innerHTML,updated_at:new Date().toISOString()}).eq("id",n.id).eq("user_id",user.id);if(r.error)return alert(r.error.message);await load();openNote(n.id)}
 async function deleteNote(){if(!confirm("Delete this note?"))return;let r=await db.from("notes").delete().eq("id",currentDoc.id).eq("user_id",user.id);if(r.error)alert(r.error.message);else load()}
-function modal(title,action){modalAction=action;$("#modalTitle").textContent=title;$("#modalInput").value="";$("#modalBack").classList.remove("hidden");setTimeout(()=>$("#modalInput").focus(),20)}
+
+function closeMenus(){document.querySelectorAll(".item-menu.open").forEach(m=>m.classList.remove("open"))}
+document.addEventListener("click",e=>{
+  const mb=e.target.closest("[data-menu-btn]");
+  if(mb){
+    e.stopPropagation(); closeMenus();
+    const m=document.querySelector(`[data-menu="${mb.dataset.menuBtn}"]`);
+    if(m)m.classList.add("open");
+    return;
+  }
+  const act=e.target.closest(".item-menu button");
+  if(act){
+    e.stopPropagation();
+    const m=act.closest(".item-menu"), key=m.dataset.menu.split(":");
+    closeMenus(); handleItemAction(key[0],key[1],act.dataset.action); return;
+  }
+  closeMenus();
+});
+async function handleItemAction(type,id,action){
+  if(action==="open"){type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id);return}
+  if(action==="rename"){
+    let item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
+    modal("Rename",async name=>{
+      if(!name)return;
+      let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+      let patch={name};
+      if(type==="note")patch.updated_at=new Date().toISOString();
+      let r=await db.from(table).update(patch).eq("id",id).eq("user_id",user.id);
+      if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load(); type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id)}
+    },item?.name||"");return;
+  }
+  if(action==="color"){chooseColor(type,id);return}
+  if(action==="delete"){
+    if(!confirm(`Delete this ${type}?`))return;
+    let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+    let r=await db.from(table).delete().eq("id",id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else await load();
+    return;
+  }
+  if(action==="move"){moveItemMobile(type,id);return}
+}
+function modal(title,action,initial=""){
+  modalAction=action;$("#modalTitle").textContent=title;$("#modalInput").value=initial||"";
+  $("#modalBack").classList.remove("hidden");setTimeout(()=>$("#modalInput").focus(),20)
+}
+function chooseColor(type,id){
+  let item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
+  modal("Color code",async color=>{
+    if(!color)return;
+    let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+    let r=await db.from(table).update({color}).eq("id",id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(type==="folder")openFolder(id);else if(type==="note")openNote(id);else openList(id)}
+  },item?.color||"#7c6ad9");
+}
+function moveItemMobile(type,id){
+  if(type==="folder" && depth(id)>=5)return alert("Maximum folder depth is 5.");
+  let choices=[{id:"",name:"My workspace"}].concat(folders.filter(f=>f.id!==id && !(type==="folder" && path(f.id).some(x=>x.id===id))));
+  let html=choices.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
+  $("#modalTitle").textContent="Move to";
+  $("#modalInput").outerHTML=`<select id="modalInput">${html}</select>`;
+  $("#modalBack").classList.remove("hidden");
+  modalAction=async dest=>{
+    let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+    let patch=type==="folder"?{parent_id:dest||null}:{folder_id:dest||null};
+    if(type==="folder"){
+      let d=dest?depth(dest)+1:1;
+      if(d>5){alert("That would exceed the 5-level limit.");return}
+    }
+    let r=await db.from(table).update(patch).eq("id",id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");$("#modalInput").outerHTML=`<input id="modalInput" placeholder="Name">`;await load()}
+  };
+  $("#modalOk").onclick=()=>modalAction($("#modalInput").value);
+}
+function setupDnD(){
+  document.querySelectorAll(".draggable-item").forEach(el=>{
+    el.addEventListener("dragstart",e=>{
+      e.dataTransfer.setData("text/plain",JSON.stringify({type:el.dataset.dragType,id:el.dataset.dragId}));
+      el.classList.add("dragging");
+    });
+    el.addEventListener("dragend",()=>el.classList.remove("dragging"));
+    el.addEventListener("dragover",e=>{
+      let targetType=el.dataset.dragType;
+      if(targetType==="folder"){e.preventDefault();el.classList.add("drag-over")}
+    });
+    el.addEventListener("dragleave",()=>el.classList.remove("drag-over"));
+    el.addEventListener("drop",async e=>{
+      e.preventDefault();el.classList.remove("drag-over");
+      let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
+      if(d.type==="folder" && el.dataset.dragType==="folder"){
+        if(d.id===el.dataset.dragId || path(el.dataset.dragId).some(x=>x.id===d.id))return alert("You cannot move a folder into itself.");
+        let targetDepth=depth(el.dataset.dragId)+1;
+        if(targetDepth>5)return alert("That would exceed the 5-level limit.");
+      }
+      let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+      let patch=d.type==="folder"?{parent_id:el.dataset.dragId}:{folder_id:el.dataset.dragId};
+      let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+      if(r.error)alert(r.error.message);else await load();
+    });
+  });
+  // Empty workspace is also a valid drop target.
+  $("#content").addEventListener("dragover",e=>{if(e.target===e.currentTarget)e.preventDefault()});
+  $("#content").addEventListener("drop",async e=>{
+    if(e.target!==e.currentTarget)return;
+    let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
+    let table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
+    let patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
+    let r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
+    if(r.error)alert(r.error.message);else await load();
+  });
+}
+
 $("#modalCancel").onclick=()=>$("#modalBack").classList.add("hidden");$("#modalOk").onclick=()=>modalAction?.($("#modalInput").value.trim());$("#modalInput").onkeydown=e=>{if(e.key==="Enter")$("#modalOk").click()}
-async function newFolder(){let parent=currentFolder||null;if(depth(parent)>=5)return alert("Maximum folder depth is 5.");modal("New folder",async name=>{if(!name)return;let r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now()});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent)openFolder(parent)}})}
-async function newList(){let folder=currentFolder||null;modal("New task list",async name=>{if(!name)return;let r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now()});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder)openFolder(folder)}})}
-async function newNote(){let folder=currentFolder||null;modal("New note",async name=>{if(!name)return;let r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString()}).select().single();if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}})}
+async function newFolder(){let parent=currentFolder||null;if(depth(parent)>=5)return alert("Maximum folder depth is 5.");modal("New folder",async name=>{if(!name)return;let r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent)openFolder(parent)}})}
+async function newList(){let folder=currentFolder||null;modal("New task list",async name=>{if(!name)return;let r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder)openFolder(folder)}})}
+async function newNote(){let folder=currentFolder||null;modal("New note",async name=>{if(!name)return;let r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color:"#7c6ad9"}).select().single();if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}})}
 $("#newFolderBtn").onclick=newFolder;$("#newListBtn").onclick=newList;$("#newNoteBtn").onclick=newNote;$("#upBtn").onclick=()=>{if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
 db.auth.onAuthStateChange(async(_,s)=>{user=s?.user||null;if(user){$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");try{await load()}catch(e){alert(e.message)}}else{$("#app").classList.add("hidden");$("#auth").classList.remove("hidden")}});
 let s=await db.auth.getSession();if(s.data.session){user=s.data.session.user;$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");await load()}else renderHome();
