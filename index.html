@@ -36,27 +36,31 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .sidebar .tree-row{position:relative;padding-right:34px}
 .sidebar .tree-more{margin-left:auto;opacity:0;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:6px;padding:1px 5px;line-height:1}
 .sidebar .tree-row:hover .tree-more,.sidebar .tree-more:focus{opacity:1}
-.sidebar .tree-menu{position:absolute;right:6px;top:31px;z-index:50;display:none;min-width:145px;background:#20242a;border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:0 12px 30px #0009}
+.sidebar .tree-menu{position:fixed;z-index:1000;display:none;min-width:190px;max-width:240px;background:#2b2b2b;border:1px solid #444;border-radius:10px;padding:6px;box-shadow:0 14px 36px rgba(0,0,0,.48)}
 .sidebar .tree-menu.open{display:grid}
-.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:var(--text);border-radius:5px;padding:8px}
-.sidebar .tree-menu button:hover{background:#2b3037}
+.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:#f2f2f2;border-radius:7px;padding:9px 11px;font-size:14px;white-space:nowrap}
+.sidebar .tree-menu button:hover{background:#3a3a3a}
+.sidebar .tree-menu .danger-setting{color:#ff6b6b}
+.sidebar .tree-menu .mobile-move{display:none}
 .sidebar .tree-drop-target{outline:2px solid #9b86e8;outline-offset:2px;border-radius:7px}
 .settings-list{display:grid;gap:6px;margin-top:5px}
 .settings-list button{width:100%;text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:8px;padding:11px 12px}
 .settings-list button:hover{background:#292e35}
 .settings-list .danger-setting{color:var(--danger)}
 .settings-note{color:var(--muted);font-size:12px;margin-top:12px}
-@media(max-width:760px){
+@media(max-width:760px){ .sidebar .tree-menu .mobile-move{display:block}
   .mobile-move{display:block!important}
 }
 
 .sidebar .tree-row{position:relative;padding-right:34px}
 .sidebar .tree-more{margin-left:auto;opacity:0;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:6px;padding:1px 5px;line-height:1}
 .sidebar .tree-row:hover .tree-more,.sidebar .tree-more:focus{opacity:1}
-.sidebar .tree-menu{position:absolute;right:6px;top:31px;z-index:50;display:none;min-width:145px;background:#20242a;border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:0 12px 30px #0009}
+.sidebar .tree-menu{position:fixed;z-index:1000;display:none;min-width:190px;max-width:240px;background:#2b2b2b;border:1px solid #444;border-radius:10px;padding:6px;box-shadow:0 14px 36px rgba(0,0,0,.48)}
 .sidebar .tree-menu.open{display:grid}
-.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:var(--text);border-radius:5px;padding:8px}
-.sidebar .tree-menu button:hover{background:#2b3037}
+.sidebar .tree-menu button{border:0;background:transparent;text-align:left;color:#f2f2f2;border-radius:7px;padding:9px 11px;font-size:14px;white-space:nowrap}
+.sidebar .tree-menu button:hover{background:#3a3a3a}
+.sidebar .tree-menu .danger-setting{color:#ff6b6b}
+.sidebar .tree-menu .mobile-move{display:none}
 .sidebar .tree-drop-target{outline:2px solid #9b86e8;outline-offset:2px;border-radius:7px}
 .settings-list{display:grid;gap:6px;margin-top:5px}
 .settings-list button{width:100%;text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:8px;padding:11px 12px}
@@ -76,7 +80,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 <div id="app" class="app hidden"><aside class="sidebar">
 <div class="sidebar-head"><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><button id="newFolderBtn">＋ New folder</button><button id="newNoteBtn">＋ Add note</button><button id="newListBtn">＋ Add tasklist</button></div>
-<div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
+<div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
 </aside><main class="main"><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
 <h2 id="modalTitle"></h2>
@@ -93,6 +97,7 @@ function msg(t,ok=false){$("#authMsg").textContent=t;$("#authMsg").className="fo
 function setAuthMode(m){authMode=m;$("#loginTab").classList.toggle("active",m==="login");$("#registerTab").classList.toggle("active",m==="register");$("#confirmWrap").classList.toggle("hidden",m!=="register");$("#authSubmit").textContent=m==="login"?"Log in":"Create account"}
 $("#loginTab").onclick=()=>setAuthMode("login");$("#registerTab").onclick=()=>setAuthMode("register");
 $("#authForm").onsubmit=async e=>{e.preventDefault();msg("");let email=$("#email").value.trim(),password=$("#password").value;if(authMode==="register"&&password!==$("#confirm").value)return msg("Passwords do not match.");try{let r=authMode==="login"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password,options:{emailRedirectTo:location.href}});if(r.error)throw r.error;if(authMode==="register"&&!r.data.session){setAuthMode("login");msg("Account created. Check your email to confirm it.",true)}}catch(e){msg(e.message||"Authentication failed.")}};
+$("#gardenBtn").onclick=()=>location.href="garden.html";
 $("#logoutBtn").onclick=()=>db.auth.signOut();
 async function load(){let uid=user.id;let [f,l,n,t,p]=await Promise.all([db.from("folders").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("task_lists").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),db.from("tasks").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("profiles").select("coins").eq("id",uid).maybeSingle()]);for(let r of [f,l,n,t,p])if(r.error)throw r.error;folders=f.data||[];lists=l.data||[];notes=n.data||[];tasks=t.data||[];profile=p.data||{coins:0};$("#coins").textContent=profile.coins??0;$("#userLine").textContent=user.email;renderTree();renderHome()}
 function childrenOf(p){return folders.filter(f=>(f.parent_id||null)===(p||null))}
@@ -148,8 +153,16 @@ function renderTree(){
   el.querySelectorAll(".tree-more").forEach(btn=>{
     btn.onclick=e=>{
       e.stopPropagation();
+      const menu=btn.nextElementSibling;
       el.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
-      btn.nextElementSibling.classList.add("open");
+      menu.classList.add("open");
+      const r=btn.getBoundingClientRect();
+      const mw=menu.offsetWidth, mh=menu.offsetHeight;
+      let left=r.right+8, top=r.top-4;
+      if(left+mw>window.innerWidth-8) left=Math.max(8,r.left-mw-8);
+      if(top+mh>window.innerHeight-8) top=Math.max(8,window.innerHeight-mh-8);
+      menu.style.left=left+"px";
+      menu.style.top=top+"px";
     };
   });
   el.querySelectorAll(".tree-menu button").forEach(btn=>{
@@ -360,15 +373,13 @@ $("#optionsBtn").onclick=()=>{
   $("#modalBody").innerHTML=`<div class="settings-list">
     <button id="feedbackBtn">Feedback</button>
     <button id="credentialsBtn">Credentials</button>
-    <button id="gardenFromOptions">Go to Garden</button>
     <button id="clearAccountBtn">Clear account data</button>
     <button id="deleteAccountBtn" class="danger-setting">Delete account</button>
   </div><div class="settings-note">Account and content actions affect the data stored for your account.</div>`;
   $("#modalBack").classList.remove("hidden");
   $("#feedbackBtn").onclick=()=>{location.href="mailto:?subject=Task%20Garden%20feedback"};
   $("#credentialsBtn").onclick=()=>showCredentials();
-  $("#gardenFromOptions").onclick=()=>location.href="garden.html";
-  $("#clearAccountBtn").onclick=clearAccount;
+    $("#clearAccountBtn").onclick=clearAccount;
   $("#deleteAccountBtn").onclick=deleteAccount;
 };
 $("#modalCancel").onclick=()=>{
@@ -395,6 +406,14 @@ async function deleteAccount(){
   if(!confirm("Delete your account? This is permanent."))return;
   alert("For security, account deletion needs to be enabled through your Supabase account-deletion flow. The app cannot safely delete auth.users using the public browser key.");
 }
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".tree-more,.tree-menu")){
+    document.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
+  }
+});
+window.addEventListener("scroll",()=>{
+  document.querySelectorAll(".tree-menu.open").forEach(x=>x.classList.remove("open"));
+},true);
 async function newFolder(){let parent=currentFolder||null;if(depth(parent)>=5)return alert("Maximum folder depth is 5.");modal("New folder",async name=>{if(!name)return;let r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent)openFolder(parent)}})}
 async function newList(){let folder=currentFolder||null;modal("New task list",async name=>{if(!name)return;let r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color:"#7c6ad9"});if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder)openFolder(folder)}})}
 async function newNote(){let folder=currentFolder||null;modal("New note",async name=>{if(!name)return;let r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color:"#7c6ad9"}).select().single();if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}})}
