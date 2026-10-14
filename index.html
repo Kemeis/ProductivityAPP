@@ -69,6 +69,34 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .settings-note{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 15px}.topbar{padding:0 15px}}
 
+
+/* Responsive navigation and functional controls */
+.modal-back{z-index:200}.mobile-nav,.mobile-close{display:none}.mobile-shade{display:none}
+.color-palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:12px 0}
+.create-color-label{color:var(--muted);font-size:12px;margin-top:8px}
+.color-choice{height:38px;min-width:0;border:2px solid transparent;border-radius:9px;background:var(--swatch);touch-action:manipulation}
+.color-choice.selected{outline:2px solid #eee;outline-offset:2px}
+.hex-preview{height:36px;border:1px solid var(--border);border-radius:8px;margin:8px 0}
+.move-choices{max-height:50dvh;overflow:auto;display:grid;gap:5px}.move-choices button{background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:left;padding:11px}
+.folder-wrap .folder-card{width:100%;height:100%}.folder-wrap .folder-more{position:absolute;right:8px;top:8px}
+.folder-wrap .folder-card{padding-right:42px}.item-menu{z-index:80}.tree{min-height:0;flex:1}.tree-more{min-width:32px;min-height:32px}
+.topbar .crumbs{flex:1}.modal{max-height:calc(100dvh - 32px);overflow:auto}.sidebar .tree-menu{max-height:65dvh;overflow:auto}
+@media(max-width:760px){
+ html,body{overflow-x:hidden}.app{height:100dvh;min-height:0;display:flex}.main{min-width:0;width:100%}
+ .sidebar{display:flex;position:fixed;left:0;top:0;bottom:0;width:min(320px,86vw);z-index:110;transform:translateX(-105%);transition:transform .2s ease;box-shadow:8px 0 30px #0008}
+ body.nav-open .sidebar{transform:translateX(0)}.mobile-shade:not(.hidden){display:block;position:fixed;inset:0;background:#0009;z-index:105}
+ .mobile-nav,.mobile-close{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:42px}
+ .mobile-close{float:right}.topbar{min-height:60px;height:auto;padding:8px 12px;gap:8px}.topbar #upBtn{min-width:48px;min-height:42px}
+ .content{padding:18px 12px;padding-bottom:40px;max-width:100%;overscroll-behavior:contain}
+ .welcome h1{font-size:23px}.folder-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}
+ .section-head{padding:12px}.section-body{padding:10px}.task{grid-template-columns:24px minmax(0,1fr) auto 28px;gap:6px}.task-title{overflow-wrap:anywhere}
+ .add-row input{min-width:0}.add-row button{flex-shrink:0}.note-head input{min-width:0}.editor{min-height:45dvh}
+ .save-row{gap:12px;align-items:center}.save-row span{font-size:11px}.sidebar .tree-more{opacity:1}
+ .sidebar .tree-menu .mobile-move{display:block}.mobile-move{display:block!important}
+ .item-menu{min-width:170px}.modal-back{padding:12px}.modal{width:100%;max-width:460px;padding:16px}
+ .color-choice{height:42px}button{touch-action:manipulation}
+}
+@media(max-width:380px){.color-palette{gap:6px}.folder-grid{grid-template-columns:1fr 1fr}.section-title{overflow-wrap:anywhere}}
 </style></head>
 <body>
 <div id="auth" class="auth"><div class="auth-card">
@@ -78,11 +106,11 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 <div id="confirmWrap" class="hidden"><label>Confirm password</label><input id="confirm" type="password"></div>
 <button class="primary" style="width:100%;margin-top:18px" id="authSubmit">Log in</button><div id="authMsg" class="form-message"></div></form>
 </div></div>
-<div id="app" class="app hidden"><aside class="sidebar">
-<div class="sidebar-head"><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
+<div id="app" class="app hidden"><div id="mobileShade" class="mobile-shade hidden"></div><aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><button id="mobileCloseBtn" class="ghost mobile-close" aria-label="Close navigation">✕</button><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><button id="newFolderBtn">＋ New folder</button><button id="newNoteBtn">＋ Add note</button><button id="newListBtn">＋ Add tasklist</button></div>
 <div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
-</aside><main class="main"><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
+</aside><main class="main"><header class="topbar"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
 <h2 id="modalTitle"></h2>
 <div id="modalBody"></div>
@@ -94,6 +122,8 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
 const db=createClient("https://nndonweuhrlinoakunyn.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 let user=null,folders=[],lists=[],notes=[],tasks=[],profile={coins:0},currentFolder=null,currentDoc=null,authMode="login",modalAction=null;
+const expandedFolders=new Set();
+let modalBusy=false;
 function msg(t,ok=false){$("#authMsg").textContent=t;$("#authMsg").className="form-message"+(ok?" success":"")}
 function setAuthMode(m){authMode=m;$("#loginTab").classList.toggle("active",m==="login");$("#registerTab").classList.toggle("active",m==="register");$("#confirmWrap").classList.toggle("hidden",m!=="register");$("#authSubmit").textContent=m==="login"?"Log in":"Create account"}
 $("#loginTab").onclick=()=>setAuthMode("login");$("#registerTab").onclick=()=>setAuthMode("register");
@@ -107,7 +137,7 @@ function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=
 function renderTree(){
   const el=$("#tree");
   el.innerHTML="";
-  if(!window.expandedFolders) window.expandedFolders=new Set();
+  
 
   const makeMenu=(type,id)=>`<div class="tree-menu" data-tree-menu-box="${type}:${id}">
     <button data-tree-action="open">Open</button>
@@ -175,7 +205,7 @@ function renderTree(){
       const table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
       const patch=d.type==="folder"?{parent_id:item.id}:{folder_id:item.id};
       const r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
-      if(r.error)alert(r.error.message);else{expandedFolders.add(item.id);await load()}
+      if(r.error)alert(r.error.message);else{expandedFolders.add(item.id);await refreshView()}
     });
 
     const more=row.querySelector(".tree-more");
@@ -219,21 +249,21 @@ function renderTree(){
   lists.filter(x=>!x.folder_id).forEach(x=>el.append(makeRow(x,"list")));
   notes.filter(x=>!x.folder_id).forEach(x=>el.append(makeRow(x,"note")));
 
-  el.addEventListener("dragover",e=>{
+  el.ondragover=e=>{
     if(e.target===el){e.preventDefault();el.classList.add("drop-target")}
-  });
-  el.addEventListener("dragleave",e=>{
+  };
+  el.ondragleave=e=>{
     if(e.target===el)el.classList.remove("drop-target")
-  });
-  el.addEventListener("drop",async e=>{
+  };
+  el.ondrop=async e=>{
     if(e.target!==el)return;
     e.preventDefault();el.classList.remove("drop-target");
     let d;try{d=JSON.parse(e.dataTransfer.getData("text/plain"))}catch{return}
     const table=d.type==="folder"?"folders":d.type==="note"?"notes":"task_lists";
     const patch=d.type==="folder"?{parent_id:null}:{folder_id:null};
     const r=await db.from(table).update(patch).eq("id",d.id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else await load();
-  });
+    if(r.error)alert(r.error.message);else await refreshView();
+  };
 }
 function folderItems(id){return{folders:childrenOf(id),lists:lists.filter(l=>(l.folder_id||null)===id),notes:notes.filter(n=>(n.folder_id||null)===id)}}
 function renderHome(){
@@ -241,7 +271,8 @@ function renderHome(){
   $("#crumbs").innerHTML="<strong>My workspace</strong>";
   $("#content").innerHTML=`<div class="welcome"><h1>My workspace</h1><p>Your folders, notes and task lists.</p></div>
   <div class="folder-grid">${childrenOf(null).map(folderCard).join("")}</div>
-  ${childrenOf(null).length?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
+  <div class="list-view" style="margin-top:18px">${lists.filter(x=>!x.folder_id).map(listHTML).join("")}${notes.filter(x=>!x.folder_id).map(noteHTML).join("")}</div>
+  ${childrenOf(null).length||lists.some(x=>!x.folder_id)||notes.some(x=>!x.folder_id)?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
   bind();
 }
 function taskHTML(t){return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward">+${Number(t.coin_reward||5)}</span><button class="task-delete" data-del="${t.id}">×</button></div>`}
@@ -293,31 +324,31 @@ function folderCard(f){
   </div>`;
 }
 function renderFolder(id){
+  let f=folders.find(x=>x.id===id);if(!f)return renderHome();
   currentFolder=id;currentDoc=null;
-  let f=folders.find(x=>x.id===id),it=folderItems(id);
+  let it=folderItems(id);
   $("#crumbs").textContent=path(id).map(x=>x.name).join(" / ");
   $("#content").innerHTML=`<div class="welcome"><h1>${esc(f.name)}</h1><p>${it.folders.length} folders · ${it.lists.length} task lists · ${it.notes.length} notes</p></div>
   <div class="folder-grid">${it.folders.map(folderCard).join("")}</div>
   <div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;
   bind();
 }
-function bind(){document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteTask(b.dataset.del));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")addTask(i.dataset.add)})}
-async function addTask(id){let i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;let r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:5,is_done:false,sort_order:Date.now()});if(r.error)return alert(r.error.message);await load()}
-async function toggleTask(id,done){let t=tasks.find(x=>x.id===id);let r=await db.from("tasks").update({is_done:done}).eq("id",id).eq("user_id",user.id);if(r.error)return alert(r.error.message);if(done){let next=Number(profile.coins||0)+Number(t?.coin_reward||5);await db.from("profiles").update({coins:next}).eq("id",user.id)}await load()}
-async function deleteTask(id){if(!confirm("Delete this task?"))return;let r=await db.from("tasks").delete().eq("id",id).eq("user_id",user.id);if(r.error)alert(r.error.message);else load()}
-function openFolder(id){renderFolder(id);renderTree()}
-function openList(id){currentDoc={type:"list",id};let l=lists.find(x=>x.id===id);currentFolder=l?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),l.name].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="list-view"><div class="section"><div class="section-head"><span class="section-title">☷ ${esc(l.name)}</span><span style="color:var(--muted)">${tasks.filter(t=>t.list_id===id&&t.is_done).length}/${tasks.filter(t=>t.list_id===id).length}</span></div><div class="section-body">${tasks.filter(t=>t.list_id===id).map(taskHTML).join("")||"<div style='color:var(--muted)'>No tasks yet.</div>"}<div class="add-row"><input data-add="${id}" placeholder="Add task…"><button class="primary" data-addbtn="${id}">Add</button></div></div></div>`;bind()}
-function openNote(id){currentDoc={type:"note",id};let n=notes.find(x=>x.id===id);currentFolder=n?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),n.title].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="note-card"><div class="note-head"><input id="noteTitle" value="${esc(n.title)}"><button class="primary" id="saveNote">Save</button></div><div class="toolbar"><button class="tool" data-cmd="bold"><b>B</b></button><button class="tool" data-cmd="italic"><i>I</i></button><button class="tool" data-cmd="formatBlock" data-val="h2">H</button><button class="tool" data-cmd="insertUnorderedList">• List</button><button class="tool" data-cmd="insertOrderedList">1. List</button><button class="tool" data-cmd="insertHorizontalRule">―</button><button class="tool" data-cmd="undo">↶</button><button class="tool" data-cmd="redo">↷</button></div><div id="editor" class="editor" contenteditable="true" data-placeholder="Start writing…">${n.content_html||""}</div><div class="save-row"><span>Notes are saved to your account.</span><button class="danger" id="deleteNote">Delete note</button></div></div>`;document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,b.dataset.val||null);$("#editor").focus()});$("#saveNote").onclick=saveNote;$("#deleteNote").onclick=deleteNote}
-async function saveNote(){let n=notes.find(x=>x.id===currentDoc.id),r=await db.from("notes").update({title:$("#noteTitle").value.trim()||"Untitled note",content_html:$("#editor").innerHTML,updated_at:new Date().toISOString()}).eq("id",n.id).eq("user_id",user.id);if(r.error)return alert(r.error.message);await load();openNote(n.id)}
-async function deleteNote(){if(!confirm("Delete this note?"))return;let r=await db.from("notes").delete().eq("id",currentDoc.id).eq("user_id",user.id);if(r.error)alert(r.error.message);else load()}
+function bind(){document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteTask(b.dataset.del));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")addTask(i.dataset.add)})}
+async function addTask(id){let i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;i.disabled=true;let r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:5,is_done:false,sort_order:Date.now()});if(r.error){i.disabled=false;return alert(r.error.message)}await refreshView()}
+async function toggleTask(id,done){let t=tasks.find(x=>x.id===id);let r=await db.from("tasks").update({is_done:done}).eq("id",id).eq("user_id",user.id);if(r.error)return alert(r.error.message);if(done){let next=Number(profile.coins||0)+Number(t?.coin_reward||5);await db.from("profiles").update({coins:next}).eq("id",user.id)}await refreshView()}
+async function deleteTask(id){if(!confirm("Delete this task?"))return;let r=await db.from("tasks").delete().eq("id",id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
+function openFolder(id){path(id).forEach(f=>expandedFolders.add(f.id));renderFolder(id);renderTree();closeMobileNav()}
+function openList(id){closeMobileNav();currentDoc={type:"list",id};let l=lists.find(x=>x.id===id);currentFolder=l?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),l.name].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="list-view"><div class="section"><div class="section-head"><span class="section-title">☷ ${esc(l.name)}</span><span style="color:var(--muted)">${tasks.filter(t=>t.list_id===id&&t.is_done).length}/${tasks.filter(t=>t.list_id===id).length}</span></div><div class="section-body">${tasks.filter(t=>t.list_id===id).map(taskHTML).join("")||"<div style='color:var(--muted)'>No tasks yet.</div>"}<div class="add-row"><input data-add="${id}" placeholder="Add task…"><button class="primary" data-addbtn="${id}">Add</button></div></div></div>`;bind()}
+function openNote(id){closeMobileNav();currentDoc={type:"note",id};let n=notes.find(x=>x.id===id);currentFolder=n?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),n.title].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="note-card"><div class="note-head"><input id="noteTitle" value="${esc(n.title)}"><button class="primary" id="saveNote">Save</button></div><div class="toolbar"><button class="tool" data-cmd="bold"><b>B</b></button><button class="tool" data-cmd="italic"><i>I</i></button><button class="tool" data-cmd="formatBlock" data-val="h2">H</button><button class="tool" data-cmd="insertUnorderedList">• List</button><button class="tool" data-cmd="insertOrderedList">1. List</button><button class="tool" data-cmd="insertHorizontalRule">―</button><button class="tool" data-cmd="undo">↶</button><button class="tool" data-cmd="redo">↷</button></div><div id="editor" class="editor" contenteditable="true" data-placeholder="Start writing…">${n.content_html||""}</div><div class="save-row"><span>Notes are saved to your account.</span><button class="danger" id="deleteNote">Delete note</button></div></div>`;document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,b.dataset.val||null);$("#editor").focus()});$("#saveNote").onclick=saveNote;$("#deleteNote").onclick=deleteNote}
+async function saveNote(){let n=notes.find(x=>x.id===currentDoc.id),r=await db.from("notes").update({title:$("#noteTitle").value.trim()||"Untitled note",content_html:$("#editor").innerHTML,updated_at:new Date().toISOString()}).eq("id",n.id).eq("user_id",user.id);if(r.error)return alert(r.error.message);await refreshView();openNote(n.id)}
+async function deleteNote(){if(!confirm("Delete this note?"))return;let r=await db.from("notes").delete().eq("id",currentDoc.id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
 
-function closeMenus(){document.querySelectorAll(".item-menu.open").forEach(m=>m.classList.remove("open"))}
+function closeMenus(){document.querySelectorAll(".item-menu.open,.tree-menu.open").forEach(m=>m.classList.remove("open"))}
 document.addEventListener("click",e=>{
   const mb=e.target.closest("[data-menu-btn]");
   if(mb){
-    e.stopPropagation(); closeMenus();
-    const m=document.querySelector(`[data-menu="${mb.dataset.menuBtn}"]`);
-    if(m)m.classList.add("open");
+    e.stopPropagation();const m=document.querySelector(`[data-menu="${mb.dataset.menuBtn}"]`);const already=m?.classList.contains("open");closeMenus();
+    if(m&&!already){m.classList.add("open");const r=mb.getBoundingClientRect(),box=m.getBoundingClientRect();if(box.right>innerWidth-8)m.style.right="0";if(box.bottom>innerHeight-8){m.style.top="auto";m.style.bottom="42px"}}
     return;
   }
   const act=e.target.closest(".item-menu button");
@@ -326,30 +357,31 @@ document.addEventListener("click",e=>{
     const m=act.closest(".item-menu"), key=m.dataset.menu.split(":");
     closeMenus(); handleItemAction(key[0],key[1],act.dataset.action); return;
   }
-  closeMenus();
+  if(!e.target.closest(".item-menu,.tree-menu,.tree-more"))closeMenus();
 });
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenus();closeModal();closeMobileNav()}});
 async function handleItemAction(type,id,action){
   if(action==="open"){type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id);return}
-  if(action==="rename"){
+  if(action==="rename"){closeMobileNav();
     let item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
     modal("Rename",async name=>{
       if(!name)return;
       let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
-      let patch={name};
+      let patch=type==="note"?{title:name}:{name};
       if(type==="note")patch.updated_at=new Date().toISOString();
       let r=await db.from(table).update(patch).eq("id",id).eq("user_id",user.id);
-      if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load(); type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id)}
-    },item?.name||"");return;
+      if(r.error)alert(r.error.message);else{closeModal();await refreshView(); type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id)}
+    },item?.name||item?.title||"");return;
   }
-  if(action==="color"){chooseColor(type,id);return}
+  if(action==="color"){closeMobileNav();chooseColor(type,id);return}
   if(action==="delete"){
     if(!confirm(`Delete this ${type}?`))return;
     let table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
     let r=await db.from(table).delete().eq("id",id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else await load();
+    if(r.error)alert(r.error.message);else await refreshView();
     return;
   }
-  if(action==="move"){moveItemMobile(type,id);return}
+  if(action==="move"){closeMobileNav();moveItemMobile(type,id);return}
 }
 const PALETTE=[
   ["#5f9e50","Green"],["#3f78b5","Blue"],["#d99a18","Yellow"],
@@ -362,12 +394,14 @@ function resetModal(){
   $("#modalInput").classList.remove("hidden");
   $("#modalOk").classList.remove("hidden");
   $("#modalOk").textContent="Create";
+  $("#modalOk").disabled=false;
 }
 function modal(title,action,initial=""){
   resetModal();
   modalAction=action;
   $("#modalTitle").textContent=title;
   $("#modalInput").value=initial||"";
+  $("#modalOk").textContent="Save";
   $("#modalBack").classList.remove("hidden");
   setTimeout(()=>$("#modalInput").focus(),20);
 }
@@ -377,7 +411,7 @@ function creationModal(title,action,initial="#5f9e50"){
   $("#modalTitle").textContent=title;
   $("#modalInput").value="";
   $("#modalBody").innerHTML=`<div class="create-color-label">Color</div>
-    <div class="color-palette" id="createPalette">${PALETTE.map(([c,n],i)=>`<button type="button" class="color-choice${c===initial?" selected":""}" data-color="${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div>`;
+    <div class="color-palette" id="createPalette">${PALETTE.map(([c,n],i)=>`<button type="button" class="color-choice${c===initial?" selected":""}" data-color="${c}" style="--swatch:${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div>`;
   $("#modalInput").placeholder="Name";
   $("#modalBack").classList.remove("hidden");
   $("#createPalette").querySelectorAll(".color-choice").forEach(b=>b.onclick=()=>{
@@ -409,7 +443,7 @@ async function chooseColor(type,id){
     if(!/^#[0-9a-fA-F]{6}$/.test(value))return alert("Enter a valid hex color, e.g. #5f9e50.");
     const table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
     const r=await db.from(table).update({color:value}).eq("id",id).eq("user_id",user.id);
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load()}
+    if(r.error)alert(r.error.message);else{closeModal();await refreshView()}
   };
   setTimeout(()=>$("#modalInput").focus(),20);
 }
@@ -421,7 +455,7 @@ async function newFolder(){
     name=name.trim();if(!name)return;
     const color=selectedCreateColor();
     const r=await db.from("folders").insert({user_id:user.id,name,parent_id:parent,sort_order:Date.now(),color});
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(parent){expandedFolders.add(parent);openFolder(parent)}}
+    if(r.error)alert(r.error.message);else{closeModal();await refreshView();if(parent){expandedFolders.add(parent);openFolder(parent)}}
   });
 }
 async function newList(){
@@ -430,7 +464,7 @@ async function newList(){
     name=name.trim();if(!name)return;
     const color=selectedCreateColor();
     const r=await db.from("task_lists").insert({user_id:user.id,name,folder_id:folder,sort_order:Date.now(),color});
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();if(folder){expandedFolders.add(folder);openFolder(folder)}}
+    if(r.error)alert(r.error.message);else{closeModal();await refreshView();if(folder){expandedFolders.add(folder);openFolder(folder)}}
   });
 }
 async function newNote(){
@@ -439,10 +473,61 @@ async function newNote(){
     name=name.trim();if(!name)return;
     const color=selectedCreateColor();
     const r=await db.from("notes").insert({user_id:user.id,title:name,folder_id:folder,content_html:"",updated_at:new Date().toISOString(),color}).select().single();
-    if(r.error)alert(r.error.message);else{$("#modalBack").classList.add("hidden");await load();openNote(r.data.id)}
+    if(r.error)alert(r.error.message);else{closeModal();await refreshView();openNote(r.data.id)}
   });
 }
-$("#newFolderBtn").onclick=newFolder;$("#newListBtn").onclick=newList;$("#newNoteBtn").onclick=newNote;$("#upBtn").onclick=()=>{if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
+
+function closeModal(){$("#modalBack").classList.add("hidden");modalAction=null}
+$("#modalCancel").onclick=closeModal;
+$("#modalBack").addEventListener("click",e=>{if(e.target===$("#modalBack"))closeModal()});
+$("#modalOk").onclick=async()=>{
+  if(!modalAction||modalBusy)return;
+  const value=$("#modalInput").value.trim();
+  if(!value){$("#modalInput").focus();return}
+  modalBusy=true;$("#modalOk").disabled=true;
+  try{await modalAction(value)}catch(e){alert(e.message||String(e))}
+  finally{modalBusy=false;$("#modalOk").disabled=false}
+};
+$("#modalBack").addEventListener("keydown",e=>{if(e.target.id==="modalInput"&&e.key==="Enter"){e.preventDefault();$("#modalOk").click()}});
+function closeMobileNav(){document.body.classList.remove("nav-open");$("#mobileShade").classList.add("hidden");$("#mobileNavBtn").setAttribute("aria-expanded","false");closeMenus()}
+function showMobileNav(){document.body.classList.add("nav-open");$("#mobileShade").classList.remove("hidden");$("#mobileNavBtn").setAttribute("aria-expanded","true")}
+$("#mobileNavBtn").onclick=showMobileNav;
+$("#mobileCloseBtn").onclick=closeMobileNav;
+$("#mobileShade").onclick=closeMobileNav;
+async function refreshView(){
+ const prevFolder=currentFolder,prevDoc=currentDoc&&{...currentDoc};
+ await load();
+ if(prevDoc?.type==="list"&&lists.some(x=>x.id===prevDoc.id))openList(prevDoc.id);
+ else if(prevDoc?.type==="note"&&notes.some(x=>x.id===prevDoc.id))openNote(prevDoc.id);
+ else if(prevFolder&&folders.some(x=>x.id===prevFolder))openFolder(prevFolder);
+}
+function moveItemMobile(type,id){
+ const item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
+ const current=type==="folder"?item?.parent_id:item?.folder_id;
+ const destinations=folders.filter(f=>f.id!==id&&!(type==="folder"&&path(f.id).some(x=>x.id===id))&&(type!=="folder"||depth(f.id)<5));
+ resetModal();$("#modalTitle").textContent="Move to folder";$("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
+ $("#modalBody").innerHTML=`<div class="move-choices"><button data-destination="">⌂ My workspace ${!current?"✓":""}</button>${destinations.map(f=>`<button data-destination="${esc(f.id)}">${"　".repeat(Math.min(depth(f.id),5))}▱ ${esc(f.name)} ${current===f.id?"✓":""}</button>`).join("")}</div>`;
+ $("#modalBack").classList.remove("hidden");
+ $("#modalBody").querySelectorAll("[data-destination]").forEach(b=>b.onclick=async()=>{
+  const destination=b.dataset.destination||null;
+  const table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
+  const patch=type==="folder"?{parent_id:destination}:{folder_id:destination};
+  b.disabled=true;const r=await db.from(table).update(patch).eq("id",id).eq("user_id",user.id);
+  if(r.error){b.disabled=false;alert(r.error.message);return}
+  closeModal();if(destination)expandedFolders.add(destination);await refreshView();
+ });
+}
+$("#optionsBtn").onclick=()=>{
+ resetModal();$("#modalTitle").textContent="Options";$("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
+ $("#modalBody").innerHTML=`<div class="settings-list"><button id="settingsHome">⌂ My workspace</button><button id="settingsExpand">Expand all folders</button><button id="settingsCollapse">Collapse all folders</button><button id="settingsGarden">Go to Garden</button></div><div class="settings-note">Your content is stored in your Supabase account.</div>`;
+ $("#modalBack").classList.remove("hidden");
+ $("#settingsHome").onclick=()=>{closeModal();renderHome();closeMobileNav()};
+ $("#settingsExpand").onclick=()=>{folders.forEach(f=>expandedFolders.add(f.id));renderTree();closeModal()};
+ $("#settingsCollapse").onclick=()=>{expandedFolders.clear();renderTree();closeModal()};
+ $("#settingsGarden").onclick=()=>location.href="garden.html";
+};
+
+$("#newFolderBtn").onclick=()=>{closeMobileNav();newFolder()};$("#newListBtn").onclick=()=>{closeMobileNav();newList()};$("#newNoteBtn").onclick=()=>{closeMobileNav();newNote()};$("#upBtn").onclick=()=>{if(currentDoc){currentDoc=null;if(currentFolder)openFolder(currentFolder);else renderHome()}else if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
 db.auth.onAuthStateChange(async(_,s)=>{user=s?.user||null;if(user){$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");try{await load()}catch(e){alert(e.message)}}else{$("#app").classList.add("hidden");$("#auth").classList.remove("hidden")}});
 let s=await db.auth.getSession();if(s.data.session){user=s.data.session.user;$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");await load()}else renderHome();
 </script></body></html>
