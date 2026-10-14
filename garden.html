@@ -945,7 +945,210 @@
     #panel-habits,
     #panel-goals,
     #task-menu-items { display: none !important; }
-    </style>
+    
+
+/* Task Garden unified dark UI — visual-only overrides.
+   Map tiles, sprite assets, application markup and JavaScript are untouched. */
+:root {
+  --tg-bg: #111315;
+  --tg-panel: #191c20;
+  --tg-panel-alt: #20242a;
+  --tg-input: #14171a;
+  --tg-border: #30353d;
+  --tg-text: #e7e9ec;
+  --tg-muted: #969da8;
+  --tg-accent: #9b86e8;
+  --tg-accent-hover: #b09df3;
+  --tg-danger: #e47b86;
+}
+body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+button, input, select, textarea { font-family: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+select:focus-visible, summary:focus-visible { outline: 2px solid var(--tg-accent); outline-offset: 2px; }
+/* Keep the map green and pixel art unchanged; darken only the surrounding controls. */
+.floating-brand {
+  color: #e7e9ec;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-shadow: 0 2px 10px #000a;
+}
+.coin-hud {
+  background: #191c20f5;
+  color: #c5b5ff;
+  border: 1px solid #554677;
+  border-radius: 10px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px #0005;
+}
+.map-status {
+  background: #191c20eb;
+  border: 1px solid #444954;
+  color: #d5d8df;
+  font-weight: 600;
+  box-shadow: 0 8px 20px #0005;
+}
+/* Menus and floating windows follow index.html's flat dark cards. */
+.app-menu {
+  width: 172px;
+  background: #191c20f7;
+  border: 1px solid var(--tg-border);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 16px 42px #0008;
+  backdrop-filter: blur(10px);
+}
+.menu-action {
+  min-height: 39px;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--tg-text);
+  font-size: 13px;
+  font-weight: 550;
+}
+.menu-icon { color: #bca8ff; }
+.menu-action:hover, .menu-action.active {
+  background: #2a2638;
+  color: #f0eaff;
+  border-color: #534769;
+}
+.menu-action.danger { color: #e8b5bb; }
+.menu-action.danger:hover { background: #36242c; color: #ffc1cb; border-color: #734452; }
+.menu-toggle { background: #20242a; border-color: var(--tg-border); color: var(--tg-text); }
+.app-menu.is-collapsed { width: 48px; }
+.app-menu.is-collapsed .menu-toggle { width: 34px; }
+.panel-window {
+  border: 1px solid var(--tg-border);
+  border-radius: 13px;
+  background: var(--tg-panel);
+  box-shadow: 0 18px 60px #0009;
+  color: var(--tg-text);
+}
+.panel-header {
+  background: #17191d;
+  border-bottom: 1px solid var(--tg-border);
+  padding: 14px 16px;
+}
+.panel-title, .menu-title {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--tg-text);
+}
+.panel-subtitle, .plants-help, .plants-note, .settings-caption,
+.form-hint, .item-meta, .streak { color: var(--tg-muted); font-weight: 450; }
+.panel-body { color: var(--tg-text); overscroll-behavior: contain; }
+.icon-button { color: var(--tg-muted); border-radius: 8px; }
+.icon-button:hover { background: var(--tg-panel-alt); color: var(--tg-text); }
+/* Shared fields and buttons */
+.field label, .field > span, .feedback-group legend,
+.add-task-color-label { color: var(--tg-muted); font-weight: 600; }
+.field input, .inline-input, .inline-select, .form-stack textarea {
+  color: var(--tg-text);
+  background: var(--tg-input);
+  border: 1px solid var(--tg-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+.field input:focus, .inline-input:focus, .inline-select:focus, .form-stack textarea:focus {
+  border-color: var(--tg-accent);
+  box-shadow: 0 0 0 2px #9b86e82a;
+}
+.inline-input::placeholder, .field input::placeholder, .form-stack textarea::placeholder { color: #737c87; }
+.inline-select option, select option { background: var(--tg-panel-alt); color: var(--tg-text); }
+.btn {
+  border: 1px solid var(--tg-border);
+  border-radius: 8px;
+  box-shadow: none;
+  font-weight: 600;
+  transition: background .12s ease, border-color .12s ease;
+}
+.btn:hover:not(:disabled) { transform: none; filter: none; }
+.btn:active:not(:disabled) { transform: none; }
+.btn-paper { background: var(--tg-panel-alt); color: var(--tg-text); border-color: var(--tg-border); }
+.btn-paper:hover:not(:disabled) { background: #2b3038; border-color: #525965; }
+.btn-green, .btn-primary { background: var(--tg-accent); color: #171421; border-color: var(--tg-accent); }
+.btn-green:hover:not(:disabled), .btn-primary:hover:not(:disabled) {
+  background: var(--tg-accent-hover); border-color: var(--tg-accent-hover);
+}
+.btn-danger { background: #36242c; color: #f1a1aa; border-color: #74434e; }
+.btn-danger:hover:not(:disabled) { background: #4c2d36; }
+/* Lists and cards */
+.task-list-tools, .shop-item, .help-entry, .update-entry, .feedback-option {
+  background: var(--tg-panel-alt);
+  color: var(--tg-text);
+  border: 1px solid var(--tg-border);
+  border-radius: 9px;
+}
+.task-list-row, .list-item, .habit-item { border-bottom-color: var(--tg-border); }
+.task-list-row.is-open { background: #2a2638; }
+.item-title { color: var(--tg-text); font-weight: 650; }
+.item-title.done, .item-meta { color: var(--tg-muted); }
+.reward, .shop-price { color: #bca8ff; font-weight: 650; }
+.drag-handle, .edit-btn, .delete-btn { color: var(--tg-muted); }
+.edit-btn:hover { background: #2a2638; color: #cebfff; }
+.delete-btn:hover { background: #39242d; color: #ffa9b4; }
+.check-btn, .habit-check { border: 1px solid #676071; background: var(--tg-input); color: var(--tg-text); }
+.check-btn.done, .habit-check.done { background: var(--tg-accent); color: #191421; border-color: var(--tg-accent); }
+.color-choice.selected { box-shadow: 0 0 0 2px var(--tg-panel), 0 0 0 4px var(--tg-accent); border-color: var(--tg-text); }
+.shop-item:hover, .shop-item.selected { background: #2a2638; border-color: #8470c3; box-shadow: none; }
+.shop-name { color: var(--tg-text); }
+.empty, .loading { color: var(--tg-muted); }
+.duplicate-hint { background: #302819; border: 1px solid #826936; color: #e5c789; }
+/* Modal stack, including account / feedback / confirmations */
+.modal { background: #070809b8; backdrop-filter: blur(4px); }
+.settings-card {
+  background: var(--tg-panel);
+  border: 1px solid var(--tg-border);
+  border-radius: 14px;
+  color: var(--tg-text);
+  box-shadow: 0 22px 65px #000b;
+  max-height: min(90dvh, 850px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.settings-body { color: var(--tg-text); }
+.settings-submenu-content { border-left-color: #51445f; }
+.settings-submenu-summary::after { color: var(--tg-muted); }
+.feedback-option { font-weight: 500; }
+.feedback-option input { accent-color: var(--tg-accent); }
+.help-entry strong, .update-entry strong { color: #c7b5ff; }
+.help-entry p, .update-entry p { color: var(--tg-muted); }
+.modal.remove-confirm .settings-card { box-shadow: 0 18px 55px #000a; }
+#toast { background: #20242a; color: var(--tg-text); border: 1px solid #535b66; box-shadow: 0 8px 30px #0009; font-weight: 600; }
+#toast.error { background: #38232b; color: #ffbec5; border-color: #8c4856; }
+#toast.success { background: #25352c; color: #a5dfb4; border-color: #4d8a60; }
+.placement-bar {
+  background: #191c20f5;
+  border: 1px solid var(--tg-border);
+  color: var(--tg-text);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px #0009;
+}
+/* The authentication screen is currently disabled in this garden build,
+   but match its visuals if it is enabled again in a future build. */
+.auth-card { background: var(--tg-panel); color: var(--tg-text); border: 1px solid var(--tg-border); box-shadow: 0 18px 55px #0008; }
+.auth-subtitle { color: var(--tg-muted); }
+.brand-mark { color: #c7b5ff; }
+.auth-tabs { background: var(--tg-input); border-color: var(--tg-border); }
+.auth-tab { color: var(--tg-muted); }
+.auth-tab.active { background: var(--tg-panel-alt); color: var(--tg-text); box-shadow: none; }
+@media (max-width: 720px) {
+  .app-menu { width: 150px; }
+  .app-menu.is-collapsed { width: 48px; }
+  .panel-window { border-radius: 12px; }
+  .settings-card { max-height: calc(100dvh - 36px); }
+  .floating-brand { font-size: 12px; }
+  .panel-title { font-size: 14px; }
+}
+
+</style>
 </head>
 <body>
   <main id="auth-screen">
