@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.2" />
-  <meta name="theme-color" content="#234a2d" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111315" />
   <title>Task Garden</title>
   <!-- Task Garden build: task-checkbox-colors-uncheck-2026-10-04 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -88,8 +88,7 @@
     .icon-button:hover { background: rgba(96, 63, 35, .1); }
 
     /* Authentication */
-    #auth-screen { display: none !important;
-
+    #auth-screen {
       display: grid;
       min-height: 100vh;
       place-items: center;
@@ -237,14 +236,6 @@
       touch-action: none;
       user-select: none;
       cursor: grab;
-      overflow: visible;
-    }
-    .garden-sprite-layer {
-      position: absolute;
-      inset: 0;
-      z-index: 15;
-      pointer-events: none;
-      overflow: visible;
     }
     .garden-grid.grabbing { cursor: grabbing; }
     .garden-tile {
@@ -272,17 +263,9 @@
       background-color: #bdbdbd !important;
       box-shadow: inset 0 0 0 2px rgba(90,90,90,.72);
     }
-    .garden-tile.placement-overlap {
-      background-color: #f0c94a !important;
-      box-shadow: inset 0 0 0 2px rgba(143,104,13,.78);
-    }
     .garden-tile.placement-invalid {
       background-color: #e86d6d !important;
       box-shadow: inset 0 0 0 2px rgba(142,25,25,.82);
-    }
-    .garden-tile.removal-preview {
-      background-color: #e86d6d !important;
-      box-shadow: inset 0 0 0 2px rgba(142,25,25,.88);
     }
     .garden-tile.sprite-anchor {
       z-index: 12;
@@ -308,12 +291,7 @@
       user-select: none;
       z-index: 20;
     }
-    .garden-sprite {
-      object-fit: contain;
-      image-rendering: pixelated;
-      pointer-events: none;
-      user-select: none;
-    }
+    .garden-sprite-tree { width: 64px; height: 64px; }
     .tile-coordinate {
       position: absolute;
       right: 2px;
@@ -725,22 +703,6 @@
       background: rgba(14,45,25,.46);
       backdrop-filter: blur(3px);
     }
-    .modal.remove-confirm {
-      place-items: end center;
-      padding: 0 20px 24px;
-      background: rgba(14,45,25,.10);
-      backdrop-filter: none;
-    }
-    .modal.remove-confirm .settings-card {
-      width: min(100%, 520px);
-      border-radius: 15px;
-      box-shadow: 0 8px 0 #855735, 0 10px 28px rgba(0,0,0,.18);
-      animation: removeConfirmSlideUp .16s ease-out;
-    }
-    @keyframes removeConfirmSlideUp {
-      from { transform: translateY(18px); opacity: .7; }
-      to { transform: translateY(0); opacity: 1; }
-    }
     .settings-card {
       width: min(100%, 420px);
       overflow: hidden;
@@ -791,12 +753,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 4px;
-    }
-    .modal.remove-confirm .settings-body {
-      padding: 14px 17px 16px;
-    }
-    .modal.remove-confirm .settings-caption {
-      margin-bottom: 2px;
     }
     .feedback-card, .edit-card { width: min(100%, 510px); }
     .form-stack { display: grid; gap: 13px; }
@@ -939,13 +895,19 @@
       .habit-item .delete-btn { grid-column: 3; }
       .placement-bar { gap: 8px; padding-left: 10px; }
     }
-  /* Dedicated garden page: task-management UI lives in index.html. */
-    #task-panels,
-    #panel-task-lists,
-    #panel-habits,
-    #panel-goals,
-    #task-menu-items { display: none !important; }
-    </style>
+  
+<style>
+:root{--ui-bg:#111315;--ui-panel:#191c20;--ui-panel2:#20242a;--ui-border:#30353d;--ui-text:#e7e9ec;--ui-muted:#969da8;--ui-accent:#9b86e8;--ui-danger:#e47b86}
+#auth-screen{background:#111315;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:28px 28px}.auth-card{border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-panel);color:var(--ui-text);box-shadow:0 20px 60px #0008}.brand-mark{color:var(--ui-text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:22px;line-height:1.2;letter-spacing:normal}.auth-subtitle,.form-hint{color:var(--ui-muted)}.auth-tabs{border:1px solid var(--ui-border);background:#121417}.auth-tab{color:var(--ui-muted)}.auth-tab.active{background:var(--ui-panel2);color:var(--ui-text);box-shadow:none}.field label{color:var(--ui-muted)}.field input,.inline-input,.inline-select{border:1px solid var(--ui-border);border-radius:8px;background:#14171a;color:var(--ui-text)}.field input:focus,.inline-input:focus,.inline-select:focus{border-color:#62578a;box-shadow:none}
+.btn{border-width:1px;border-radius:8px;box-shadow:none}.btn:hover:not(:disabled){transform:translateY(-1px);filter:none}.btn-primary{border-color:var(--ui-accent);background:var(--ui-accent);color:#fff}.btn-green,.btn-paper{border-color:var(--ui-border);background:var(--ui-panel2);color:var(--ui-text)}.btn-green:hover:not(:disabled),.btn-paper:hover:not(:disabled){border-color:#505762;background:#292e35}.btn-danger{border-color:#5a3036;background:#2a1b1f;color:var(--ui-danger)}
+.floating-brand{top:18px;left:18px;padding:9px 12px;border:1px solid #30353deb;border-radius:9px;background:#111315e0;color:var(--ui-text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:17px;font-weight:700;line-height:1.15;letter-spacing:normal;text-shadow:none;box-shadow:0 8px 24px #0005}.coin-hud{top:18px;right:18px;min-height:40px;padding:8px 13px;border:1px solid var(--ui-border);border-radius:9px;background:#191c20f0;color:var(--ui-text);box-shadow:0 8px 24px #0005}
+.app-menu{right:18px;bottom:18px;width:174px;gap:4px;padding:7px;border:1px solid var(--ui-border);border-radius:10px;background:#191c20f5;box-shadow:0 14px 36px #000b}.menu-action{min-height:36px;padding:8px 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ui-text);font-size:13px;font-weight:600}.menu-action:hover,.menu-action.active{border-color:var(--ui-border);background:var(--ui-panel2);color:var(--ui-text)}.menu-action.danger:hover{border-color:#5a3036;background:#2a1b1f;color:var(--ui-danger)}.menu-toggle{border-color:var(--ui-border);background:var(--ui-panel2);color:var(--ui-text)}.menu-icon{color:var(--ui-muted)}
+.panel-window{border:1px solid var(--ui-border);border-radius:12px;background:var(--ui-panel);color:var(--ui-text);box-shadow:0 20px 55px #000b}.panel-header{border-bottom-color:var(--ui-border)!important;background:var(--ui-panel)}.panel-title,.menu-title{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:normal;font-weight:700;color:var(--ui-text)}.panel-subtitle,.settings-caption,.plants-help,.plants-note,.settings-note{color:var(--ui-muted)}.icon-button{color:var(--ui-muted)}.icon-button:hover{background:var(--ui-panel2);color:var(--ui-text)}.task-list-row,.list-item,.habit-item{border-bottom-color:var(--ui-border)!important}.task-list-row.is-open{background:#9b86e814}
+.panel-window input,.panel-window textarea,.panel-window select,.modal input,.modal textarea,.modal select{border-color:var(--ui-border);background:#14171a;color:var(--ui-text)}.panel-window input:focus,.panel-window textarea:focus,.panel-window select:focus,.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:#62578a;box-shadow:none}.settings-card{border:1px solid var(--ui-border)!important;border-radius:12px!important;background:var(--ui-panel)!important;color:var(--ui-text);box-shadow:0 20px 60px #000c!important}.settings-submenu{border-color:var(--ui-border)!important}.settings-submenu-summary,.settings-list .btn{border-color:var(--ui-border)!important;background:var(--ui-panel2)!important;color:var(--ui-text)!important}.settings-submenu-summary:hover,.settings-list .btn:hover{background:#292e35!important}.placement-bar{border:1px solid var(--ui-border);border-radius:9px;background:#191c20f5;box-shadow:0 12px 30px #000b;color:var(--ui-text)}
+@media(max-width:720px){.floating-brand{top:10px;left:10px;padding:7px 9px;font-size:13px}.coin-hud{top:10px;right:10px;min-height:36px}.app-menu{right:10px;bottom:10px}}
+</style>
+
+  </style>
 </head>
 <body>
   <main id="auth-screen">
@@ -1079,10 +1041,10 @@
       </section>
     </div>
 
-    <aside class="app-menu" id="app-menu" aria-label="Garden menu">
+    <aside class="app-menu" id="app-menu" aria-label="Application menu">
       <button class="menu-action menu-toggle" id="menu-toggle-btn" type="button" aria-label="Hide menu" title="Hide menu"><span class="menu-icon" id="menu-toggle-icon">×</span><span class="menu-text" id="menu-toggle-text">Hide menu</span></button>
-      <button class="menu-action" id="tasks-btn" type="button"><span class="menu-icon">☑</span><span>Go to Tasks</span></button>
-      <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">✿</span><span>Shop</span></button>
+      <div id="task-menu-items"></div>
+      <button class="menu-action" type="button" data-toggle-panel="plants"><span class="menu-icon">+</span><span>Shop</span></button>
       <button class="menu-action" id="help-btn" type="button"><span class="menu-icon">?</span><span>Help</span></button>
       <button class="menu-action" id="settings-btn" type="button"><span class="menu-icon">⚙</span><span>Options</span></button>
       <button class="menu-action danger" id="logout-btn" type="button"><span class="menu-icon">↪</span><span>Log out</span></button>
@@ -1284,28 +1246,7 @@
     // represent the placement anchor. For the 2x2 tree the anchor is the
     // LOWER-LEFT tile, exactly where the user clicks.
     const ITEM_GEOMETRY = {
-      // 2x2 trees
-      tree:             { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_green.png" },
-      tree_green:       { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_green.png" },
-      tree_flowering:   { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_flowering.png" },
-      tree_autumn:      { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_autumn.png" },
-
-      // 3x3 large tree
-      tree_large:       { cols: 3, rows: 3, anchor: "bottom-left", sprite: "assets/tree_large.png" },
-
-      // 2x2 bushes / canopies
-      bush_green:       { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_green.png" },
-      bush_green_2:     { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_green_2.png" },
-      bush_flowering:   { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_flowering.png" },
-      bush_autumn:      { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/bush_autumn.png" },
-
-      // 1x1 small elements
-      small_tree:       { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/small_tree.png" },
-      small_bush:       { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/small_bush.png" },
-      stump:            { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/stump.png" },
-      grass_patch:      { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/grass_patch.png" },
-      plant:            { cols: 1, rows: 1, anchor: "bottom-left", sprite: "assets/plant.png" },
-
+      tree: { cols: 2, rows: 2, anchor: "bottom-left", sprite: "assets/tree_2x2.png" },
       default: { cols: 1, rows: 1, anchor: "bottom-left", sprite: null }
     };
     const PANEL_NAMES = ["habits", "goals", "plants", "task-lists"];
@@ -1318,19 +1259,6 @@
       pond: "Pond",
       house: "House",
       bush: "Bush",
-      bush_green: "Green Bush",
-      bush_green_2: "Green Bush II",
-      bush_flowering: "Flowering Bush",
-      bush_autumn: "Autumn Bush",
-      tree_green: "Green Tree",
-      tree_flowering: "Flowering Tree",
-      tree_autumn: "Autumn Tree",
-      tree_large: "Large Tree",
-      small_tree: "Small Tree",
-      small_bush: "Small Bush",
-      stump: "Tree Stump",
-      grass_patch: "Grass Patch",
-      plant: "Plant",
       bench: "Bench"
     };
 
@@ -1421,66 +1349,6 @@
       return footprintFor(item?.item_type, anchorX, anchorY);
     }
 
-    function isTree2x2(type) {
-      return ["tree", "tree_green", "tree_flowering", "tree_autumn"].includes(type);
-    }
-
-    function isSmallObject(type) {
-      return ["small_tree", "small_bush", "stump", "grass_patch", "plant"].includes(type);
-    }
-
-    function isLargeTree(type) {
-      return type === "tree_large";
-    }
-
-    // The 2x2 trees may overlap anything except another item with the exact
-    // same anchor. Small 1x1 objects cannot overlap other 1x1 objects.
-    // The 3x3 large tree is special: only its bottom-middle tile is blocked.
-    function canStackItems(itemType, existingType) {
-      if (isSmallObject(itemType) && isSmallObject(existingType)) return false;
-      if (isTree2x2(itemType) || isTree2x2(existingType)) return true;
-      if (isLargeTree(itemType) || isLargeTree(existingType)) return true;
-      return false;
-    }
-
-    function largeTreeBlockedCell(tile) {
-      if (!tile || !isLargeTree(tile.item_type)) return null;
-      // Anchor is the bottom-left tile, therefore bottom-middle = x + 1, y.
-      return { x: Number(tile.x) + 1, y: Number(tile.y) };
-    }
-
-    function blockingPlacementCollision(item, anchorX, anchorY, tiles = mapTiles) {
-      if (!item) return null;
-      const cells = placementCells(item, anchorX, anchorY);
-
-      for (const cell of cells) {
-        // A large tree's bottom-middle tile is the one universal blocked tile.
-        for (const existingLarge of tiles) {
-          const blocked = largeTreeBlockedCell(existingLarge);
-          if (blocked && blocked.x === Number(cell.x) && blocked.y === Number(cell.y)) {
-            return existingLarge;
-          }
-        }
-
-        const existing = placedAt(tiles, cell.x, cell.y);
-        if (!existing) continue;
-
-        // Exact same anchor remains forbidden for every asset.
-        if (Number(existing.x) === Number(anchorX) && Number(existing.y) === Number(anchorY)) {
-          return existing;
-        }
-
-        // Otherwise use the category-specific stacking rules.
-        if (!canStackItems(item.item_type, existing.item_type)) {
-          return existing;
-        }
-      }
-
-      // When placing a large tree, its own bottom-middle tile cannot already
-      // be occupied by another large tree's blocked cell (handled above).
-      return null;
-    }
-
     function placementFits(item, anchorX, anchorY) {
       if (!item) return false;
       const cells = placementCells(item, anchorX, anchorY);
@@ -1493,7 +1361,7 @@
         }
       }
       return cells.every((cell) => visible.has(footprintKey(cell.x, cell.y))) &&
-        !blockingPlacementCollision(item, anchorX, anchorY);
+        !cells.some((cell) => placedAt(mapTiles, cell.x, cell.y));
     }
 
     function shopDisplayName(itemOrType) {
@@ -1639,23 +1507,6 @@
       }
     }
 
-    async function ensureGardenProfile() {
-      const { data, error } = await db
-        .from("profiles")
-        .select("id")
-        .eq("id", currentUser.id)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) {
-        const { error: insertError } = await db.from("profiles").insert({
-          id: currentUser.id,
-          farm_name: "My Garden",
-          coins: 0
-        });
-        if (insertError) throw insertError;
-      }
-    }
-
     async function applySession(session) {
       if (!session?.user) {
         currentUser = null;
@@ -1663,7 +1514,8 @@
         mapTiles = [];
         selectedShopItem = null;
         updatePlacementBar();
-        window.location.replace("index.html");
+        $("#auth-screen").style.display = "grid";
+        $("#app-screen").style.display = "none";
         return;
       }
 
@@ -1672,9 +1524,11 @@
       $("#app-screen").style.display = "block";
 
       try {
-        await ensureGardenProfile();
+        await ensureProfileAndStarterHabits();
+        await loadTaskLists();
         calculateView();
-        await Promise.all([loadProfile(), loadShopItems(), loadVisibleMapTiles()]);
+        await Promise.all([loadProfile(), loadTasks(), loadHabits(), loadGoals(), loadShopItems()]);
+        await loadVisibleMapTiles();
       } catch (error) {
         reportError(error, "Your garden could not be loaded.");
       }
@@ -2882,15 +2736,13 @@
       const placedByPosition = new Map();
       for (const tile of mapTiles) {
         for (const cell of footprintFor(tile.item_type, tile.x, tile.y)) {
-          // Keep the most recently loaded item for tile background/click state.
-          // Actual tree sprites are rendered separately below, so overlapping
-          // trees are never "cut out" of the DOM.
           placedByPosition.set(footprintKey(cell.x, cell.y), tile);
         }
       }
 
       const halfX = Math.floor(view.cols / 2);
       const halfY = Math.floor(view.rows / 2);
+      const renderedSprites = new Set();
 
       for (let row = 0; row < view.rows; row += 1) {
         for (let column = 0; column < view.cols; column += 1) {
@@ -2911,14 +2763,26 @@
               ? `Place ${shopDisplayName(selectedShopItem)} with anchor at ${x}, ${y}`
               : `Empty tile at ${x}, ${y}`;
 
-          if (placed && placed.item_type !== "tree") {
+          if (placed?.item_type === "tree") {
             const geometry = geometryFor(placed.item_type);
-            if (!geometry.sprite) {
-              const icon = document.createElement("span");
-              icon.className = "garden-icon";
-              icon.textContent = iconFor(placed.item_type);
-              cell.append(icon);
+            const topLeftX = placed.x;
+            const topLeftY = placed.y - (geometry.rows - 1);
+            const spriteKey = `${placed.id}:${topLeftX},${topLeftY}`;
+            if (x === topLeftX && y === topLeftY && !renderedSprites.has(spriteKey)) {
+              const sprite = document.createElement("img");
+              sprite.className = "garden-sprite garden-sprite-tree";
+              sprite.src = geometry.sprite;
+              sprite.alt = "";
+              sprite.draggable = false;
+              cell.classList.add("sprite-anchor");
+              cell.append(sprite);
+              renderedSprites.add(spriteKey);
             }
+          } else if (placed) {
+            const icon = document.createElement("span");
+            icon.className = "garden-icon";
+            icon.textContent = iconFor(placed.item_type);
+            cell.append(icon);
           }
 
           const coordinate = document.createElement("span");
@@ -2928,62 +2792,9 @@
           grid.append(cell);
         }
       }
-      // Render trees in a separate layer. Each whole sprite remains intact;
-      // CSS z-index determines which tree is in front, so overlap hides only
-      // the pixels covered by the front tree instead of deleting a whole tile.
-      const spriteLayer = document.createElement("div");
-      spriteLayer.className = "garden-sprite-layer";
-
-      const visibleMinX = camera.x - halfX;
-      const visibleMaxX = camera.x + halfX;
-      const visibleMinY = camera.y - halfY;
-      const visibleMaxY = camera.y + halfY;
-
-      const spriteItems = mapTiles
-        .filter((item) => geometryFor(item.item_type).sprite)
-        .filter((item) => {
-          const geometry = geometryFor(item.item_type);
-          const topLeftX = item.x;
-          const topLeftY = item.y - (geometry.rows - 1);
-          return (
-            topLeftX <= visibleMaxX &&
-            topLeftX + geometry.cols - 1 >= visibleMinX &&
-            topLeftY <= visibleMaxY &&
-            topLeftY + geometry.rows - 1 >= visibleMinY
-          );
-        })
-        .sort((a, b) => a.y - b.y || a.x - b.x || String(a.id).localeCompare(String(b.id)));
-
-      for (const item of spriteItems) {
-        const geometry = geometryFor(item.item_type);
-        const topLeftX = item.x;
-        const topLeftY = item.y - (geometry.rows - 1);
-        const left = (topLeftX - visibleMinX) * view.tile;
-        const top = (topLeftY - visibleMinY) * view.tile;
-
-        const sprite = document.createElement("img");
-        sprite.className = `garden-sprite garden-sprite-${item.item_type}`;
-        sprite.src = geometry.sprite;
-        sprite.alt = "";
-        sprite.draggable = false;
-        sprite.style.left = `${left}px`;
-        sprite.style.top = `${top}px`;
-        sprite.style.width = `${geometry.cols * view.tile}px`;
-        sprite.style.height = `${geometry.rows * view.tile}px`;
-        sprite.style.zIndex = String(100 + (item.y + 10000));
-        spriteLayer.append(sprite);
-      }
-
-      grid.append(spriteLayer);
       updateGridVisibility();
       updateMapStatus();
       updatePlacementPreview();
-
-      if (removalPreviewTileId !== null) {
-        const removalTile = mapTiles.find((item) => item.id === removalPreviewTileId);
-        if (removalTile) updateRemovalPreview(removalTile);
-        else clearRemovalPreview();
-      }
     }
 
     function queueVisibleMapLoad() {
@@ -3015,45 +2826,7 @@
         .select("id, name, price, item_type, icon_url")
         .order("price", { ascending: true });
       if (error) throw error;
-      shopItems = (data || []).filter((item) => [
-        "small_tree", "small_bush", "stump", "grass_patch", "plant",
-        "tree_flowering", "tree_autumn", "tree_large"
-      ].includes(item.item_type));
-
-      const spriteShopCatalog = [
-        // 1x1 = 10 coins
-        { item_type: "small_tree",     name: "Small Tree",      price: 10 },
-        { item_type: "small_bush",     name: "Small Bush",      price: 10 },
-        { item_type: "stump",          name: "Tree Stump",      price: 10 },
-        { item_type: "grass_patch",    name: "Grass Patch",     price: 10 },
-        { item_type: "plant",          name: "Plant",           price: 10 },
-
-        // 2x2 = 20 coins
-        { item_type: "tree_flowering", name: "Flowering Tree",  price: 20 },
-        { item_type: "tree_autumn",    name: "Autumn Tree",     price: 20 },
-
-        // 3x3 = 40 coins
-        { item_type: "tree_large",     name: "Large Tree",      price: 40 }
-      ];
-
-      for (const catalogItem of spriteShopCatalog) {
-        const existing = shopItems.find((item) => item.item_type === catalogItem.item_type);
-        if (existing) {
-          existing.name = catalogItem.name;
-          existing.price = catalogItem.price;
-        } else {
-          shopItems.push({
-            id: `local-${catalogItem.item_type}`,
-            name: catalogItem.name,
-            price: catalogItem.price,
-            item_type: catalogItem.item_type,
-            icon_url: null,
-            localOnly: true
-          });
-        }
-      }
-
-      shopItems.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+      shopItems = data || [];
       renderShop();
     }
 
@@ -3071,17 +2844,12 @@
         button.className = "shop-item" + (selectedShopItem?.id === item.id ? " selected" : "");
         const icon = document.createElement("span");
         icon.className = "shop-icon";
-        const shopGeometry = geometryFor(item.item_type);
-        if (shopGeometry.sprite) {
+        if (item.item_type === "tree") {
           const image = document.createElement("img");
-          image.src = shopGeometry.sprite;
+          image.src = geometryFor("tree").sprite;
           image.alt = "";
           image.className = "shop-sprite";
           image.draggable = false;
-          image.style.width = "32px";
-          image.style.height = "32px";
-          image.style.objectFit = "contain";
-          image.style.imageRendering = "pixelated";
           icon.append(image);
         } else {
           icon.textContent = iconFor(item.item_type);
@@ -3120,7 +2888,6 @@
     function closePlacement() {
       selectedShopItem = null;
       clearPlacementPreview();
-      clearRemovalPreview();
       updatePlacementBar();
       $("#plants-note").textContent = "Choose an item to begin placing it.";
       updateMenuPanelStates();
@@ -3128,30 +2895,10 @@
       renderGardenGrid();
     }
 
-    function topmostAssetAt(x, y) {
-      const candidates = mapTiles.filter((tile) =>
-        footprintFor(tile.item_type, tile.x, tile.y).some(
-          (cell) => cell.x === x && cell.y === y
-        )
-      );
-
-      // Lower on the map = visually closer/frontmost.
-      candidates.sort((a, b) =>
-        Number(b.y) - Number(a.y) ||
-        Number(b.x) - Number(a.x) ||
-        String(b.id).localeCompare(String(a.id))
-      );
-
-      return candidates[0] || null;
-    }
-
     async function handleGardenTileClick(x, y) {
-      if (selectedShopItem) {
-        return buyAndPlace(selectedShopItem, x, y);
-      }
-
-      const existing = topmostAssetAt(x, y);
+      const existing = placedAt(mapTiles, x, y);
       if (existing) return askToRemoveMapTile(existing);
+      return buyAndPlace(selectedShopItem, x, y);
     }
 
     async function buyAndPlace(item, x, y) {
@@ -3165,7 +2912,7 @@
       }
       const geometry = geometryFor(item.item_type);
       const cells = placementCells(item, x, y);
-      const collision = blockingPlacementCollision(item, x, y);
+      const collision = cells.find((cell) => placedAt(mapTiles, cell.x, cell.y));
       if (collision) {
         showToast(`${shopDisplayName(item)} does not fit there. Some of its ${geometry.cols}×${geometry.rows} tiles are occupied.`, "error");
         return;
@@ -3187,8 +2934,11 @@
           .gte("y", y - geometry.rows)
           .lte("y", y + geometry.rows);
         if (existingError) throw existingError;
-        const refreshedTiles = existingTiles || [];
-        const collisionAfterRefresh = blockingPlacementCollision(item, x, y, refreshedTiles);
+        const collisionAfterRefresh = (existingTiles || []).find((tile) =>
+          footprintFor(tile.item_type, tile.x, tile.y).some((occupiedCell) =>
+            cells.some((cell) => cell.x === occupiedCell.x && cell.y === occupiedCell.y)
+          )
+        );
         if (collisionAfterRefresh) {
           showToast("That space is already occupied.", "error");
           await loadVisibleMapTiles();
@@ -3218,42 +2968,9 @@
       }
     }
 
-    let removalPreviewTileId = null;
-
-    function clearRemovalPreview() {
-      document.querySelectorAll(".garden-tile.removal-preview").forEach((tile) => {
-        tile.classList.remove("removal-preview");
-      });
-      removalPreviewTileId = null;
-    }
-
-    function updateRemovalPreview(tile) {
-      clearRemovalPreview();
-      if (!tile) return;
-
-      const footprint = footprintFor(tile.item_type, tile.x, tile.y);
-      const cellMap = new Map(
-        Array.from(document.querySelectorAll(".garden-tile")).map((cell) => [
-          footprintKey(Number(cell.dataset.x), Number(cell.dataset.y)),
-          cell
-        ])
-      );
-
-      footprint.forEach((cell) => {
-        const gridTile = cellMap.get(footprintKey(cell.x, cell.y));
-        if (gridTile) gridTile.classList.add("removal-preview");
-      });
-
-      removalPreviewTileId = tile.id;
-    }
-
     function askToRemoveMapTile(tile) {
       const refund = refundForTile(tile);
       const itemName = shopDisplayName(tile.item_type);
-
-      updateRemovalPreview(tile);
-      $("#confirm-modal").classList.add("remove-confirm");
-
       openConfirmDialog({
         title: "REMOVE ITEM",
         message: `Remove ${itemName} from your garden? You will receive ${refund} coins back.`,
@@ -3271,7 +2988,6 @@
         if (error) throw error;
         if (refund > 0) await addCoins(refund);
         mapTiles = mapTiles.filter((item) => item.id !== tile.id);
-        clearRemovalPreview();
         renderGardenGrid();
         showToast(`${shopDisplayName(tile.item_type)} removed. +${refund} coins refunded.`, "success");
       } catch (error) {
@@ -3282,10 +2998,8 @@
     let placementPreviewAnchor = null;
 
     function clearPlacementPreview() {
-      document.querySelectorAll(
-        ".garden-tile.placement-preview, .garden-tile.placement-overlap, .garden-tile.placement-invalid"
-      ).forEach((tile) => {
-        tile.classList.remove("placement-preview", "placement-overlap", "placement-invalid");
+      document.querySelectorAll(".garden-tile.placement-preview, .garden-tile.placement-invalid").forEach((tile) => {
+        tile.classList.remove("placement-preview", "placement-invalid");
       });
       placementPreviewAnchor = null;
     }
@@ -3295,7 +3009,6 @@
       if (!selectedShopItem || anchorX === null || anchorY === null) return;
 
       const cells = placementCells(selectedShopItem, anchorX, anchorY);
-      const blockingCollision = blockingPlacementCollision(selectedShopItem, anchorX, anchorY);
       const cellMap = new Map(
         Array.from(document.querySelectorAll(".garden-tile")).map((tile) => [
           footprintKey(Number(tile.dataset.x), Number(tile.dataset.y)),
@@ -3307,16 +3020,11 @@
         const tile = cellMap.get(footprintKey(cell.x, cell.y));
         if (!tile) return;
 
-        const existing = placedAt(mapTiles, cell.x, cell.y);
-        if (existing && canStackItems(selectedShopItem.item_type, existing.item_type)) {
-          tile.classList.add("placement-overlap");
-        } else if (blockingCollision) {
-          tile.classList.add("placement-invalid");
-        } else {
-          tile.classList.add("placement-preview");
-        }
+        // Show the placement footprint cell-by-cell:
+        // free cells are grey, occupied cells are red.
+        const occupied = Boolean(placedAt(mapTiles, cell.x, cell.y));
+        tile.classList.add(occupied ? "placement-invalid" : "placement-preview");
       });
-
       placementPreviewAnchor = { x: anchorX, y: anchorY };
     }
 
@@ -3602,8 +3310,6 @@
 
     function closeConfirmDialog() {
       confirmAction = null;
-      if (typeof clearRemovalPreview === "function") clearRemovalPreview();
-      $("#confirm-modal").classList.remove("remove-confirm");
       $("#confirm-modal").classList.add("hidden");
     }
 
@@ -3683,7 +3389,6 @@
     $("#garden-grid").addEventListener("pointerup", handlePointerUp);
     $("#garden-grid").addEventListener("pointercancel", handlePointerUp);
     $("#menu-toggle-btn").addEventListener("click", () => setMenuCollapsed(!menuCollapsed));
-    $("#tasks-btn").addEventListener("click", () => { window.location.href = "index.html"; });
     $("#return-center-btn").addEventListener("click", returnToCenter);
     $("#toggle-grid-btn").addEventListener("click", toggleGrid);
     $("#toggle-coordinates-btn").addEventListener("click", toggleCoordinates);
