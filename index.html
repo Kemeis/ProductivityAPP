@@ -105,6 +105,33 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 .reward{white-space:nowrap;font-weight:600}.task-priority{font-size:11px;color:var(--muted);margin-left:6px;font-weight:500}
 .color-choices-heading{color:var(--muted);font-size:12px;margin:12px 0 5px}
 @media(max-width:520px){.add-row input{flex:1 1 100%}.add-row select{flex:1;min-width:0}.add-row button{min-width:76px}.task-priority{display:none}}
+
+/* v4: reliable independent scrolling for long task lists and notes */
+html,body{height:100%;overflow:hidden}
+.app{height:100vh;height:100dvh;min-height:0}
+.main{min-height:0;min-width:0;overflow:hidden;flex:1}
+.topbar{flex:0 0 62px;min-height:0}
+.content{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;margin:0 auto;scrollbar-gutter:stable;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:65px}
+.list-view,.note-card,.section{min-width:0}
+.task{min-width:0}.task-title{min-width:0;overflow-wrap:anywhere}
+.note-card .editor{overflow-wrap:anywhere;min-width:0}
+.modal-back{overflow-y:auto;overscroll-behavior:contain}
+.modal{max-height:calc(100dvh - 32px);overflow-y:auto}
+.modal #modalBody{min-width:0}
+.settings-list details{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--panel2)}
+.settings-list summary{cursor:pointer;padding:11px 12px;font-weight:600}
+.settings-list details .setting-inner{display:grid;gap:7px;padding:0 10px 10px}
+.settings-list details .setting-inner button{background:var(--panel)}
+.settings-list button:disabled{opacity:.6;cursor:wait}
+.settings-subheading{margin:8px 0 0;color:var(--muted);font-size:12px}
+.feedback-form{display:grid;gap:12px}
+.feedback-form label{margin:0 0 4px}
+.feedback-form textarea{min-height:110px;resize:vertical}
+.feedback-form .feedback-choice{display:flex;flex-wrap:wrap;gap:10px}
+.feedback-form .feedback-choice label{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px}
+.feedback-form input[type=radio]{width:auto;accent-color:var(--accent)}
+.feedback-form .primary{justify-self:start}
+@media(max-width:760px){.main{height:100dvh}.topbar{flex-basis:60px}.content{padding-bottom:80px;scrollbar-gutter:auto}}
 </style></head>
 <body>
 <div id="auth" class="auth"><div class="auth-card">
@@ -373,7 +400,9 @@ async function deleteTask(id){if(!confirm("Delete this task?"))return;let r=awai
 function openFolder(id){path(id).forEach(f=>expandedFolders.add(f.id));renderFolder(id);renderTree();closeMobileNav()}
 function openList(id){closeMobileNav();currentDoc={type:"list",id};let l=lists.find(x=>x.id===id);currentFolder=l?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),l.name].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="list-view"><div class="section"><div class="section-head"><span class="section-title">☷ ${esc(l.name)}</span><span style="color:var(--muted)">${tasks.filter(t=>t.list_id===id&&t.is_done).length}/${tasks.filter(t=>t.list_id===id).length}</span></div><div class="section-body">${tasks.filter(t=>t.list_id===id).map(taskHTML).join("")||"<div style='color:var(--muted)'>No tasks yet.</div>"}${addTaskRow(id)}</div></div>`;bind()}
 function openNote(id){closeMobileNav();currentDoc={type:"note",id};let n=notes.find(x=>x.id===id);currentFolder=n?.folder_id||null;$("#crumbs").textContent=[...path(currentFolder).map(x=>x.name),n.title].filter(Boolean).join(" / ");$("#content").innerHTML=`<div class="note-card"><div class="note-head"><input id="noteTitle" value="${esc(n.title)}"><button class="primary" id="saveNote">Save</button></div><div class="toolbar"><button class="tool" data-cmd="bold"><b>B</b></button><button class="tool" data-cmd="italic"><i>I</i></button><button class="tool" data-cmd="formatBlock" data-val="h2">H</button><button class="tool" data-cmd="insertUnorderedList">• List</button><button class="tool" data-cmd="insertOrderedList">1. List</button><button class="tool" data-cmd="insertHorizontalRule">―</button><button class="tool" data-cmd="undo">↶</button><button class="tool" data-cmd="redo">↷</button></div><div id="editor" class="editor" contenteditable="true" data-placeholder="Start writing…">${n.content_html||""}</div><div class="save-row"><span>Notes are saved to your account.</span><button class="danger" id="deleteNote">Delete note</button></div></div>`;document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,b.dataset.val||null);$("#editor").focus()});$("#saveNote").onclick=saveNote;$("#deleteNote").onclick=deleteNote}
-async function saveNote(){let n=notes.find(x=>x.id===currentDoc.id),r=await db.from("notes").update({title:$("#noteTitle").value.trim()||"Untitled note",content_html:$("#editor").innerHTML,updated_at:new Date().toISOString()}).eq("id",n.id).eq("user_id",user.id);if(r.error)return alert(r.error.message);await refreshView();openNote(n.id)}
+let noteSaveBusy=false;
+async function saveNote(){if(noteSaveBusy||currentDoc?.type!=="note"||!$("#editor"))return;noteSaveBusy=true;const saveBtn=$("#saveNote");if(saveBtn)saveBtn.disabled=true;try{let n=notes.find(x=>x.id===currentDoc.id),r=await db.from("notes").update({title:$("#noteTitle").value.trim()||"Untitled note",content_html:$("#editor").innerHTML,updated_at:new Date().toISOString()}).eq("id",n.id).eq("user_id",user.id);if(r.error)throw r.error;await refreshView();openNote(n.id)}catch(e){alert(e.message||"Could not save note.")}finally{noteSaveBusy=false;const button=$("#saveNote");if(button)button.disabled=false}}
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"&&currentDoc?.type==="note"&&$("#modalBack").classList.contains("hidden")){e.preventDefault();saveNote()}});
 async function deleteNote(){if(!confirm("Delete this note?"))return;let r=await db.from("notes").delete().eq("id",currentDoc.id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
 
 function closeMenus(){document.querySelectorAll(".item-menu.open,.tree-menu.open").forEach(m=>m.classList.remove("open"))}
@@ -540,11 +569,13 @@ $("#mobileNavBtn").onclick=showMobileNav;
 $("#mobileCloseBtn").onclick=closeMobileNav;
 $("#mobileShade").onclick=closeMobileNav;
 async function refreshView(){
+ const content=$("#content"), previousScroll=content?.scrollTop||0;
  const prevFolder=currentFolder,prevDoc=currentDoc&&{...currentDoc};
  await load();
  if(prevDoc?.type==="list"&&lists.some(x=>x.id===prevDoc.id))openList(prevDoc.id);
  else if(prevDoc?.type==="note"&&notes.some(x=>x.id===prevDoc.id))openNote(prevDoc.id);
  else if(prevFolder&&folders.some(x=>x.id===prevFolder))openFolder(prevFolder);
+ if(content)content.scrollTop=previousScroll;
 }
 function moveItemMobile(type,id){
  const item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
@@ -562,15 +593,84 @@ function moveItemMobile(type,id){
   closeModal();if(destination)expandedFolders.add(destination);await refreshView();
  });
 }
-$("#optionsBtn").onclick=()=>{
+function showOptions(){
  resetModal();$("#modalTitle").textContent="Options";$("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
- $("#modalBody").innerHTML=`<div class="settings-list"><button id="settingsHome">⌂ My workspace</button><button id="settingsExpand">Expand all folders</button><button id="settingsCollapse">Collapse all folders</button><button id="settingsGarden">Go to Garden</button></div><div class="settings-note">Your content is stored in your Supabase account.</div>`;
+ $("#modalBody").innerHTML=`<div class="settings-list">
+  <button id="settingsHome">⌂ My workspace</button>
+  <details><summary>Workspace</summary><div class="setting-inner"><button id="settingsExpand">Expand all folders</button><button id="settingsCollapse">Collapse all folders</button><button id="settingsGarden">Go to Garden</button></div></details>
+  <details><summary>Account</summary><div class="setting-inner"><p class="settings-subheading">Signed in as: ${esc(user?.email||"")}</p><button id="settingsReset" class="danger-setting">Reset progress</button><button id="settingsDelete" class="danger-setting">Delete account</button></div></details>
+  <button id="settingsFeedback">Feedback / report error</button>
+  <button id="settingsPrivacy">Privacy Policy</button>
+  <button id="settingsCredentials">Credentials</button>
+ </div><div class="settings-note">Your data is stored in your Supabase account.</div>`;
  $("#modalBack").classList.remove("hidden");
  $("#settingsHome").onclick=()=>{closeModal();renderHome();closeMobileNav()};
  $("#settingsExpand").onclick=()=>{folders.forEach(f=>expandedFolders.add(f.id));renderTree();closeModal()};
  $("#settingsCollapse").onclick=()=>{expandedFolders.clear();renderTree();closeModal()};
  $("#settingsGarden").onclick=()=>location.href="garden.html";
-};
+ $("#settingsFeedback").onclick=showFeedback;
+ $("#settingsPrivacy").onclick=()=>location.href="privacy.html";
+ $("#settingsCredentials").onclick=()=>window.open("https://kemeis.github.io/Portfolio/","_blank","noopener,noreferrer");
+ $("#settingsReset").onclick=()=>{
+  if(!confirm("Reset progress? This removes garden map items, tasks, folders, notes, lists, habits and goals and sets coins to zero. This CANNOT be undone."))return;
+  if(!confirm("Final confirmation: permanently reset ALL your Task Garden progress?"))return;
+  resetAllProgress();
+ };
+ $("#settingsDelete").onclick=()=>{
+  if(!confirm("Delete your account and all associated data PERMANENTLY? This cannot be undone."))return;
+  if(!confirm("Final confirmation: request account deletion?"))return;
+  deleteGardenAccount();
+ };
+}
+$("#optionsBtn").onclick=showOptions;
+function showFeedback(){
+ resetModal();$("#modalTitle").textContent="Feedback / report error";$("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
+ $("#modalBody").innerHTML=`<form class="feedback-form" id="feedbackForm">
+ <div><label>Type</label><div class="feedback-choice"><label><input type="radio" name="type" value="bug" checked> Feedback</label><label><input type="radio" name="type" value="error"> Report error</label></div></div>
+ <div><label>How does the current version feel?</label><div class="feedback-choice">${[["very_negative","Very negative"],["negative","Negative"],["okay","OK"],["positive","Positive"],["very_positive","Very positive"]].map(([v,label])=>`<label><input type="radio" name="rating" value="${v}" ${v==="okay"?"checked":""}> ${label}</label>`).join("")}</div></div>
+ <div><label for="feedbackComment">Comment</label><textarea id="feedbackComment" maxlength="2000" required placeholder="Describe an issue or share an idea…"></textarea></div>
+ <div><label for="feedbackEmail">Email (optional)</label><input id="feedbackEmail" type="email" maxlength="254" placeholder="you@example.com"></div>
+ <button type="submit" class="primary" id="feedbackSubmit">Send feedback</button></form>`;
+ $("#modalBack").classList.remove("hidden");
+ $("#feedbackForm").onsubmit=async e=>{
+  e.preventDefault();const button=$("#feedbackSubmit");button.disabled=true;
+  try{
+   const f=$("#feedbackForm"),type=f.querySelector('input[name="type"]:checked').value,rating=f.querySelector('input[name="rating"]:checked').value;
+   const comment=$("#feedbackComment").value.trim(),email=$("#feedbackEmail").value.trim();
+   if(!comment)throw Error("Please write a comment.");
+   const {error}=await db.from("feedback_reports").insert({user_id:user.id,report_type:type,rating,comment,feedback_email:email||null});
+   if(error)throw error;
+   closeModal();alert("Feedback sent. Thank you!");
+  }catch(error){alert("Feedback could not be sent: "+(error.message||error)+". The feedback_reports table may need to be configured.")}
+  finally{if(button.isConnected)button.disabled=false}
+ };
+}
+async function resetAllProgress(){
+ // Never remove the authentication account here. Deleting dependent records first avoids foreign key errors.
+ const button=$("#settingsReset");if(button)button.disabled=true;
+ try{
+  const uid=user.id;
+  for(const table of ["map_tiles","habit_logs","tasks","notes","task_lists","folders","goals","habits"]){
+   const {error}=await db.from(table).delete().eq("user_id",uid);
+   if(error)throw new Error(table+": "+error.message);
+  }
+  const {error}=await db.from("profiles").update({coins:0,farm_name:"My Garden"}).eq("id",uid);
+  if(error)throw error;
+  closeModal();currentFolder=null;currentDoc=null;expandedFolders.clear();await load();
+  alert("Progress reset.");
+ }catch(error){alert("Reset was not completed: "+(error.message||error)+". Some changes may already have been made.")}
+ finally{if(button?.isConnected)button.disabled=false}
+}
+async function deleteGardenAccount(){
+ const button=$("#settingsDelete");if(button)button.disabled=true;
+ try{
+  const {error}=await db.functions.invoke("delete-account");
+  if(error)throw error;
+  closeModal();await db.auth.signOut();alert("Account deleted.");
+ }catch(error){alert("Account deletion failed. The delete-account Supabase Edge Function must be deployed and configured. "+(error.message||""))}
+ finally{if(button?.isConnected)button.disabled=false}
+}
+
 
 $("#newFolderBtn").onclick=()=>{closeMobileNav();newFolder()};$("#newListBtn").onclick=()=>{closeMobileNav();newList()};$("#newNoteBtn").onclick=()=>{closeMobileNav();newNote()};$("#upBtn").onclick=()=>{if(currentDoc){currentDoc=null;if(currentFolder)openFolder(currentFolder);else renderHome()}else if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
 db.auth.onAuthStateChange(async(_,s)=>{user=s?.user||null;if(user){$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");try{await load()}catch(e){alert(e.message)}}else{$("#app").classList.add("hidden");$("#auth").classList.remove("hidden")}});
