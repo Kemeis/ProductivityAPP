@@ -98,6 +98,8 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 }
 @media(max-width:380px){.color-palette{gap:6px}.folder-grid{grid-template-columns:1fr 1fr}.section-title{overflow-wrap:anywhere}}
 
+/* Menus float above clipped cards and short lists. */
+.item-menu{position:fixed;top:0;left:0;right:auto;bottom:auto;z-index:150;max-height:min(70dvh,460px);overflow-y:auto;overscroll-behavior:contain}
 /* Task priority and editing palette */
 .add-row{flex-wrap:wrap;align-items:stretch}.add-row select{width:auto;min-width:132px;flex:0 0 auto;padding:9px 8px}.add-row input{min-width:130px}
 .reward{white-space:nowrap;font-weight:600}.task-priority{font-size:11px;color:var(--muted);margin-left:6px;font-weight:500}
@@ -281,8 +283,8 @@ function renderHome(){
   ${childrenOf(null).length||lists.some(x=>!x.folder_id)||notes.some(x=>!x.folder_id)?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
   bind();
 }
-function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===20?"High":reward===10?"Normal":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward} 🪙<span class="task-priority">${priority}</span></span><button class="task-delete" data-del="${t.id}" aria-label="Delete task">×</button></div>`}
-function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low · 5 🪙</option><option value="10" selected>Normal · 10 🪙</option><option value="20">High · 20 🪙</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
+function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===20?"High":reward===10?"Normal":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="task-delete" data-del="${t.id}" aria-label="Delete task">×</button></div>`}
+function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low · 5</option><option value="10" selected>Normal · 10</option><option value="20">High · 20</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
 function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483646?Math.max(m,n):m},0);return max+1}
 function colorOf(x){return x?.color||""}
 function itemMenu(type,id){
@@ -379,7 +381,15 @@ document.addEventListener("click",e=>{
   const mb=e.target.closest("[data-menu-btn]");
   if(mb){
     e.stopPropagation();const m=document.querySelector(`[data-menu="${mb.dataset.menuBtn}"]`);const already=m?.classList.contains("open");closeMenus();
-    if(m&&!already){m.classList.add("open");const r=mb.getBoundingClientRect(),box=m.getBoundingClientRect();if(box.right>innerWidth-8)m.style.right="0";if(box.bottom>innerHeight-8){m.style.top="auto";m.style.bottom="42px"}}
+    if(m&&!already){
+      m.style.left="0px";m.style.top="0px";m.style.right="auto";m.style.bottom="auto";
+      m.classList.add("open");
+      const r=mb.getBoundingClientRect(),box=m.getBoundingClientRect(),gap=6,pad=8;
+      const left=Math.max(pad,Math.min(r.right-box.width,innerWidth-box.width-pad));
+      const below=r.bottom+gap,above=r.top-box.height-gap;
+      const top=below+box.height<=innerHeight-pad?below:(above>=pad?above:Math.max(pad,innerHeight-box.height-pad));
+      m.style.left=left+"px";m.style.top=top+"px";
+    }
     return;
   }
   const act=e.target.closest(".item-menu button");
@@ -390,6 +400,8 @@ document.addEventListener("click",e=>{
   }
   if(!e.target.closest(".item-menu,.tree-menu,.tree-more"))closeMenus();
 });
+document.querySelector("#content").addEventListener("scroll",closeMenus,{passive:true});
+window.addEventListener("resize",closeMenus,{passive:true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenus();closeModal();closeMobileNav()}});
 async function handleItemAction(type,id,action){
   if(action==="open"){type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id);return}
