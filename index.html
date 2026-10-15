@@ -114,7 +114,7 @@ html,body{height:100%;overflow:hidden}
 .topbar{flex:0 0 62px;min-height:0}
 .content{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;margin:0 auto;scrollbar-gutter:stable;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:65px}
 .list-view,.note-card,.section{min-width:0}
-.task{min-width:0}.task-title{min-width:0;overflow-wrap:anywhere}
+.task{min-width:0;position:relative;grid-template-columns:22px minmax(0,1fr) auto auto}.task-title{min-width:0;overflow-wrap:anywhere}.task-more{font-size:20px;min-width:34px;min-height:32px;display:grid;place-items:center;margin:0}
 .note-card .editor{overflow-wrap:anywhere;min-width:0}
 .modal-back{overflow-y:auto;overscroll-behavior:contain}
 .modal{max-height:calc(100dvh - 32px);overflow-y:auto}
@@ -311,7 +311,8 @@ function renderHome(){
   ${childrenOf(null).length||lists.some(x=>!x.folder_id)||notes.some(x=>!x.folder_id)?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
   bind();
 }
-function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===10?"Normal":reward===20?"High":reward===50?"Very high":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="task-delete" data-del="${t.id}" aria-label="Delete task">×</button></div>`}
+function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===10?"Normal":reward===20?"High":reward===50?"Very high":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="more-btn task-more" data-menu-btn="task:${t.id}" aria-label="Task options" aria-haspopup="true">⋯</button>${taskMenu(t.id)}</div>`}
+function taskMenu(id){return `<div class="item-menu" data-menu="task:${id}"><button data-action="edit">Edit task</button><button data-action="delete">Delete task</button></div>`}
 function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low</option><option value="10" selected>Normal</option><option value="20">High</option><option value="50">Very high</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
 function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483646?Math.max(m,n):m},0);return max+1}
 function colorOf(x){return x?.color||""}
@@ -371,7 +372,7 @@ function renderFolder(id){
   <div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;
   bind();
 }
-function bind(){document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteTask(b.dataset.del));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")addTask(i.dataset.add)})}
+function bind(){document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addTask(i.dataset.add)}})}
 async function addTask(id){
  const i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;
  const reward=Number(document.querySelector(`[data-priority="${id}"]`)?.value||10);
@@ -381,6 +382,8 @@ async function addTask(id){
   const r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:reward,is_done:false,sort_order:nextSortOrder(tasks)});
   if(r.error)throw r.error;
   await refreshView();
+  const nextInput=document.querySelector(`[data-add="${id}"]`);
+  if(nextInput){nextInput.focus({preventScroll:true});nextInput.value="";}
  }catch(e){alert(e.message||"Could not add task.");i.disabled=false;if(btn)btn.disabled=false}
 }
 async function toggleTask(id,done){
@@ -396,6 +399,24 @@ async function toggleTask(id,done){
   alert(c.error?.message||"Could not update coins. Check your profile.");
  }
  await refreshView();
+}
+async function editTask(id){
+ const task=tasks.find(t=>t.id===id);if(!task)return;
+ modal("Edit task",async title=>{
+   const reward=task.is_done?Number(task.coin_reward??10):Number($("#editTaskPriority")?.value);
+   if(!title.trim())return alert("Task name cannot be empty.");
+   if(!Number.isFinite(reward)||reward<0)return alert("Invalid priority.");
+   const patch={title:title.trim()};
+   if(!task.is_done)patch.coin_reward=reward;
+   const {error}=await db.from("tasks").update(patch).eq("id",id).eq("user_id",user.id);
+   if(error)throw error;
+   closeModal();await refreshView();
+ },task.title);
+ const options=[[5,"Low"],[10,"Normal"],[20,"High"],[50,"Very high"]];
+ const old=Number(task.coin_reward??10);
+ if(!options.some(([n])=>n===old))options.push([old,`Custom (${old})`]);
+ $("#modalBody").innerHTML=`<label for="editTaskPriority">Priority</label><select id="editTaskPriority" ${task.is_done?'disabled title="Completed task priority is locked"':''}>${options.map(([value,label])=>`<option value="${value}" ${old===value?"selected":""}>${label}</option>`).join("")}</select>${task.is_done?'<p class="settings-note">This task is already completed. Its priority is locked to preserve the awarded coins.</p>':""}`;
+ $("#modalInput").placeholder="Task name";
 }
 async function deleteTask(id){if(!confirm("Delete this task?"))return;let r=await db.from("tasks").delete().eq("id",id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
 function openFolder(id){path(id).forEach(f=>expandedFolders.add(f.id));renderFolder(id);renderTree();closeMobileNav()}
@@ -444,6 +465,11 @@ document.querySelector("#content").addEventListener("scroll",closeMenus,{passive
 window.addEventListener("resize",closeMenus,{passive:true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenus();closeModal();closeMobileNav()}});
 async function handleItemAction(type,id,action){
+  if(type==="task"){
+    if(action==="edit")return editTask(id);
+    if(action==="delete")return deleteTask(id);
+    return;
+  }
   if(action==="open"){type==="folder"?openFolder(id):type==="note"?openNote(id):openList(id);return}
   if(action==="rename"){closeMobileNav();
     let item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
