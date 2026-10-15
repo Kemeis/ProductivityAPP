@@ -73,10 +73,10 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
 
 /* Responsive navigation and functional controls */
 .modal-back{z-index:200}.mobile-nav,.mobile-close{display:none}.mobile-shade{display:none}
-.color-palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:12px 0}
+.color-palette{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin:12px 0}
 .create-color-label{color:var(--muted);font-size:12px;margin-top:8px}
 .color-choice{height:38px;min-width:0;border:2px solid transparent;border-radius:9px;background:var(--swatch);touch-action:manipulation}
-.color-choice.selected{outline:2px solid #eee;outline-offset:2px}
+.color-choice.selected{outline:2px solid #eee;outline-offset:2px}.color-choice.no-color{background:var(--panel);color:var(--muted);font-size:10px;line-height:1.1;border:1px dashed var(--muted);padding:2px;overflow-wrap:anywhere}
 .hex-preview{height:36px;border:1px solid var(--border);border-radius:8px;margin:8px 0}
 .move-choices{max-height:50dvh;overflow:auto;display:grid;gap:5px}.move-choices button{background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:left;padding:11px}
 .folder-wrap .folder-card{width:100%;height:100%}.folder-wrap .folder-more{position:absolute;right:8px;top:8px}
@@ -194,7 +194,7 @@ function renderTree(){
     if(type==="folder"){
       const hasChildren=childrenOf(item.id).length || lists.some(x=>(x.folder_id||null)===item.id) || notes.some(x=>(x.folder_id||null)===item.id);
       row.innerHTML=`<button class="tree-toggle" title="${hasChildren?"Expand/collapse":"No contents"}">${hasChildren?(expandedFolders.has(item.id)?"▾":"▸"):""}</button>
-        <span class="tree-icon">▱</span><span class="tree-color-dot" style="background:${esc(colorOf(item)||'#6d7480')}"></span><span class="tree-name">${esc(item.name)}</span>
+        <span class="tree-icon">▱</span>${colorOf(item)?`<span class="tree-color-dot" style="background:${esc(colorOf(item))}"></span>`:""}<span class="tree-name">${esc(item.name)}</span>
         <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
 
       row.querySelector(".tree-toggle").onclick=e=>{
@@ -208,7 +208,7 @@ function renderTree(){
         openFolder(item.id);
       };
     }else{
-      row.innerHTML=`<span class="tree-icon">${type==="note"?"□":"☷"}</span><span class="tree-color-dot" style="background:${esc(colorOf(item)||'#6d7480')}"></span><span class="tree-name">${esc(type==="note"?item.title:item.name)}</span>
+      row.innerHTML=`<span class="tree-icon">${type==="note"?"□":"☷"}</span>${colorOf(item)?`<span class="tree-color-dot" style="background:${esc(colorOf(item))}"></span>`:""}<span class="tree-name">${esc(type==="note"?item.title:item.name)}</span>
         <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
       row.onclick=e=>{
         if(e.target.closest(".tree-more,.tree-menu"))return;
@@ -328,7 +328,7 @@ function listHTML(l){
   let ts=tasks.filter(t=>t.list_id===l.id);
   return `<div class="section draggable-item" draggable="true" data-drag-type="list" data-drag-id="${l.id}">
     <div class="section-head">
-      <span class="item-color" style="background:${esc(colorOf(l))}"></span>
+      ${colorOf(l)?`<span class="item-color" style="background:${esc(colorOf(l))}"></span>`:""}
       <span class="section-title">☷ ${esc(l.name)}</span>
       <button class="more-btn" data-menu-btn="list:${l.id}">⋯</button>
       ${itemMenu("list",l.id)}
@@ -341,7 +341,7 @@ function listHTML(l){
 function noteHTML(n){
   return `<div class="section draggable-item" draggable="true" data-drag-type="note" data-drag-id="${n.id}">
     <div class="section-head">
-      <span class="item-color" style="background:${esc(colorOf(n))}"></span>
+      ${colorOf(n)?`<span class="item-color" style="background:${esc(colorOf(n))}"></span>`:""}
       <span class="section-title">□ ${esc(n.title)}</span>
       <button class="more-btn" data-menu-btn="note:${n.id}">⋯</button>
       ${itemMenu("note",n.id)}
@@ -353,7 +353,7 @@ function folderCard(f){
   let it=folderItems(f.id);
   return `<div class="folder-wrap draggable-item" draggable="true" data-drag-type="folder" data-drag-id="${f.id}">
     <button class="folder-card" data-f="${f.id}">
-      <span class="item-color folder-color" style="background:${esc(colorOf(f))}"></span>
+      ${colorOf(f)?`<span class="item-color folder-color" style="background:${esc(colorOf(f))}"></span>`:""}
       <strong>▱ ${esc(f.name)}</strong>
       <div class="count">${it.lists.length} task lists · ${it.notes.length} notes</div>
     </button>
@@ -488,13 +488,13 @@ function modal(title,action,initial=""){
   $("#modalBack").classList.remove("hidden");
   setTimeout(()=>$("#modalInput").focus(),20);
 }
-function creationModal(title,action,initial="#5f9e50"){
+function creationModal(title,action,initial=""){
   resetModal();
   modalAction=action;
   $("#modalTitle").textContent=title;
   $("#modalInput").value="";
   $("#modalBody").innerHTML=`<div class="create-color-label">Color</div>
-    <div class="color-palette" id="createPalette">${PALETTE.map(([c,n],i)=>`<button type="button" class="color-choice${c===initial?" selected":""}" data-color="${c}" style="--swatch:${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div>`;
+    <div class="color-palette" id="createPalette"><button type="button" class="color-choice no-color${!initial?" selected":""}" data-color="" title="No color" aria-label="No color">None</button>${PALETTE.map(([c,n],i)=>`<button type="button" class="color-choice${c===initial?" selected":""}" data-color="${c}" style="--swatch:${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div>`;
   $("#modalInput").placeholder="Name";
   $("#modalBack").classList.remove("hidden");
   $("#createPalette").querySelectorAll(".color-choice").forEach(b=>b.onclick=()=>{
@@ -504,19 +504,20 @@ function creationModal(title,action,initial="#5f9e50"){
   setTimeout(()=>$("#modalInput").focus(),20);
 }
 function selectedCreateColor(){
-  return $("#createPalette")?.querySelector(".color-choice.selected")?.dataset.color||"#5f9e50";
+  return $("#createPalette")?.querySelector(".color-choice.selected")?.dataset.color||null;
 }
 
 async function chooseColor(type,id){
  const item=type==="folder"?folders.find(x=>x.id===id):type==="note"?notes.find(x=>x.id===id):lists.find(x=>x.id===id);
  resetModal();
  $("#modalTitle").textContent="Change color";
- $("#modalInput").value=item?.color||"#5f9e50";
- $("#modalInput").placeholder="#5f9e50";
+ $("#modalInput").value=item?.color||"";
+ $("#modalInput").dataset.allowEmpty="true";
+ $("#modalInput").placeholder="No color (or enter #5f9e50)";
  $("#modalInput").setAttribute("pattern","^#[0-9a-fA-F]{6}$");
  $("#modalInput").title="Enter a color such as #5f9e50";
  $("#modalOk").textContent="Save";
- $("#modalBody").innerHTML=`<div class="color-choices-heading">Choose a color</div><div class="color-palette" id="editPalette">${PALETTE.map(([c,n])=>`<button type="button" class="color-choice${c.toLowerCase()===(item?.color||"").toLowerCase()?" selected":""}" data-color="${c}" style="--swatch:${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div><div class="create-color-label">Custom HEX color</div><div class="hex-row"><div id="hexPreview" class="hex-preview"></div></div>`;
+ $("#modalBody").innerHTML=`<div class="color-choices-heading">Choose a color</div><div class="color-palette" id="editPalette"><button type="button" class="color-choice no-color${!item?.color?" selected":""}" data-color="" title="No color" aria-label="No color">None</button>${PALETTE.map(([c,n])=>`<button type="button" class="color-choice${c.toLowerCase()===(item?.color||"").toLowerCase()?" selected":""}" data-color="${c}" style="--swatch:${c}" title="${n}" aria-label="${n}"></button>`).join("")}</div><div class="create-color-label">Custom HEX color</div><div class="hex-row"><div id="hexPreview" class="hex-preview"></div></div>`;
  $("#modalBack").classList.remove("hidden");
  const preview=()=>{
   const value=$("#modalInput").value.trim();$("#hexPreview").style.background=/^#[0-9a-fA-F]{6}$/.test(value)?value:"transparent";
@@ -525,9 +526,9 @@ async function chooseColor(type,id){
  $("#editPalette").querySelectorAll(".color-choice").forEach(b=>b.onclick=()=>{$("#modalInput").value=b.dataset.color;preview()});
  $("#modalInput").oninput=preview;preview();
  modalAction=async value=>{
-  value=value.trim();if(!/^#[0-9a-fA-F]{6}$/.test(value))return alert("Enter a valid hex color, e.g. #5f9e50.");
+  value=value.trim();if(value&&!/^#[0-9a-fA-F]{6}$/.test(value))return alert("Enter a valid hex color, e.g. #5f9e50, or choose No color.");
   const table=type==="folder"?"folders":type==="note"?"notes":"task_lists";
-  const r=await db.from(table).update({color:value}).eq("id",id).eq("user_id",user.id);
+  const r=await db.from(table).update({color:value||null}).eq("id",id).eq("user_id",user.id);
   if(r.error)alert(r.error.message);else{closeModal();await refreshView()}
  };
  setTimeout(()=>$("#modalInput").focus(),20);
@@ -568,7 +569,7 @@ $("#modalBack").addEventListener("click",e=>{if(e.target===$("#modalBack"))close
 $("#modalOk").onclick=async()=>{
   if(!modalAction||modalBusy)return;
   const value=$("#modalInput").value.trim();
-  if(!value){$("#modalInput").focus();return}
+  if(!value&&$("#modalInput").dataset.allowEmpty!=="true"){$("#modalInput").focus();return}
   modalBusy=true;$("#modalOk").disabled=true;
   try{await modalAction(value)}catch(e){alert(e.message||String(e))}
   finally{modalBusy=false;$("#modalOk").disabled=false}
