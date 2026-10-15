@@ -12,7 +12,8 @@ button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}.hidden{d
 label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,textarea,select{width:100%;border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:8px;padding:10px 11px;outline:none}input:focus,textarea:focus{border-color:#62578a}
 .primary,.ghost,.danger{border:1px solid var(--border);border-radius:8px;padding:9px 12px;background:var(--panel2)}.primary{background:var(--accent);border-color:var(--accent);font-weight:650}.danger{color:var(--danger)}.form-message{min-height:20px;margin-top:12px;color:var(--danger)}.form-message.success{color:#82d39a}
 .app{height:100vh;display:grid;grid-template-columns:270px minmax(0,1fr);overflow:hidden}.sidebar{background:#15171a;border-right:1px solid var(--border);display:flex;flex-direction:column}.sidebar-head{padding:18px;border-bottom:1px solid var(--border)}.brand-small{font-size:17px;font-weight:700}.user-line{color:var(--muted);font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.side-actions{padding:12px;display:grid;gap:7px}.side-actions button{width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 10px}.side-actions button:hover{background:var(--panel2);border-color:var(--border)}
-.tree{overflow:auto;padding:6px 10px 20px}.tree-row{display:flex;align-items:center;gap:6px;min-height:34px;border-radius:7px;padding:4px 7px}.tree-row:hover{background:var(--panel2)}.tree-row.selected{background:#2a2638}.tree-toggle{width:20px;border:0;background:transparent;color:var(--muted);padding:0}.tree-icon{color:#aeb5bf;width:17px}.tree-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.tree-children{margin-left:17px}.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);display:grid;gap:7px}.coins{color:#c5b5ff}
+.new-menu-wrap{position:relative}.new-main-btn{width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 10px}.new-main-btn:hover,.new-main-btn[aria-expanded="true"]{background:var(--panel2);border-color:var(--border)}.new-dropdown{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;display:none;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;box-shadow:0 12px 30px #0008}.new-dropdown.open{display:grid}.new-dropdown button{background:transparent;border:0;border-radius:8px;padding:9px 10px;text-align:left}.new-dropdown button:hover{background:#2b3037;border-color:transparent}
+.tree{overflow:auto;padding:6px 10px 20px}.tree-row{display:flex;align-items:center;gap:6px;min-height:34px;border-radius:7px;padding:4px 7px}.tree-row:hover{background:var(--panel2)}.tree-row.selected{background:#2a2638}.tree-toggle{width:20px;border:0;background:transparent;color:var(--muted);padding:0}.tree-icon{color:#aeb5bf;width:17px}.tree-color-dot{width:10px;height:10px;border-radius:999px;flex:0 0 10px;background:#6d7480;border:1px solid rgba(255,255,255,.14)}.tree-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.tree-children{margin-left:17px}.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);display:grid;gap:7px}.coins{color:#c5b5ff}
 .main{min-width:0;display:flex;flex-direction:column;background:#111315}.topbar{height:62px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:15px}.crumbs{color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.crumbs strong{color:var(--text)}.content{overflow:auto;padding:30px;max-width:1100px;width:100%;margin:auto}.welcome{padding:8px 0 25px}.welcome h1{font-size:28px;margin:0 0 5px}.welcome p{margin:0;color:var(--muted)}.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}.folder-card{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:15px;text-align:left;min-height:90px}.folder-card:hover{border-color:#505762;background:#1c2025}.folder-card .count{color:var(--muted);font-size:12px;margin-top:8px}
 .list-view{display:grid;gap:18px}.section{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}.section-head{padding:15px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}.section-title{font-weight:650}.section-body{padding:12px}.task{display:grid;grid-template-columns:22px 1fr auto auto;gap:9px;align-items:center;padding:9px 7px;border-radius:7px}.task:hover{background:var(--panel2)}.task.done .task-title{text-decoration:line-through;color:var(--muted)}.task input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}.reward{color:#bca8ff;font-size:12px}.task-delete{border:0;background:transparent;color:var(--muted);font-size:18px}.task-delete:hover{color:var(--danger)}.add-row{display:flex;gap:8px;margin-top:10px}.add-row input{flex:1}
 .note-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}.note-head{padding:12px;border-bottom:1px solid var(--border);display:flex;gap:8px}.note-head input{font-weight:650;background:transparent}.editor{min-height:430px;padding:18px;outline:none}.editor:empty:before{content:attr(data-placeholder);color:#6e757f}.toolbar{display:flex;flex-wrap:wrap;gap:5px;padding:9px 12px;border-bottom:1px solid var(--border);background:#17191d}.tool{border:1px solid var(--border);background:#20242a;border-radius:6px;min-width:32px;height:30px}.tool:hover{background:#292e35}.save-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;color:var(--muted)}
@@ -143,7 +144,7 @@ html,body{height:100%;overflow:hidden}
 </div></div>
 <div id="app" class="app hidden"><div id="mobileShade" class="mobile-shade hidden"></div><aside class="sidebar" id="sidebar">
 <div class="sidebar-head"><button id="mobileCloseBtn" class="ghost mobile-close" aria-label="Close navigation">✕</button><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
-<div class="side-actions"><button id="newFolderBtn">＋ New folder</button><button id="newNoteBtn">＋ Add note</button><button id="newListBtn">＋ Add tasklist</button></div>
+<div class="side-actions"><div class="new-menu-wrap"><button id="newMenuBtn" class="new-main-btn" aria-haspopup="true" aria-expanded="false">＋ New</button><div id="newMenu" class="new-dropdown"><button id="newFolderBtn">New folder</button><button id="newNoteBtn">New note</button><button id="newListBtn">New task list</button></div></div></div>
 <div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
 </aside><main class="main"><header class="topbar"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
@@ -193,7 +194,7 @@ function renderTree(){
     if(type==="folder"){
       const hasChildren=childrenOf(item.id).length || lists.some(x=>(x.folder_id||null)===item.id) || notes.some(x=>(x.folder_id||null)===item.id);
       row.innerHTML=`<button class="tree-toggle" title="${hasChildren?"Expand/collapse":"No contents"}">${hasChildren?(expandedFolders.has(item.id)?"▾":"▸"):""}</button>
-        <span class="tree-icon">▱</span><span class="tree-name">${esc(item.name)}</span>
+        <span class="tree-icon">▱</span><span class="tree-color-dot" style="background:${esc(colorOf(item)||'#6d7480')}"></span><span class="tree-name">${esc(item.name)}</span>
         <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
 
       row.querySelector(".tree-toggle").onclick=e=>{
@@ -207,7 +208,7 @@ function renderTree(){
         openFolder(item.id);
       };
     }else{
-      row.innerHTML=`<span class="tree-icon">${type==="note"?"□":"☷"}</span><span class="tree-name">${esc(type==="note"?item.title:item.name)}</span>
+      row.innerHTML=`<span class="tree-icon">${type==="note"?"□":"☷"}</span><span class="tree-color-dot" style="background:${esc(colorOf(item)||'#6d7480')}"></span><span class="tree-name">${esc(type==="note"?item.title:item.name)}</span>
         <button class="tree-more" title="Options">⋯</button>${makeMenu(type,item.id)}`;
       row.onclick=e=>{
         if(e.target.closest(".tree-more,.tree-menu"))return;
@@ -310,8 +311,8 @@ function renderHome(){
   ${childrenOf(null).length||lists.some(x=>!x.folder_id)||notes.some(x=>!x.folder_id)?"":"<div class='empty'>Create a folder, note or task list to get started.</div>"}`;
   bind();
 }
-function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===20?"High":reward===10?"Normal":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="task-delete" data-del="${t.id}" aria-label="Delete task">×</button></div>`}
-function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low · 5</option><option value="10" selected>Normal · 10</option><option value="20">High · 20</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
+function taskHTML(t){const reward=Number(t.coin_reward??10);const priority=reward===5?"Low":reward===10?"Normal":reward===20?"High":reward===50?"Very high":"Custom";return`<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="task-delete" data-del="${t.id}" aria-label="Delete task">×</button></div>`}
+function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low</option><option value="10" selected>Normal</option><option value="20">High</option><option value="50">Very high</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
 function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483646?Math.max(m,n):m},0);return max+1}
 function colorOf(x){return x?.color||""}
 function itemMenu(type,id){
@@ -374,7 +375,7 @@ function bind(){document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>o
 async function addTask(id){
  const i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;
  const reward=Number(document.querySelector(`[data-priority="${id}"]`)?.value||10);
- if(![5,10,20].includes(reward))return alert("Invalid task priority.");
+ if(![5,10,20,50].includes(reward))return alert("Invalid task priority.");
  const btn=document.querySelector(`[data-addbtn="${id}"]`);i.disabled=true;if(btn)btn.disabled=true;
  try{
   const r=await db.from("tasks").insert({user_id:user.id,list_id:id,title,coin_reward:reward,is_done:false,sort_order:nextSortOrder(tasks)});
@@ -405,8 +406,18 @@ async function saveNote(){if(noteSaveBusy||currentDoc?.type!=="note"||!$("#edito
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"&&currentDoc?.type==="note"&&$("#modalBack").classList.contains("hidden")){e.preventDefault();saveNote()}});
 async function deleteNote(){if(!confirm("Delete this note?"))return;let r=await db.from("notes").delete().eq("id",currentDoc.id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
 
-function closeMenus(){document.querySelectorAll(".item-menu.open,.tree-menu.open").forEach(m=>m.classList.remove("open"))}
+function closeMenus(){document.querySelectorAll(".item-menu.open,.tree-menu.open,.new-dropdown.open").forEach(m=>m.classList.remove("open"));const btn=$("#newMenuBtn");if(btn)btn.setAttribute("aria-expanded","false")}
 document.addEventListener("click",e=>{
+  const newBtn=e.target.closest("#newMenuBtn");
+  if(newBtn){
+    e.stopPropagation();
+    const menu=$("#newMenu");
+    const already=menu?.classList.contains("open");
+    closeMenus();
+    if(menu&&!already){menu.classList.add("open");newBtn.setAttribute("aria-expanded","true");}
+    return;
+  }
+  if(e.target.closest("#newMenu"))return;
   const mb=e.target.closest("[data-menu-btn]");
   if(mb){
     e.stopPropagation();const m=document.querySelector(`[data-menu="${mb.dataset.menuBtn}"]`);const already=m?.classList.contains("open");closeMenus();
