@@ -158,6 +158,14 @@ html,body{height:100%;overflow:hidden}
 .task-section-heading{grid-template-columns:19px 22px minmax(0,1fr) auto auto!important}
 .section-body{min-width:0}
 @media(max-width:760px){.content{padding-top:65px}.mobile-nav{position:fixed;top:9px;left:10px;z-index:100;background:var(--panel2);border:1px solid var(--border)}.task{gap:5px!important}.task-drag{width:19px}}
+
+/* v10: expanded lists and visible drag handles in every task list */
+.task-drag{display:inline-flex;align-items:center;justify-content:center;visibility:visible!important;color:#a99bc7;font-size:18px;cursor:grab;user-select:none}
+.task-drag:hover,.task-drag:focus-visible{color:var(--accent);background:rgba(155,134,232,.12);border-radius:5px}
+.task[draggable="true"]{user-select:none}
+.task[draggable="true"] .task-title{user-select:text}
+.task.drop-before{box-shadow:inset 0 3px 0 #b7a6ff;background:rgba(155,134,232,.08)}
+.task.drop-after{box-shadow:inset 0 -3px 0 #b7a6ff;background:rgba(155,134,232,.08)}
 </style></head>
 <body>
 <div id="auth" class="auth"><div class="auth-card">
@@ -222,7 +230,7 @@ function renderTree(){
   function makeRow(item,type,depthLevel=0){
     const row=document.createElement("div");
     row.className="tree-row"+((type==="folder"&&currentFolder===item.id)?" selected":"");
-    row.draggable=true;
+    row.draggable=false;
     row.dataset.dragType=type;
     row.dataset.dragId=item.id;
     row.style.borderLeftColor=item.color||"transparent";
@@ -251,14 +259,6 @@ function renderTree(){
         type==="note"?openNote(item.id):openList(item.id);
       };
     }
-
-    row.addEventListener("dragstart",e=>{
-      e.stopPropagation();
-      e.dataTransfer.effectAllowed="move";
-      e.dataTransfer.setData("text/plain",JSON.stringify({type,id:item.id}));
-      row.classList.add("dragging");
-    });
-    row.addEventListener("dragend",()=>row.classList.remove("dragging"));
 
     row.addEventListener("dragover",e=>{
       if(type!=="folder")return;
@@ -363,7 +363,7 @@ function renderTasksHTML(listTasks,limit=Infinity){
  }).join("");
 }
 function taskHTML(t,sectionDone=false){
- if(isTaskSection(t))return `<div class="task task-section-heading ${sectionDone?"section-complete":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag section" aria-label="Reorder section">⠿</button>
+ if(isTaskSection(t))return `<div class="task task-section-heading ${sectionDone?"section-complete":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag to reorder section" aria-label="Reorder section">⠿</button>
     <input type="checkbox" disabled aria-label="Section progress is automatic" title="Completes automatically when all tasks below are done" ${sectionDone?"checked":""}>
     <span class="task-title">${esc(taskDisplayTitle(t))}</span>
     <span class="section-status">${sectionDone?"Completed":"Section"}</span>
@@ -375,7 +375,7 @@ function taskHTML(t,sectionDone=false){
 }
 function taskMenu(id){return `<div class="item-menu" data-menu="task:${id}"><button data-action="edit">Edit task</button><button data-action="delete">Delete task</button></div>`}
 function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low</option><option value="10" selected>Normal</option><option value="20">High</option><option value="50">Very high</option><option value="section">Section</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
-function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483640?Math.max(m,n):m},0);return max+1}
+function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483000?Math.max(m,n):m},0);return max+1}
 function colorOf(x){return x?.color||""}
 function itemMenu(type,id){
   return `<div class="item-menu" data-menu="${type}:${id}">
@@ -395,7 +395,7 @@ function listHTML(l){
       <button class="more-btn" data-menu-btn="list:${l.id}">⋯</button>
       ${itemMenu("list",l.id)}
     </div>
-    <div class="section-body">${renderTasksHTML(ts,8)||"<div style='color:var(--muted)'>No tasks yet.</div>"}
+    <div class="section-body">${renderTasksHTML(ts)||"<div style='color:var(--muted)'>No tasks yet.</div>"}
       ${addTaskRow(l.id)}
     </div>
   </div>`;
@@ -437,15 +437,16 @@ function renderFolder(id){
 let draggingTaskId=null;
 function bindTaskDnD(){
  document.querySelectorAll(".task[data-task-id]").forEach(row=>{
-  if(currentDoc?.type!=="list"){const handle=row.querySelector(".task-drag");if(handle)handle.style.visibility="hidden";return;}
   const handle=row.querySelector(".task-drag");if(!handle)return;
-  handle.addEventListener("dragstart",e=>{
+  row.draggable=true;
+  row.addEventListener("dragstart",e=>{
+   if(e.target.closest("input,select,.task-more,.item-menu") && !e.target.closest(".task-drag")){e.preventDefault();return;}
    draggingTaskId=row.dataset.taskId;
    e.dataTransfer.effectAllowed="move";
    e.dataTransfer.setData("text/plain",draggingTaskId);
    row.classList.add("dragging");e.stopPropagation();
   });
-  handle.addEventListener("dragend",()=>{draggingTaskId=null;clearTaskDrag();});
+  row.addEventListener("dragend",()=>{draggingTaskId=null;clearTaskDrag();});
   row.addEventListener("dragover",e=>{
    if(!draggingTaskId||draggingTaskId===row.dataset.taskId)return;
    const source=document.querySelector(`.task[data-task-id="${draggingTaskId}"]`);
@@ -472,7 +473,7 @@ async function reorderListTasks(listId,movedId,targetId,after){
  const at=order.findIndex(t=>t.id===targetId);if(at<0)return;
  order.splice(at+(after?1:0),0,moving);
  try{
-  // Two-pass renumbering prevents collisions with old sort_order values.
+  // Save ordered positions for every item in this list.
   for(let i=0;i<order.length;i++){const r=await db.from("tasks").update({sort_order:i+1}).eq("id",order[i].id).eq("user_id",user.id);if(r.error)throw r.error;}
   await refreshView();
  }catch(e){alert("Could not save task order: "+(e.message||e));await refreshView();}
