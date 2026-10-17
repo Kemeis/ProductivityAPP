@@ -144,6 +144,20 @@ html,body{height:100%;overflow:hidden}
 .task-section-heading .section-status{color:var(--muted);font-size:11px;white-space:nowrap}
 .task-section-heading.section-complete .task-title{color:var(--muted)}
 @media(max-width:480px){.task-section-heading .task-title{font-size:15px}.task-section-heading .section-status{font-size:10px}}
+
+/* v9 compact workspace, task drag sorting */
+.topbar{position:absolute;top:8px;right:12px;width:auto;height:auto;min-height:0;border:0;padding:0;z-index:12;background:transparent}.topbar .crumbs{display:none}.main{position:relative}.content{padding-top:18px}
+.welcome{padding:0 0 15px}
+.task[data-task-id]{cursor:default}
+.task.dragging{opacity:.45}
+.task.drop-before{box-shadow:inset 0 3px 0 var(--accent)}
+.task.drop-after{box-shadow:inset 0 -3px 0 var(--accent)}
+.task-drag{border:0;background:transparent;color:var(--muted);font-size:17px;cursor:grab;padding:0;width:19px;min-width:19px;touch-action:none}
+.task-drag:active{cursor:grabbing}
+.task{grid-template-columns:19px 22px minmax(0,1fr) auto auto!important}
+.task-section-heading{grid-template-columns:19px 22px minmax(0,1fr) auto auto!important}
+.section-body{min-width:0}
+@media(max-width:760px){.content{padding-top:65px}.mobile-nav{position:fixed;top:9px;left:10px;z-index:100;background:var(--panel2);border:1px solid var(--border)}.task{gap:5px!important}.task-drag{width:19px}}
 </style></head>
 <body>
 <div id="auth" class="auth"><div class="auth-card">
@@ -157,7 +171,7 @@ html,body{height:100%;overflow:hidden}
 <div class="sidebar-head"><button id="mobileCloseBtn" class="ghost mobile-close" aria-label="Close navigation">✕</button><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><div class="new-menu-wrap"><button id="newMenuBtn" class="new-main-btn" aria-haspopup="true" aria-expanded="false">＋ New</button><div id="newMenu" class="new-dropdown"><button id="newFolderBtn">New folder</button><button id="newNoteBtn">New note</button><button id="newListBtn">New task list</button></div></div></div>
 <div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
-</aside><main class="main"><header class="topbar"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
+</aside><main class="main"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
 <h2 id="modalTitle"></h2>
 <div id="modalBody"></div>
@@ -177,7 +191,18 @@ $("#loginTab").onclick=()=>setAuthMode("login");$("#registerTab").onclick=()=>se
 $("#authForm").onsubmit=async e=>{e.preventDefault();msg("");let email=$("#email").value.trim(),password=$("#password").value;if(authMode==="register"&&password!==$("#confirm").value)return msg("Passwords do not match.");try{let r=authMode==="login"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password,options:{emailRedirectTo:location.href}});if(r.error)throw r.error;if(authMode==="register"&&!r.data.session){setAuthMode("login");msg("Account created. Check your email to confirm it.",true)}}catch(e){msg(e.message||"Authentication failed.")}};
 $("#gardenBtn").onclick=()=>location.href="garden.html";
 $("#logoutBtn").onclick=()=>db.auth.signOut();
-async function load(){let uid=user.id;let [f,l,n,t,p]=await Promise.all([db.from("folders").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("task_lists").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),db.from("tasks").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("profiles").select("coins").eq("id",uid).maybeSingle()]);for(let r of [f,l,n,t,p])if(r.error)throw r.error;folders=f.data||[];lists=l.data||[];notes=n.data||[];tasks=t.data||[];profile=p.data||{coins:0};$("#coins").textContent=profile.coins??0;$("#userLine").textContent=user.email;renderTree();renderHome()}
+async function fetchAllTasks(uid){
+ const all=[];let from=0;const batch=500;
+ while(true){
+  const r=await db.from("tasks").select("*").eq("user_id",uid).order("sort_order").order("created_at").range(from,from+batch-1);
+  if(r.error)return r;
+  all.push(...(r.data||[]));
+  if((r.data||[]).length<batch)break;
+  from+=batch;
+ }
+ return {data:all,error:null};
+}
+async function load(){let uid=user.id;let [f,l,n,t,p]=await Promise.all([db.from("folders").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("task_lists").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),fetchAllTasks(uid),db.from("profiles").select("coins").eq("id",uid).maybeSingle()]);for(let r of [f,l,n,t,p])if(r.error)throw r.error;folders=f.data||[];lists=l.data||[];notes=n.data||[];tasks=t.data||[];profile=p.data||{coins:0};$("#coins").textContent=profile.coins??0;$("#userLine").textContent=user.email;renderTree();renderHome()}
 function childrenOf(p){return folders.filter(f=>(f.parent_id||null)===(p||null))}
 function depth(id){let d=0,f=folders.find(x=>x.id===id);while(f?.parent_id&&d<10){d++;f=folders.find(x=>x.id===f.parent_id)}return d}
 function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=folders.find(x=>x.id===f.parent_id)}return a}
@@ -329,7 +354,7 @@ const SECTION_PREFIX="[TG_SECTION] ";
 function isTaskSection(t){return Number(t.coin_reward)===0&&String(t.title||"").startsWith(SECTION_PREFIX)}
 function taskDisplayTitle(t){return isTaskSection(t)?t.title.slice(SECTION_PREFIX.length):t.title}
 function renderTasksHTML(listTasks,limit=Infinity){
- const ordered=[...listTasks];
+ const ordered=[...listTasks].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)||String(a.created_at||"").localeCompare(String(b.created_at||"")));
  return ordered.slice(0,limit).map((t,i)=>{
    if(!isTaskSection(t))return taskHTML(t);
    const below=[];
@@ -338,7 +363,7 @@ function renderTasksHTML(listTasks,limit=Infinity){
  }).join("");
 }
 function taskHTML(t,sectionDone=false){
- if(isTaskSection(t))return `<div class="task task-section-heading ${sectionDone?"section-complete":""}">
+ if(isTaskSection(t))return `<div class="task task-section-heading ${sectionDone?"section-complete":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag section" aria-label="Reorder section">⠿</button>
     <input type="checkbox" disabled aria-label="Section progress is automatic" title="Completes automatically when all tasks below are done" ${sectionDone?"checked":""}>
     <span class="task-title">${esc(taskDisplayTitle(t))}</span>
     <span class="section-status">${sectionDone?"Completed":"Section"}</span>
@@ -346,11 +371,11 @@ function taskHTML(t,sectionDone=false){
    </div>`;
  const reward=Number(t.coin_reward??10);
  const priority=reward===5?"Low":reward===10?"Normal":reward===20?"High":reward===50?"Very high":"Custom";
- return `<div class="task ${t.is_done?"done":""}"><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="more-btn task-more" data-menu-btn="task:${t.id}" aria-label="Task options" aria-haspopup="true">⋯</button>${taskMenu(t.id)}</div>`;
+ return `<div class="task ${t.is_done?"done":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag to reorder" aria-label="Reorder task">⠿</button><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="more-btn task-more" data-menu-btn="task:${t.id}" aria-label="Task options" aria-haspopup="true">⋯</button>${taskMenu(t.id)}</div>`;
 }
 function taskMenu(id){return `<div class="item-menu" data-menu="task:${id}"><button data-action="edit">Edit task</button><button data-action="delete">Delete task</button></div>`}
 function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low</option><option value="10" selected>Normal</option><option value="20">High</option><option value="50">Very high</option><option value="section">Section</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
-function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483646?Math.max(m,n):m},0);return max+1}
+function nextSortOrder(items){const max=items.reduce((m,x)=>{const n=Number(x.sort_order);return Number.isSafeInteger(n)&&n>=0&&n<2147483640?Math.max(m,n):m},0);return max+1}
 function colorOf(x){return x?.color||""}
 function itemMenu(type,id){
   return `<div class="item-menu" data-menu="${type}:${id}">
@@ -363,7 +388,7 @@ function itemMenu(type,id){
 }
 function listHTML(l){
   let ts=tasks.filter(t=>t.list_id===l.id);
-  return `<div class="section draggable-item" draggable="true" data-drag-type="list" data-drag-id="${l.id}">
+  return `<div class="section" data-drag-type="list" data-drag-id="${l.id}">
     <div class="section-head">
       ${colorOf(l)?`<span class="item-color" style="background:${esc(colorOf(l))}"></span>`:""}
       <span class="section-title">☷ ${esc(l.name)}</span>
@@ -376,7 +401,7 @@ function listHTML(l){
   </div>`;
 }
 function noteHTML(n){
-  return `<div class="section draggable-item" draggable="true" data-drag-type="note" data-drag-id="${n.id}">
+  return `<div class="section" data-drag-type="note" data-drag-id="${n.id}">
     <div class="section-head">
       ${colorOf(n)?`<span class="item-color" style="background:${esc(colorOf(n))}"></span>`:""}
       <span class="section-title">□ ${esc(n.title)}</span>
@@ -388,7 +413,7 @@ function noteHTML(n){
 }
 function folderCard(f){
   let it=folderItems(f.id);
-  return `<div class="folder-wrap draggable-item" draggable="true" data-drag-type="folder" data-drag-id="${f.id}">
+  return `<div class="folder-wrap" data-drag-type="folder" data-drag-id="${f.id}">
     <button class="folder-card" data-f="${f.id}">
       ${colorOf(f)?`<span class="item-color folder-color" style="background:${esc(colorOf(f))}"></span>`:""}
       <strong>▱ ${esc(f.name)}</strong>
@@ -408,7 +433,52 @@ function renderFolder(id){
   <div class="list-view" style="margin-top:18px">${it.lists.map(listHTML).join("")}${it.notes.map(noteHTML).join("")}</div>`;
   bind();
 }
-function bind(){document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addTask(i.dataset.add)}})}
+
+let draggingTaskId=null;
+function bindTaskDnD(){
+ document.querySelectorAll(".task[data-task-id]").forEach(row=>{
+  if(currentDoc?.type!=="list"){const handle=row.querySelector(".task-drag");if(handle)handle.style.visibility="hidden";return;}
+  const handle=row.querySelector(".task-drag");if(!handle)return;
+  handle.addEventListener("dragstart",e=>{
+   draggingTaskId=row.dataset.taskId;
+   e.dataTransfer.effectAllowed="move";
+   e.dataTransfer.setData("text/plain",draggingTaskId);
+   row.classList.add("dragging");e.stopPropagation();
+  });
+  handle.addEventListener("dragend",()=>{draggingTaskId=null;clearTaskDrag();});
+  row.addEventListener("dragover",e=>{
+   if(!draggingTaskId||draggingTaskId===row.dataset.taskId)return;
+   const source=document.querySelector(`.task[data-task-id="${draggingTaskId}"]`);
+   if(!source||source.dataset.taskList!==row.dataset.taskList)return;
+   e.preventDefault();e.stopPropagation();clearTaskDrag();
+   row.classList.add(e.clientY<row.getBoundingClientRect().top+row.offsetHeight/2?"drop-before":"drop-after");
+  });
+  row.addEventListener("drop",async e=>{
+   if(!draggingTaskId||draggingTaskId===row.dataset.taskId)return;
+   const source=tasks.find(t=>t.id===draggingTaskId),target=tasks.find(t=>t.id===row.dataset.taskId);
+   if(!source||!target||source.list_id!==target.list_id)return;
+   e.preventDefault();e.stopPropagation();
+   const after=e.clientY>=row.getBoundingClientRect().top+row.offsetHeight/2;
+   const moved=draggingTaskId;draggingTaskId=null;clearTaskDrag();
+   await reorderListTasks(source.list_id,moved,target.id,after);
+  });
+ });
+}
+function clearTaskDrag(){document.querySelectorAll(".task.dragging,.task.drop-before,.task.drop-after").forEach(x=>x.classList.remove("dragging","drop-before","drop-after"));}
+async function reorderListTasks(listId,movedId,targetId,after){
+ const order=tasks.filter(t=>t.list_id===listId).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)||String(a.created_at||"").localeCompare(String(b.created_at||"")));
+ const movingIndex=order.findIndex(t=>t.id===movedId);if(movingIndex<0)return;
+ const [moving]=order.splice(movingIndex,1);
+ const at=order.findIndex(t=>t.id===targetId);if(at<0)return;
+ order.splice(at+(after?1:0),0,moving);
+ try{
+  // Two-pass renumbering prevents collisions with old sort_order values.
+  for(let i=0;i<order.length;i++){const r=await db.from("tasks").update({sort_order:i+1}).eq("id",order[i].id).eq("user_id",user.id);if(r.error)throw r.error;}
+  await refreshView();
+ }catch(e){alert("Could not save task order: "+(e.message||e));await refreshView();}
+}
+
+function bind(){bindTaskDnD();document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>openFolder(b.dataset.f));document.querySelectorAll("[data-open-list]").forEach(b=>b.onclick=()=>openList(b.dataset.openList));document.querySelectorAll("[data-open-note]").forEach(b=>b.onclick=()=>openNote(b.dataset.openNote));document.querySelectorAll("[data-check]").forEach(c=>c.onchange=()=>toggleTask(c.dataset.check,c.checked));document.querySelectorAll("[data-addbtn]").forEach(b=>b.onclick=()=>addTask(b.dataset.addbtn));document.querySelectorAll("[data-add]").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addTask(i.dataset.add)}})}
 async function addTask(id){
  const i=document.querySelector(`[data-add="${id}"]`),title=i?.value.trim();if(!title)return;
  const selection=document.querySelector(`[data-priority="${id}"]`)?.value||"10";
@@ -416,26 +486,38 @@ async function addTask(id){
  if(!isSection&&![5,10,20,50].includes(reward))return alert("Invalid task priority.");
  const btn=document.querySelector(`[data-addbtn="${id}"]`);i.disabled=true;if(btn)btn.disabled=true;
  try{
-  const r=await db.from("tasks").insert({user_id:user.id,list_id:id,title:isSection?SECTION_PREFIX+title:title,coin_reward:reward,is_done:false,sort_order:nextSortOrder(tasks)});
+  const r=await db.from("tasks").insert({user_id:user.id,list_id:id,title:isSection?SECTION_PREFIX+title:title,coin_reward:reward,is_done:false,sort_order:nextSortOrder(tasks.filter(t=>t.list_id===id))});
   if(r.error)throw r.error;
   await refreshView();
   const nextInput=document.querySelector(`[data-add="${id}"]`);
+  const nextSelect=document.querySelector(`[data-priority="${id}"]`);
+  if(nextSelect)nextSelect.value=selection;
   if(nextInput){nextInput.focus({preventScroll:true});nextInput.value="";}
  }catch(e){alert(e.message||"Could not add task.");i.disabled=false;if(btn)btn.disabled=false}
 }
+let taskToggleBusy=false;
 async function toggleTask(id,done){
- const t=tasks.find(x=>x.id===id);if(!t||isTaskSection(t)||Boolean(t.is_done)===done)return;
- const reward=Number(t.coin_reward??10);
- const r=await db.from("tasks").update({is_done:done}).eq("id",id).eq("user_id",user.id);
- if(r.error){alert(r.error.message);return refreshView()}
- // Rewards share the profiles.coins balance with Garden. Undoing completion reverses the reward.
- const next=Math.max(0,Number(profile.coins||0)+(done?reward:-reward));
- const c=await db.from("profiles").update({coins:next}).eq("id",user.id).select("coins");
- if(c.error||!c.data?.length){
-  await db.from("tasks").update({is_done:!done}).eq("id",id).eq("user_id",user.id);
-  alert(c.error?.message||"Could not update coins. Check your profile.");
- }
- await refreshView();
+ if(taskToggleBusy)return;
+ const t=tasks.find(x=>x.id===id);
+ if(!t||isTaskSection(t)||Boolean(t.is_done)===done)return;
+ taskToggleBusy=true;
+ // Match exact titles, including case and punctuation. Sections excluded.
+ const same=tasks.filter(x=>!isTaskSection(x)&&x.title===t.title);
+ const affected=done?same.filter(x=>!x.is_done):same.filter(x=>x.is_done);
+ const award=Math.max(...same.map(x=>Number(x.coin_reward)||0),0);
+ const delta=done?award:-award;
+ try{
+  // Read balance immediately before updating; both pages share this profile balance.
+  const pr=await db.from("profiles").select("coins").eq("id",user.id).single();
+  if(pr.error)throw pr.error;
+  const results=await Promise.all(affected.map(x=>db.from("tasks").update({is_done:done}).eq("id",x.id).eq("user_id",user.id)));
+  const fail=results.find(x=>x.error);if(fail?.error)throw fail.error;
+  const balance=Math.max(0,Number(pr.data.coins||0)+delta);
+  const cr=await db.from("profiles").update({coins:balance}).eq("id",user.id).select("coins");
+  if(cr.error||!cr.data?.length)throw cr.error||Error("Could not update coins");
+  await refreshView();
+ }catch(e){alert(e.message||"Could not update tasks.");await refreshView();}
+ finally{taskToggleBusy=false;}
 }
 async function editTask(id){
  const task=tasks.find(t=>t.id===id);if(!task)return;
