@@ -87,7 +87,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:14px 0 6px}input,te
  .sidebar{display:flex;position:fixed;left:0;top:0;bottom:0;width:min(320px,86vw);z-index:110;transform:translateX(-105%);transition:transform .2s ease;box-shadow:8px 0 30px #0008}
  body.nav-open .sidebar{transform:translateX(0)}.mobile-shade:not(.hidden){display:block;position:fixed;inset:0;background:#0009;z-index:105}
  .mobile-nav,.mobile-close{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:42px}
- .mobile-close{float:right}.topbar{min-height:60px;height:auto;padding:8px 12px;gap:8px}.topbar #upBtn{min-width:48px;min-height:42px}
+ .mobile-close{float:right}.topbar{min-height:60px;height:auto;padding:8px 12px;gap:8px}
  .content{padding:18px 12px;padding-bottom:40px;max-width:100%;overscroll-behavior:contain}
  .welcome h1{font-size:23px}.folder-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}
  .section-head{padding:12px}.section-body{padding:10px}.task{grid-template-columns:24px minmax(0,1fr) auto 28px;gap:6px}.task-title{overflow-wrap:anywhere}
@@ -203,7 +203,7 @@ html,body{height:100%;overflow:hidden}
 <div class="sidebar-head"><button id="mobileCloseBtn" class="ghost mobile-close" aria-label="Close navigation">✕</button><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><div class="new-menu-wrap"><button id="newMenuBtn" class="new-main-btn" aria-haspopup="true" aria-expanded="false">＋ New</button><div id="newMenu" class="new-dropdown"><button id="newFolderBtn">New folder</button><button id="newNoteBtn">New note</button><button id="newListBtn">New task list</button></div></div></div>
 <div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
-</aside><main class="main"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div><button class="ghost" id="upBtn">Up</button></header><section id="content" class="content"></section></main></div>
+</aside><main class="main"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
 <h2 id="modalTitle"></h2>
 <div id="modalBody"></div>
@@ -952,7 +952,7 @@ async function deleteGardenAccount(){
 }
 
 
-$("#newFolderBtn").onclick=()=>{closeMobileNav();newFolder()};$("#newListBtn").onclick=()=>{closeMobileNav();newList()};$("#newNoteBtn").onclick=()=>{closeMobileNav();newNote()};$("#upBtn").onclick=()=>{if(isDesktopWorkspace()&&desktopPanes.length){const last=desktopPanes[desktopPanes.length-1];closeDesktopPane(last.type,last.id);return}if(currentDoc){currentDoc=null;if(currentFolder)openFolder(currentFolder);else renderHome()}else if(currentFolder){let f=folders.find(x=>x.id===currentFolder);f?.parent_id?openFolder(f.parent_id):renderHome()}else renderHome()};
+$("#newFolderBtn").onclick=()=>{closeMobileNav();newFolder()};$("#newListBtn").onclick=()=>{closeMobileNav();newList()};$("#newNoteBtn").onclick=()=>{closeMobileNav();newNote()};
 db.auth.onAuthStateChange(async(_,s)=>{user=s?.user||null;if(user){$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");try{await load()}catch(e){alert(e.message)}}else{$("#app").classList.add("hidden");$("#auth").classList.remove("hidden")}});
 let s=await db.auth.getSession();if(s.data.session){user=s.data.session.user;$("#auth").classList.add("hidden");$("#app").classList.remove("hidden");await load()}else renderHome();
 </script></body></html>
