@@ -146,7 +146,7 @@ html,body{height:100%;overflow:hidden}
 @media(max-width:480px){.task-section-heading .task-title{font-size:15px}.task-section-heading .section-status{font-size:10px}}
 
 /* v9 compact workspace, task drag sorting */
-.topbar{position:absolute;top:8px;right:12px;width:auto;height:auto;min-height:0;border:0;padding:0;z-index:12;background:transparent}.topbar .crumbs{display:none}.main{position:relative}.content{padding-top:18px}
+.topbar{position:absolute;top:8px;right:12px;width:auto;height:auto;min-height:0;border:0;padding:0;z-index:12;background:transparent}.topbar .crumbs{display:none}.main{position:relative}.topbar{display:none}.content{padding-top:18px}
 .welcome{padding:0 0 15px}
 .task[data-task-id]{cursor:default}
 .task.dragging{opacity:.45}
@@ -167,6 +167,8 @@ html,body{height:100%;overflow:hidden}
 .task.drop-before{box-shadow:inset 0 3px 0 #b7a6ff;background:rgba(155,134,232,.08)}
 .task.drop-after{box-shadow:inset 0 -3px 0 #b7a6ff;background:rgba(155,134,232,.08)}
 
+/* Priorities remain stored in coin_reward for compatibility with existing data. */
+.task-priority-label{font-size:11px;color:var(--muted);white-space:nowrap}
 /* Desktop multi-pane workspace v11 */
 @media(min-width:761px){
  .content.workspace-active{max-width:none;width:100%;padding:18px 22px 22px;overflow:hidden;scrollbar-gutter:auto}
@@ -202,7 +204,7 @@ html,body{height:100%;overflow:hidden}
 <div id="app" class="app hidden"><div id="mobileShade" class="mobile-shade hidden"></div><aside class="sidebar" id="sidebar">
 <div class="sidebar-head"><button id="mobileCloseBtn" class="ghost mobile-close" aria-label="Close navigation">✕</button><div class="brand-small">Task Garden</div><div id="userLine" class="user-line"></div></div>
 <div class="side-actions"><div class="new-menu-wrap"><button id="newMenuBtn" class="new-main-btn" aria-haspopup="true" aria-expanded="false">＋ New</button><div id="newMenu" class="new-dropdown"><button id="newFolderBtn">New folder</button><button id="newNoteBtn">New note</button><button id="newListBtn">New task list</button></div></div></div>
-<div id="tree" class="tree"></div><div class="sidebar-foot"><div class="coins">Coins: <strong id="coins">0</strong></div><button class="ghost" id="gardenBtn">Go to Garden</button><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
+<div id="tree" class="tree"></div><div class="sidebar-foot"><button class="ghost" id="optionsBtn">Options</button><button class="ghost" id="logoutBtn">Log out</button></div>
 </aside><main class="main"><button class="ghost mobile-nav" id="mobileNavBtn" aria-label="Open navigation" aria-expanded="false">☰</button><header class="topbar"><div id="crumbs" class="crumbs"><strong>My workspace</strong></div></header><section id="content" class="content"></section></main></div>
 <div id="modalBack" class="modal-back hidden"><div class="modal">
 <h2 id="modalTitle"></h2>
@@ -214,7 +216,7 @@ html,body{height:100%;overflow:hidden}
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
 const db=createClient("https://nndonweuhrlinoakunyn.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZG9ud2V1aHJsaW5vYWt1bnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODI0NTYsImV4cCI6MjA5ODQ1ODQ1Nn0.E04xL9bbtABVFkfO0SuSle0VeFqbe9j7ZHi7RkdOLng");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-let user=null,folders=[],lists=[],notes=[],tasks=[],profile={coins:0},currentFolder=null,currentDoc=null,authMode="login",modalAction=null;
+let user=null,folders=[],lists=[],notes=[],tasks=[],currentFolder=null,currentDoc=null,authMode="login",modalAction=null;
 const expandedFolders=new Set();
 const desktopPanes=[];
 const paneNoteDrafts=new Map();
@@ -224,7 +226,6 @@ function msg(t,ok=false){$("#authMsg").textContent=t;$("#authMsg").className="fo
 function setAuthMode(m){authMode=m;$("#loginTab").classList.toggle("active",m==="login");$("#registerTab").classList.toggle("active",m==="register");$("#confirmWrap").classList.toggle("hidden",m!=="register");$("#authSubmit").textContent=m==="login"?"Log in":"Create account"}
 $("#loginTab").onclick=()=>setAuthMode("login");$("#registerTab").onclick=()=>setAuthMode("register");
 $("#authForm").onsubmit=async e=>{e.preventDefault();msg("");let email=$("#email").value.trim(),password=$("#password").value;if(authMode==="register"&&password!==$("#confirm").value)return msg("Passwords do not match.");try{let r=authMode==="login"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password,options:{emailRedirectTo:location.href}});if(r.error)throw r.error;if(authMode==="register"&&!r.data.session){setAuthMode("login");msg("Account created. Check your email to confirm it.",true)}}catch(e){msg(e.message||"Authentication failed.")}};
-$("#gardenBtn").onclick=()=>location.href="garden.html";
 $("#logoutBtn").onclick=()=>db.auth.signOut();
 async function fetchAllTasks(uid){
  const all=[];let from=0;const batch=500;
@@ -237,7 +238,7 @@ async function fetchAllTasks(uid){
  }
  return {data:all,error:null};
 }
-async function load(){let uid=user.id;let [f,l,n,t,p]=await Promise.all([db.from("folders").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("task_lists").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),fetchAllTasks(uid),db.from("profiles").select("coins").eq("id",uid).maybeSingle()]);for(let r of [f,l,n,t,p])if(r.error)throw r.error;folders=f.data||[];lists=l.data||[];notes=n.data||[];tasks=t.data||[];profile=p.data||{coins:0};$("#coins").textContent=profile.coins??0;$("#userLine").textContent=user.email;renderTree();if(isDesktopWorkspace()&&desktopPanes.length)renderWorkspace();else renderHome()}
+async function load(){let uid=user.id;let [f,l,n,t]=await Promise.all([db.from("folders").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("task_lists").select("*").eq("user_id",uid).order("sort_order").order("created_at"),db.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),fetchAllTasks(uid)]);for(let r of [f,l,n,t])if(r.error)throw r.error;folders=f.data||[];lists=l.data||[];notes=n.data||[];tasks=t.data||[];$("#userLine").textContent=user.email;renderTree();if(isDesktopWorkspace()&&desktopPanes.length)renderWorkspace();else renderHome()}
 function childrenOf(p){return folders.filter(f=>(f.parent_id||null)===(p||null))}
 function depth(id){let d=0,f=folders.find(x=>x.id===id);while(f?.parent_id&&d<10){d++;f=folders.find(x=>x.id===f.parent_id)}return d}
 function path(id){let a=[],f=folders.find(x=>x.id===id);while(f){a.unshift(f);f=folders.find(x=>x.id===f.parent_id)}return a}
@@ -400,7 +401,7 @@ function taskHTML(t,sectionDone=false){
    </div>`;
  const reward=Number(t.coin_reward??10);
  const priority=reward===5?"Low":reward===10?"Normal":reward===20?"High":reward===50?"Very high":"Custom";
- return `<div class="task ${t.is_done?"done":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag to reorder" aria-label="Reorder task">⠿</button><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="reward" title="${priority} priority">+${reward}<span class="task-priority">${priority}</span></span><button class="more-btn task-more" data-menu-btn="task:${t.id}" aria-label="Task options" aria-haspopup="true">⋯</button>${taskMenu(t.id)}</div>`;
+ return `<div class="task ${t.is_done?"done":""}" data-task-id="${t.id}" data-task-list="${t.list_id}"><button class="task-drag" draggable="true" title="Drag to reorder" aria-label="Reorder task">⠿</button><input type="checkbox" data-check="${t.id}" ${t.is_done?"checked":""}><span class="task-title">${esc(t.title)}</span><span class="task-priority-label" title="${priority} priority">${priority}</span><button class="more-btn task-more" data-menu-btn="task:${t.id}" aria-label="Task options" aria-haspopup="true">⋯</button>${taskMenu(t.id)}</div>`;
 }
 function taskMenu(id){return `<div class="item-menu" data-menu="task:${id}"><button data-action="edit">Edit task</button><button data-action="delete">Delete task</button></div>`}
 function addTaskRow(id){return `<div class="add-row"><input data-add="${id}" placeholder="Add task…" aria-label="New task"><select data-priority="${id}" aria-label="Task priority"><option value="5">Low</option><option value="10" selected>Normal</option><option value="20">High</option><option value="50">Very high</option><option value="section">Section</option></select><button class="primary" data-addbtn="${id}">Add</button></div>`}
@@ -527,28 +528,21 @@ async function addTask(id){
 }
 let taskToggleBusy=false;
 async function toggleTask(id,done){
- if(taskToggleBusy)return;
- const t=tasks.find(x=>x.id===id);
- if(!t||isTaskSection(t)||Boolean(t.is_done)===done)return;
- taskToggleBusy=true;
- // Match exact titles, including case and punctuation. Sections excluded.
- const same=tasks.filter(x=>!isTaskSection(x)&&x.title===t.title);
- const affected=done?same.filter(x=>!x.is_done):same.filter(x=>x.is_done);
- const award=Math.max(...same.map(x=>Number(x.coin_reward)||0),0);
- const delta=done?award:-award;
- try{
-  // Read balance immediately before updating; both pages share this profile balance.
-  const pr=await db.from("profiles").select("coins").eq("id",user.id).single();
-  if(pr.error)throw pr.error;
-  const results=await Promise.all(affected.map(x=>db.from("tasks").update({is_done:done}).eq("id",x.id).eq("user_id",user.id)));
-  const fail=results.find(x=>x.error);if(fail?.error)throw fail.error;
-  const balance=Math.max(0,Number(pr.data.coins||0)+delta);
-  const cr=await db.from("profiles").update({coins:balance}).eq("id",user.id).select("coins");
-  if(cr.error||!cr.data?.length)throw cr.error||Error("Could not update coins");
-  await refreshView();
- }catch(e){alert(e.message||"Could not update tasks.");await refreshView();}
- finally{taskToggleBusy=false;}
+  if(taskToggleBusy)return;
+  const t=tasks.find(x=>x.id===id);
+  if(!t||isTaskSection(t)||Boolean(t.is_done)===done)return;
+  taskToggleBusy=true;
+  // Keep exact-title task syncing; no more coin updates without the garden.
+  const same=tasks.filter(x=>!isTaskSection(x)&&x.title===t.title);
+  const affected=same.filter(x=>Boolean(x.is_done)!==done);
+  try{
+    const results=await Promise.all(affected.map(x=>db.from("tasks").update({is_done:done}).eq("id",x.id).eq("user_id",user.id)));
+    const fail=results.find(x=>x.error);if(fail?.error)throw fail.error;
+    await refreshView();
+  }catch(e){alert(e.message||"Could not update tasks.");await refreshView();}
+  finally{taskToggleBusy=false;}
 }
+
 async function editTask(id){
  const task=tasks.find(t=>t.id===id);if(!task)return;
  modal("Edit task",async title=>{
@@ -566,7 +560,7 @@ async function editTask(id){
  const options=[[5,"Low"],[10,"Normal"],[20,"High"],[50,"Very high"],["section","Section"]];
  const old=isTaskSection(task)?"section":Number(task.coin_reward??10);
  if(!options.some(([n])=>n===old))options.push([old,`Custom (${old})`]);
- $("#modalBody").innerHTML=`<label for="editTaskPriority">Priority</label><select id="editTaskPriority" ${task.is_done?'disabled title="Completed task priority is locked"':''}>${options.map(([value,label])=>`<option value="${value}" ${old===value?"selected":""}>${label}</option>`).join("")}</select>${task.is_done?'<p class="settings-note">This task is already completed. Its priority is locked to preserve the awarded coins.</p>':""}`;
+ $("#modalBody").innerHTML=`<label for="editTaskPriority">Priority</label><select id="editTaskPriority" ${task.is_done?'disabled title="Completed task priority is locked"':''}>${options.map(([value,label])=>`<option value="${value}" ${old===value?"selected":""}>${label}</option>`).join("")}</select>${task.is_done?'<p class="settings-note">This task is already completed. Its priority is locked.</p>':""}`;
  $("#modalInput").placeholder="Task name";
 }
 async function deleteTask(id){if(!confirm("Delete this task?"))return;let r=await db.from("tasks").delete().eq("id",id).eq("user_id",user.id);if(r.error)alert(r.error.message);else await refreshView()}
@@ -877,7 +871,7 @@ function showOptions(){
  resetModal();$("#modalTitle").textContent="Options";$("#modalInput").classList.add("hidden");$("#modalOk").classList.add("hidden");
  $("#modalBody").innerHTML=`<div class="settings-list">
   <button id="settingsHome">⌂ My workspace</button>
-  <details><summary>Workspace</summary><div class="setting-inner"><button id="settingsExpand">Expand all folders</button><button id="settingsCollapse">Collapse all folders</button><button id="settingsGarden">Go to Garden</button></div></details>
+  <details><summary>Workspace</summary><div class="setting-inner"><button id="settingsExpand">Expand all folders</button><button id="settingsCollapse">Collapse all folders</button></div></details>
   <details><summary>Account</summary><div class="setting-inner"><p class="settings-subheading">Signed in as: ${esc(user?.email||"")}</p><button id="settingsReset" class="danger-setting">Reset progress</button><button id="settingsDelete" class="danger-setting">Delete account</button></div></details>
   <button id="settingsFeedback">Feedback / report error</button>
   <button id="settingsPrivacy">Privacy Policy</button>
@@ -887,12 +881,11 @@ function showOptions(){
  $("#settingsHome").onclick=()=>{closeModal();desktopPanes.length=0;$("#content").classList.remove("workspace-active");renderHome();renderTree();closeMobileNav()};
  $("#settingsExpand").onclick=()=>{folders.forEach(f=>expandedFolders.add(f.id));renderTree();closeModal()};
  $("#settingsCollapse").onclick=()=>{expandedFolders.clear();renderTree();closeModal()};
- $("#settingsGarden").onclick=()=>location.href="garden.html";
  $("#settingsFeedback").onclick=showFeedback;
  $("#settingsPrivacy").onclick=()=>location.href="privacy.html";
  $("#settingsCredentials").onclick=()=>window.open("https://kemeis.github.io/Portfolio/","_blank","noopener,noreferrer");
  $("#settingsReset").onclick=()=>{
-  if(!confirm("Reset progress? This removes garden map items, tasks, folders, notes, lists, habits and goals and sets coins to zero. This CANNOT be undone."))return;
+  if(!confirm("Reset progress? This removes tasks, folders, notes, lists, habits and goals. This CANNOT be undone."))return;
   if(!confirm("Final confirmation: permanently reset ALL your Task Garden progress?"))return;
   resetAllProgress();
  };
@@ -930,7 +923,7 @@ async function resetAllProgress(){
  const button=$("#settingsReset");if(button)button.disabled=true;
  try{
   const uid=user.id;
-  for(const table of ["map_tiles","habit_logs","tasks","notes","task_lists","folders","goals","habits"]){
+  for(const table of ["habit_logs","tasks","notes","task_lists","folders","goals","habits"]){
    const {error}=await db.from(table).delete().eq("user_id",uid);
    if(error)throw new Error(table+": "+error.message);
   }
